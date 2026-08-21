@@ -45,11 +45,7 @@ function runtimeState(reasons: EligibilityReason[]): EligibilityState {
   return state(uniqueReasons(reasons));
 }
 
-function paceState(
-  lap: Lap,
-  reasons: EligibilityReason[],
-  paceMode: PaceMode,
-): EligibilityState {
+function paceState(lap: Lap, reasons: EligibilityReason[], paceMode: PaceMode): EligibilityState {
   const nextReasons = [...reasons];
   if (lap.pitIn) {
     nextReasons.push('pit-in');
