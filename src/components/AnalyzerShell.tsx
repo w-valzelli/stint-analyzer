@@ -10,6 +10,7 @@ import {
 } from '../domain/analytics/stints';
 import type { PaceMode, ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
+import { Overview } from '../features/overview/Overview';
 import { Leaderboard } from '../features/leaderboard/Leaderboard';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
@@ -174,7 +175,9 @@ export function AnalyzerShell() {
           </TabsList>
 
           <TabsContent value={activeTab}>
-            {activeTab === 'leaderboard' && report ? (
+            {report && activeTab === 'overview' ? (
+              <Overview report={report} />
+            ) : report && activeTab === 'leaderboard' ? (
               <div className="calibration-panel calibration-panel--table">
                 <Leaderboard report={report} />
               </div>
