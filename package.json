@@ -34,6 +34,7 @@
     "simple-statistics": "^7.10.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
+    "write-excel-file": "^4.1.1",
     "zod": "4.4.3",
     "zustand": "^5.0.15"
   },
