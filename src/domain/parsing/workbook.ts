@@ -2,7 +2,7 @@ import readXlsxFile from 'read-excel-file/browser';
 
 import { Garage61ParseError, type ParsedWorkbook } from '../model/normalized';
 import { parseDetectedGarage61Sheet, type Garage61Sheet, type RawCell } from './garage61';
-import { detectHeaderRow, type HeaderDetection } from './headers';
+import { detectHeaderRow, normalizeHeader, type HeaderDetection } from './headers';
 
 export type WorkbookSheet = Garage61Sheet;
 
@@ -10,6 +10,12 @@ export type WorkbookSource = {
   id: string;
   name: string;
   hash: string;
+};
+
+type WorkbookMetadata = {
+  driverName: string | null;
+  trackName: string | null;
+  carName: string | null;
 };
 
 const PREFERRED_SHEET_NAME = 'Session - Practice';
@@ -33,6 +39,52 @@ function asGarage61Sheet(sheet: {
   return {
     name: sheet.sheet,
     rows: sheet.data.map((row) => row.map(asRawCell)),
+  };
+}
+
+function metadataText(value: unknown): string | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const text = String(value).trim();
+  return text || null;
+}
+
+function findMetadataValue(rows: readonly (readonly RawCell[])[], label: string): string | null {
+  for (const [rowIndex, row] of rows.entries()) {
+    const labelIndex = row.findIndex((cell) => normalizeHeader(cell) === label);
+    if (labelIndex < 0) {
+      continue;
+    }
+
+    const sameRowValue = row
+      .slice(labelIndex + 1)
+      .map(metadataText)
+      .find(Boolean);
+    if (sameRowValue) {
+      return sameRowValue;
+    }
+
+    const nextRowValue = rows[rowIndex + 1]?.map(metadataText).find(Boolean);
+    if (nextRowValue) {
+      return nextRowValue;
+    }
+  }
+
+  return null;
+}
+
+function extractWorkbookMetadata(sheets: readonly WorkbookSheet[]): WorkbookMetadata {
+  const overview = sheets.find((sheet) => normalizeHeader(sheet.name) === 'overview');
+  if (!overview) {
+    return { driverName: null, trackName: null, carName: null };
+  }
+
+  return {
+    driverName: findMetadataValue(overview.rows, 'driver'),
+    trackName: findMetadataValue(overview.rows, 'track'),
+    carName: findMetadataValue(overview.rows, 'car'),
   };
 }
 
@@ -70,6 +122,7 @@ export function parseWorkbookSheets(
   const selected = selectGarage61Sheet(sheets);
   return parseDetectedGarage61Sheet(selected.sheet, selected.headerRow, source, {
     fallbackSelected: selected.fallbackSelected,
+    metadata: extractWorkbookMetadata(sheets),
   });
 }
 

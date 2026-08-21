@@ -146,6 +146,22 @@ export const exactGarage61Sheets: Garage61Sheet[] = [
   },
 ];
 
+export const metadataGarage61Sheets: Garage61Sheet[] = [
+  {
+    name: 'Overview',
+    rows: [
+      ['Event info:'],
+      ['Car'],
+      [null, 'Prototype X'],
+      ['Track'],
+      [null, 'Synthetic Ring'],
+      ['Driver'],
+      [null, 'Alice'],
+    ],
+  },
+  ...exactGarage61Sheets,
+];
+
 export const fallbackGarage61Sheets: Garage61Sheet[] = [
   {
     name: 'Data',

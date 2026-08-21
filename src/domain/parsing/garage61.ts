@@ -128,7 +128,14 @@ function uniqueSorted(values: readonly string[]): string[] {
 export function parseGarage61Sheet(
   sheet: Garage61Sheet,
   source: ParseSource,
-  options: { fallbackSelected?: boolean } = {},
+  options: {
+    fallbackSelected?: boolean;
+    metadata?: {
+      driverName: string | null;
+      trackName: string | null;
+      carName: string | null;
+    };
+  } = {},
 ): ParsedWorkbook {
   const detection = detectHeaderRow(sheet.rows);
   if (!detection) {
@@ -144,7 +151,14 @@ export function parseDetectedGarage61Sheet(
   sheet: Garage61Sheet,
   detection: HeaderDetection,
   source: ParseSource,
-  options: { fallbackSelected?: boolean } = {},
+  options: {
+    fallbackSelected?: boolean;
+    metadata?: {
+      driverName: string | null;
+      trackName: string | null;
+      carName: string | null;
+    };
+  } = {},
 ): ParsedWorkbook {
   const warnings: ParserWarning[] = [];
   const laps: Lap[] = [];
@@ -303,12 +317,16 @@ export function parseDetectedGarage61Sheet(
     );
   }
 
+  const driverNames = uniqueSorted(laps.map((lap) => lap.driver));
   const sourceSummary: SourceSummary = {
     id: source.id,
     name: source.name,
     hash: source.hash,
     sheetName: sheet.name,
-    driverNames: uniqueSorted(laps.map((lap) => lap.driver)),
+    driverName: options.metadata?.driverName ?? (driverNames.join(', ') || null),
+    trackName: options.metadata?.trackName ?? null,
+    carName: options.metadata?.carName ?? null,
+    driverNames,
     sectorNames: detection.sectorColumns.map((sector) => sector.name),
     timedLapCount: laps.filter((lap) => lap.lapTimeUs !== null).length,
     fullTimedLapCount: laps.filter((lap) => lap.isFullTimedLap).length,

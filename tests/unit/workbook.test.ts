@@ -11,6 +11,7 @@ import {
 import {
   exactGarage61Sheets,
   fallbackGarage61Sheets,
+  metadataGarage61Sheets,
   unrelatedSheets,
   validSource,
 } from '../fixtures/garage61Rows';
@@ -27,6 +28,14 @@ describe('Garage 61 workbook selection', () => {
     expect(result.source.sheetName).toBe('Data');
     expect(result.warnings.some((item) => item.code === 'fallback-sheet')).toBe(true);
     expect(result.source.sectorNames).toEqual(['S1', 'S2']);
+  });
+
+  it('extracts driver, track, and car metadata from the Overview sheet', () => {
+    const result = parseWorkbookSheets(metadataGarage61Sheets, validSource);
+
+    expect(result.source.driverName).toBe('Alice');
+    expect(result.source.trackName).toBe('Synthetic Ring');
+    expect(result.source.carName).toBe('Prototype X');
   });
 
   it('rejects unrelated workbooks with a useful message', () => {
