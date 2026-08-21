@@ -42,6 +42,17 @@ If there is a conflict, this file wins.
 - UI, XLSX export, Markdown export and JSON export must all consume the same canonical analysis report.
 - Do not build telemetry abstractions in MVP.
 
+## UI information discipline
+
+- Treat the data as the primary content of every analysis surface.
+- Do not expose backend methodology, implementation terminology, or repeated context by default.
+- Do not repeat a tab label as an in-panel heading.
+- Do not repeat imported source or driver counts already visible in scope review.
+- Add explanatory copy only when the displayed data would otherwise be ambiguous or unsafe.
+- Prefer table-first analysis views. Use progressive disclosure for methodology and audit detail.
+- Format motorsport durations as `m:ss.ddd`. Format runtimes above one hour as `h:mm:ss.ddd`.
+- Do not add ceremony to impress the user. Keep analysis surfaces direct and pragmatic.
+
 ## Required stack
 
 - Astro static output
@@ -143,7 +154,7 @@ A user must be able to:
 2. drag in multiple Garage 61 `.xlsx` exports;
 3. review detected drivers/stints/laps;
 4. choose the runtime/pace scope;
-5. manually enter real penalty counts/seconds;
+5. view the runtime-only leaderboard with runtime gaps and factual invalid-lap counts;
 6. view overview, leaderboard, sectors, consistency, driver detail and lap audit;
 7. export `.xlsx`, `.md` and `.json`;
 8. use the app successfully from GitHub Pages;
