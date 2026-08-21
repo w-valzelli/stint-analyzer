@@ -1141,9 +1141,7 @@ input[type='checkbox']:focus-visible {
 
 .analysis-table-wrap tbody th,
 .analysis-table-wrap th:first-child,
-.analysis-table-wrap td:first-child,
-.analysis-table-wrap th:nth-child(2),
-.analysis-table-wrap td:nth-child(2) {
+.analysis-table-wrap td:first-child {
   text-align: left;
 }
 
@@ -1170,6 +1168,16 @@ input[type='checkbox']:focus-visible {
 .analysis-table__emphasis {
   color: var(--calibration-ink);
   font-weight: 600;
+}
+
+.leaderboard th:first-child,
+.leaderboard td:first-child {
+  text-align: right;
+}
+
+.leaderboard th:nth-child(2),
+.leaderboard td:nth-child(2) {
+  text-align: left;
 }
 
 .analysis-table__fastest {

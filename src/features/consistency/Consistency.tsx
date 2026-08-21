@@ -68,7 +68,6 @@ export function Consistency({ report }: ConsistencyProps) {
                 <h3>Consistency matrix</h3>
                 <p>Sector rows compare the selected {label} across drivers.</p>
               </div>
-              <span className="analysis-surface__count">{drivers.length} drivers</span>
             </div>
             <div className="analysis-table-wrap">
               <table aria-label="Consistency matrix">
