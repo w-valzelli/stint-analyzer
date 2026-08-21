@@ -1147,11 +1147,13 @@ input[type='checkbox']:focus-visible {
   text-align: left;
 }
 
-.analysis-table-wrap .analysis-table__label {
+.analysis-table-wrap th.analysis-table__label,
+.analysis-table-wrap td.analysis-table__label {
   text-align: left;
 }
 
-.analysis-table-wrap .analysis-table__value {
+.analysis-table-wrap th.analysis-table__value,
+.analysis-table-wrap td.analysis-table__value {
   text-align: right;
 }
 
