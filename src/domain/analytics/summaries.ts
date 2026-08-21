@@ -89,8 +89,7 @@ export function buildOverviewSummary(input: {
           bestMedianUs === null
             ? []
             : sector.drivers
-                .filter((entry) => entry.medianUs === bestMedianUs)
-                .map((entry) => entry.driver)
+                .flatMap((entry) => (entry.medianUs === bestMedianUs ? [entry.driver] : []))
                 .sort(compareText),
       };
     }),
