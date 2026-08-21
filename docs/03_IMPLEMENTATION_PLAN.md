@@ -129,26 +129,27 @@ Build `AnalysisReport` and ensure it is the only derived-data source for UI/expo
 
 ---
 
-## Milestone 4 — Penalties and leaderboard
+## Milestone 4 — Runtime leaderboard facts
+
+The approved product amendment supersedes the original penalty-adjustment proposal for this milestone. M4 remains read-only and does not add penalty inputs or adjusted runtime.
 
 ### Tasks
 
-- global `secondsPerPenalty`, default 1;
-- manual count per driver;
-- optional direct seconds override;
-- penalty source;
-- adjusted runtime;
-- sorting and gaps;
-- penalty editor;
-- leaderboard screen.
+- count selected full timed non-pit laps with `Clean = 0` as invalid laps;
+- keep invalid-lap facts separate from runtime and clean percentage;
+- sort by selected runtime and calculate deterministic gaps;
+- add position and gap to the canonical leaderboard rows;
+- build the read-only leaderboard screen.
 
 ### Acceptance
 
-- raw, penalty and adjusted are separate;
-- `adjusted = raw + penalty`;
+- runtime remains the only ranking measure;
+- unclean laps remain part of runtime when they are full timed and selected;
+- invalid-lap count is a factual `Clean` measure, not a penalty;
 - leader gap = 0;
-- no penalty inference from Clean;
-- changing penalties immediately updates position/gap.
+- changing only Clean flags does not change runtime, position, or gap;
+- ties use deterministic driver-name ordering;
+- no manual penalty input or adjusted runtime appears in M4.
 
 ---
 

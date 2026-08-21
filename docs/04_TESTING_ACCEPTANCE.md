@@ -2,6 +2,8 @@
 
 ## 1. Test layers
 
+The approved M4 amendment replaces manual penalty adjustment with a read-only runtime leaderboard and factual invalid-lap counts. The original penalty-adjustment checks remain deferred until a future explicit product decision.
+
 Use:
 
 1. domain unit tests;
@@ -78,17 +80,15 @@ Use tolerances only where floating conversion requires it.
 Test:
 
 - runtime sum;
-- 0 penalty default;
-- manual count;
-- global seconds-per-penalty;
-- direct seconds override;
-- adjusted order;
+- invalid-lap count from selected full timed non-pit laps with `Clean = 0`;
+- runtime order;
 - leader gap 0;
-- other gaps;
-- tie deterministic ordering.
+- other runtime gaps;
+- tie deterministic ordering;
+- Clean-flag invariance for runtime, position, and gap.
 
 Required regression:
-two identical datasets differing only in `Clean` flags must have identical penalty values until manual penalty input changes.
+two identical datasets differing only in `Clean` flags must have identical runtime, position, and gap values. The invalid-lap facts can differ.
 
 ---
 
@@ -154,8 +154,8 @@ Test:
 - pace control disabled before import;
 - user-facing audit reasons;
 - benchmark selector;
-- penalty editor;
-- leaderboard response;
+- read-only runtime leaderboard;
+- invalid-lap facts;
 - empty/no-clean-lap state;
 - export dialog.
 
@@ -175,12 +175,12 @@ Test:
 8. inspect driver detail;
 9. download Markdown.
 
-### Penalty
+### Runtime facts
 
 1. import;
-2. set penalty seconds/count;
-3. verify adjusted time/order/gap;
-4. verify export includes manual source.
+2. verify the leaderboard shows runtime, position, gap, and invalid-lap facts;
+3. change only Clean flags in a fixture;
+4. verify runtime, order, and gaps remain unchanged while invalid-lap facts update.
 
 ### Bad file
 
