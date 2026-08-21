@@ -51,14 +51,13 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   await expect(page.getByRole('dialog').first()).not.toBeVisible();
   await expect(scope.getByText(/pit-in|pit-out/)).not.toBeVisible();
 
-  await page.getByRole('tab', { name: 'Leaderboard' }).click();
   const leaderboard = page.getByRole('table', { name: 'Leaderboard' });
   await expect(leaderboard).toBeVisible();
   await expect(leaderboard).toContainText('Alice');
   await expect(leaderboard).toContainText('Best pace');
   await expect(leaderboard).toContainText('Median pace');
   await expect(leaderboard).toContainText('0:22.100');
-  await expect(page.getByRole('heading', { name: 'Runtime standings.' })).not.toBeVisible();
+  await expect(page.getByRole('tab', { name: 'Leaderboard' })).not.toBeVisible();
 
   await page.getByRole('button', { name: `Remove ${path.basename(fixture)}` }).click();
   await expect(

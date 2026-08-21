@@ -75,13 +75,23 @@ describe('M5 analysis views', () => {
     useAnalysisViewStore.getState().setSelectedDriver(null);
   });
 
-  it('shows overview facts and pace progression', () => {
+  it('shows the full run register and multi-driver pace progression', async () => {
+    const user = userEvent.setup();
     render(<Overview report={analysisReport()} />);
 
     expect(screen.getByText('Run register')).toBeInTheDocument();
     expect(screen.getByText('Pace progression')).toBeInTheDocument();
-    expect(screen.getByText('Fastest best')).toBeInTheDocument();
-    expect(screen.getByRole('table', { name: 'Overview run register' })).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Leaderboard' })).toBeInTheDocument();
+    expect(screen.getByTitle('Fastest best pace')).toBeInTheDocument();
+    expect(screen.getByTitle('Fastest median pace')).toBeInTheDocument();
+    expect(screen.queryByText('Data quality')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sector leaders')).not.toBeInTheDocument();
+
+    const drivers = screen.getByRole('button', { name: 'Drivers' });
+    await user.click(drivers);
+    await user.click(screen.getByRole('option', { name: 'Bob' }));
+
+    expect(drivers).toHaveTextContent('Alice');
   });
 
   it('switches sector benchmarks and consistency metrics', async () => {
@@ -94,8 +104,10 @@ describe('M5 analysis views', () => {
       </>,
     );
 
-    await user.selectOptions(screen.getByLabelText('Benchmark'), 'average');
-    await user.selectOptions(screen.getByLabelText('Metric'), 'mad');
+    await user.click(screen.getByRole('button', { name: 'Benchmark' }));
+    await user.click(screen.getByRole('option', { name: 'Average' }));
+    await user.click(screen.getByRole('button', { name: 'Metric' }));
+    await user.click(screen.getByRole('option', { name: 'MAD' }));
 
     expect(screen.getByText('Fastest Average')).toBeInTheDocument();
     expect(screen.getByText('Sector progression')).toBeInTheDocument();
@@ -106,7 +118,8 @@ describe('M5 analysis views', () => {
     const user = userEvent.setup();
     render(<Drivers report={analysisReport()} />);
 
-    await user.selectOptions(screen.getByLabelText('Driver'), 'Bob');
+    await user.click(screen.getByRole('button', { name: 'Driver' }));
+    await user.click(screen.getByRole('option', { name: 'Bob' }));
 
     expect(screen.getByText('Bob pace progression')).toBeInTheDocument();
     expect(screen.getByText(/Bob's best actual lap/)).toBeInTheDocument();

@@ -14,7 +14,6 @@ import { Audit } from '../features/audit/Audit';
 import { Consistency } from '../features/consistency/Consistency';
 import { Drivers } from '../features/drivers/Drivers';
 import { Overview } from '../features/overview/Overview';
-import { Leaderboard } from '../features/leaderboard/Leaderboard';
 import { Sectors } from '../features/sectors/Sectors';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
@@ -23,7 +22,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const tabs = [
   ['overview', 'Overview'],
-  ['leaderboard', 'Leaderboard'],
   ['sectors', 'Sectors'],
   ['consistency', 'Consistency'],
   ['drivers', 'Drivers'],
@@ -181,10 +179,6 @@ export function AnalyzerShell() {
           <TabsContent value={activeTab}>
             {report && activeTab === 'overview' ? (
               <Overview report={report} />
-            ) : report && activeTab === 'leaderboard' ? (
-              <div className="calibration-panel calibration-panel--table">
-                <Leaderboard report={report} />
-              </div>
             ) : report && activeTab === 'sectors' ? (
               <Sectors report={report} />
             ) : report && activeTab === 'consistency' ? (

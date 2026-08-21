@@ -18,23 +18,19 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
 
   await page.getByRole('tab', { name: 'Overview' }).click();
   await expect(page.getByRole('heading', { name: 'Run register' })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Leaderboard' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pace progression' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Drivers' })).toHaveText('All drivers');
 
   await page.getByRole('tab', { name: 'Sectors' }).click();
   await expect(page.getByRole('table', { name: 'Sector benchmark matrix' })).toBeVisible();
-  await page
-    .locator('.analysis-control')
-    .filter({ hasText: 'Benchmark' })
-    .locator('select')
-    .selectOption('average');
+  await page.getByRole('button', { name: 'Benchmark' }).click();
+  await page.getByRole('option', { name: 'Average' }).click();
   await expect(page.getByRole('columnheader', { name: 'Fastest Average' })).toBeVisible();
 
   await page.getByRole('tab', { name: 'Consistency' }).click();
-  await page
-    .locator('.analysis-control')
-    .filter({ hasText: 'Metric' })
-    .locator('select')
-    .selectOption('mad');
+  await page.getByRole('button', { name: 'Metric' }).click();
+  await page.getByRole('option', { name: 'MAD' }).click();
   await expect(page.getByText(/selected MAD across drivers/i)).toBeVisible();
 
   await page.getByRole('tab', { name: 'Drivers' }).click();

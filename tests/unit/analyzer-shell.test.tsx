@@ -28,5 +28,7 @@ describe('AnalyzerShell', () => {
     expect(screen.queryByText('Local / ephemeral')).not.toBeInTheDocument();
     expect(screen.queryByText('Clean is not a penalty')).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByRole('tab', { name: 'Leaderboard' })).not.toBeInTheDocument();
+    expect(document.querySelectorAll('select')).toHaveLength(0);
   });
 });
