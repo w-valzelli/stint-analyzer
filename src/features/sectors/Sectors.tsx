@@ -56,6 +56,11 @@ export function Sectors({ report }: SectorsProps) {
   const selectedDriver = useActiveDriver(report);
   const drivers = report.leaderboard.map((row) => row.driver);
   const selectedBenchmarkLabel = benchmarkLabel(benchmark);
+  const selectedSectorEntries = report.sectors.flatMap((sector) =>
+    sector.drivers
+      .filter((driver) => driver.driver === selectedDriver)
+      .map((driver) => ({ sector: sector.sector, driver })),
+  );
 
   return (
     <div className="analysis-view">
@@ -137,22 +142,20 @@ export function Sectors({ report }: SectorsProps) {
               </tr>
             </thead>
             <tbody>
-              {report.sectors.flatMap((sector) =>
-                sector.drivers.map((driver) => (
-                  <tr key={`${driver.driver}-${sector.sector}`}>
-                    <th scope="row">{driver.driver}</th>
-                    <td>{sector.sector}</td>
-                    <td>{driver.n}</td>
-                    <td>{formatDurationUs(driver.bestUs)}</td>
-                    <td>{formatDurationUs(driver.meanUs)}</td>
-                    <td>{formatDurationUs(driver.medianUs)}</td>
-                    <td>{formatDurationUs(driver.sdUs)}</td>
-                    <td>{formatDurationUs(driver.madUs)}</td>
-                    <td>{formatDurationUs(driver.iqrUs)}</td>
-                    <td>{formatSignedDurationUs(driverGap(driver, benchmark))}</td>
-                  </tr>
-                )),
-              )}
+              {selectedSectorEntries.map(({ sector, driver }) => (
+                <tr key={`${driver.driver}-${sector}`}>
+                  <th scope="row">{driver.driver}</th>
+                  <td>{sector}</td>
+                  <td>{driver.n}</td>
+                  <td>{formatDurationUs(driver.bestUs)}</td>
+                  <td>{formatDurationUs(driver.meanUs)}</td>
+                  <td>{formatDurationUs(driver.medianUs)}</td>
+                  <td>{formatDurationUs(driver.sdUs)}</td>
+                  <td>{formatDurationUs(driver.madUs)}</td>
+                  <td>{formatDurationUs(driver.iqrUs)}</td>
+                  <td>{formatSignedDurationUs(driverGap(driver, benchmark))}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

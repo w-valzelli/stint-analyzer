@@ -7,35 +7,24 @@ type OverviewProps = {
   report: AnalysisReport;
 };
 
-function fastestMetric(report: AnalysisReport, field: 'bestUs' | 'medianUs'): number | null {
-  const values = report.leaderboard
-    .map((row) => row.lapStats[field])
-    .filter((value): value is number => value !== null);
-  return values.length === 0 ? null : Math.min(...values);
-}
-
 export function Overview({ report }: OverviewProps) {
-  const runtimeLapCount = report.leaderboard.reduce((total, row) => total + row.runtimeLapCount, 0);
-  const paceLapCount = report.leaderboard.reduce((total, row) => total + row.paceLapCount, 0);
-  const bestLapUs = fastestMetric(report, 'bestUs');
-  const medianLapUs = fastestMetric(report, 'medianUs');
-  const warningCount = report.warnings.length;
+  const overview = report.overview;
 
   return (
     <div className="analysis-view">
       <MetricStrip
         items={[
-          { label: 'Drivers', value: String(report.leaderboard.length) },
-          { label: 'Source files', value: String(report.sources.length) },
-          { label: 'Runtime laps', value: String(runtimeLapCount) },
+          { label: 'Drivers', value: String(overview.driverCount) },
+          { label: 'Source files', value: String(overview.sourceFileCount) },
+          { label: 'Runtime laps', value: String(overview.runtimeLapCount) },
           {
             label: 'Pace laps',
-            value: String(paceLapCount),
+            value: String(overview.paceLapCount),
             detail: report.configuration.paceMode,
           },
-          { label: 'Fastest best', value: formatDurationUs(bestLapUs) },
-          { label: 'Fastest median', value: formatDurationUs(medianLapUs) },
-          { label: 'Warnings', value: String(warningCount) },
+          { label: 'Fastest best', value: formatDurationUs(overview.fastestBestUs) },
+          { label: 'Fastest median', value: formatDurationUs(overview.fastestMedianUs) },
+          { label: 'Warnings', value: String(overview.warningCount) },
         ]}
       />
 
@@ -80,13 +69,13 @@ export function Overview({ report }: OverviewProps) {
             <div>
               <h3>Data quality</h3>
               <p>
-                {warningCount === 0
+                {overview.warningCount === 0
                   ? 'No warnings were raised for this report.'
-                  : `${warningCount} warning${warningCount === 1 ? '' : 's'} need review.`}
+                  : `${overview.warningCount} warning${overview.warningCount === 1 ? '' : 's'} need review.`}
               </p>
             </div>
           </div>
-          {warningCount === 0 ? (
+          {overview.warningCount === 0 ? (
             <p className="analysis-status analysis-status--ready">Report checks are clear.</p>
           ) : (
             <ul className="analysis-warning-list">
@@ -98,6 +87,37 @@ export function Overview({ report }: OverviewProps) {
               ))}
             </ul>
           )}
+        </AnalysisSurface>
+
+        <AnalysisSurface className="analysis-surface--table">
+          <div className="analysis-surface__header">
+            <div>
+              <h3>Sector leaders</h3>
+              <p>Median sector leaders use the selected pace sample.</p>
+            </div>
+          </div>
+          <div className="analysis-table-wrap">
+            <table aria-label="Median sector leaders">
+              <thead>
+                <tr>
+                  <th scope="col">Sector</th>
+                  <th scope="col">Leader</th>
+                  <th scope="col">Median</th>
+                </tr>
+              </thead>
+              <tbody>
+                {overview.sectorLeaders.map((leader) => (
+                  <tr key={leader.sector}>
+                    <th scope="row">{leader.sector}</th>
+                    <td className="analysis-table__emphasis">
+                      {leader.drivers.length > 0 ? leader.drivers.join(', ') : '—'}
+                    </td>
+                    <td>{formatDurationUs(leader.bestMedianUs)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </AnalysisSurface>
       </div>
 

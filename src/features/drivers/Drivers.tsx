@@ -14,22 +14,6 @@ type DriversProps = {
   report: AnalysisReport;
 };
 
-function sectorRank(report: AnalysisReport, sector: string, driver: string): number | null {
-  const entries = report.sectors
-    .find((entry) => entry.sector === sector)
-    ?.drivers.filter((entry) => entry.gapToBestMedianUs !== null)
-    .sort(
-      (left, right) =>
-        (left.gapToBestMedianUs as number) - (right.gapToBestMedianUs as number) ||
-        left.driver.localeCompare(right.driver),
-    );
-  if (!entries) {
-    return null;
-  }
-  const index = entries.findIndex((entry) => entry.driver === driver);
-  return index < 0 ? null : index + 1;
-}
-
 function sectorGapLabel(sector: DriverSectorAnalysis): string {
   return formatSignedDurationUs(sector.gapToBestMedianUs);
 }
@@ -131,7 +115,7 @@ export function Drivers({ report }: DriversProps) {
               {driver.sectors.map((sector) => (
                 <tr key={sector.sector}>
                   <th scope="row">{sector.sector}</th>
-                  <td>{sectorRank(report, sector.sector, driver.driver) ?? '—'}</td>
+                  <td>{sector.medianRank ?? '—'}</td>
                   <td>{formatDurationUs(sector.bestUs)}</td>
                   <td>{formatDurationUs(sector.meanUs)}</td>
                   <td>{formatDurationUs(sector.medianUs)}</td>

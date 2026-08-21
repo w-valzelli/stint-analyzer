@@ -1,11 +1,6 @@
 import type { AnalysisReport } from '../../domain/model/report';
 import { formatDurationUs } from '../../lib/durations';
-import {
-  AnalysisSurface,
-  formatPercentage,
-  metricValue,
-  SelectControl,
-} from '../analysis/AnalysisPrimitives';
+import { AnalysisSurface, metricValue, SelectControl } from '../analysis/AnalysisPrimitives';
 import { useAnalysisViewStore, type ConsistencyMetric } from '../../state/analysis-view';
 
 type ConsistencyProps = {
@@ -27,13 +22,6 @@ function metricLabel(metric: ConsistencyMetric): string {
       : metric === 'iqr'
         ? 'IQR'
         : 'range';
-}
-
-function mean(values: readonly (number | null)[]): number | null {
-  const available = values.filter((value): value is number => value !== null);
-  return available.length === 0
-    ? null
-    : available.reduce((total, value) => total + value, 0) / available.length;
 }
 
 export function Consistency({ report }: ConsistencyProps) {
@@ -97,7 +85,7 @@ export function Consistency({ report }: ConsistencyProps) {
         <div className="analysis-surface__header">
           <div>
             <h3>Driver summary</h3>
-            <p>Mean consistency uses the available sector samples for each driver.</p>
+            <p>Mean, sector extremes, and IQR flags come from the canonical report.</p>
           </div>
         </div>
         <div className="analysis-table-wrap">
@@ -108,65 +96,21 @@ export function Consistency({ report }: ConsistencyProps) {
                 <th scope="col">Mean {label}</th>
                 <th scope="col">Most consistent</th>
                 <th scope="col">Least consistent</th>
-                <th scope="col">Within 100 ms</th>
                 <th scope="col">IQR outliers</th>
               </tr>
             </thead>
             <tbody>
               {drivers.map((driverName) => {
-                const entries = report.sectors
-                  .map((sector) => ({
-                    sector: sector.sector,
-                    entry: sector.drivers.find((item) => item.driver === driverName),
-                  }))
-                  .filter(
-                    (item): item is { sector: string; entry: NonNullable<typeof item.entry> } =>
-                      Boolean(item.entry),
-                  );
-                const ranked = entries
-                  .map(({ sector, entry }) => ({ sector, value: metricValue(entry, metric) }))
-                  .filter((item): item is { sector: string; value: number } => item.value !== null)
-                  .sort(
-                    (left, right) =>
-                      left.value - right.value || left.sector.localeCompare(right.sector),
-                  );
-                const driver = report.drivers.find((item) => item.driver === driverName);
-                const within100 = mean(
-                  report.sectors.map(
-                    (sector) =>
-                      sector.drivers.find((item) => item.driver === driverName)
-                        ?.pctWithin100msOfMedian ?? null,
-                  ),
-                );
-                const outliers = report.sectors.reduce(
-                  (total, sector) =>
-                    total +
-                    (sector.drivers.find((item) => item.driver === driverName)?.outlierCountIqr ??
-                      0),
-                  0,
-                );
+                const summary = report.consistency.find((entry) => entry.driver === driverName);
+                const metricSummary = summary?.[metric];
 
                 return (
                   <tr key={driverName}>
                     <th scope="row">{driverName}</th>
-                    <td>{formatDurationUs(mean(ranked.map((item) => item.value)))}</td>
-                    <td>
-                      {ranked[0]
-                        ? `${ranked[0].sector} · ${formatDurationUs(ranked[0].value)}`
-                        : '—'}
-                    </td>
-                    <td>
-                      {ranked.at(-1)
-                        ? `${ranked.at(-1)?.sector} · ${formatDurationUs(ranked.at(-1)?.value ?? null)}`
-                        : '—'}
-                    </td>
-                    <td>{formatPercentage(within100)}</td>
-                    <td>
-                      {driver?.sectors.reduce(
-                        (total, sector) => total + sector.outlierCountIqr,
-                        0,
-                      ) ?? outliers}
-                    </td>
+                    <td>{formatDurationUs(metricSummary?.meanUs ?? null)}</td>
+                    <td>{metricSummary?.mostConsistentSector ?? '—'}</td>
+                    <td>{metricSummary?.leastConsistentSector ?? '—'}</td>
+                    <td>{summary?.iqrOutlierCount ?? '—'}</td>
                   </tr>
                 );
               })}
