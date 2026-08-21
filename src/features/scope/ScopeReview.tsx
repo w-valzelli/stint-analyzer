@@ -1,5 +1,6 @@
 import { Check, ChevronDown } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 
 import type { Lap } from '../../domain/model/normalized';
 import type {
@@ -74,10 +75,18 @@ type AuditStatusProps = {
   label: string;
 };
 
+type PopoverPosition = {
+  top: number;
+  left: number;
+};
+
 function AuditStatus({ state, label }: AuditStatusProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
   const rootRef = useRef<HTMLSpanElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLSpanElement>(null);
   const isOpen = isHovered || isClicked;
   const popoverId = controlId(`${label}-reasons`);
 
@@ -87,13 +96,16 @@ function AuditStatus({ state, label }: AuditStatusProps) {
     }
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!rootRef.current?.contains(target) && !popoverRef.current?.contains(target)) {
         setIsClicked(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsClicked(false);
+        setIsHovered(false);
+        buttonRef.current?.focus();
       }
     };
 
@@ -102,6 +114,40 @@ function AuditStatus({ state, label }: AuditStatusProps) {
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setPopoverPosition(null);
+      return undefined;
+    }
+
+    const updatePosition = () => {
+      const button = buttonRef.current;
+      if (!button) {
+        return;
+      }
+      const bounds = button.getBoundingClientRect();
+      const width = 230;
+      const margin = 8;
+      const top =
+        bounds.bottom + 100 < window.innerHeight
+          ? bounds.bottom + 6
+          : Math.max(margin, bounds.top - 86);
+      const left = Math.min(
+        Math.max(margin, bounds.left),
+        Math.max(margin, window.innerWidth - width - margin),
+      );
+      setPopoverPosition({ top, left });
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
     };
   }, [isOpen]);
 
@@ -123,6 +169,7 @@ function AuditStatus({ state, label }: AuditStatusProps) {
       <button
         type="button"
         className="scope-review__audit-status scope-review__audit-status--excluded"
+        ref={buttonRef}
         aria-controls={popoverId}
         aria-expanded={isOpen}
         aria-label={`${label}: ${stateLabel(state)}`}
@@ -130,17 +177,25 @@ function AuditStatus({ state, label }: AuditStatusProps) {
       >
         Excluded
       </button>
-      {isOpen && (
-        <span
-          className="scope-review__audit-popover"
-          id={popoverId}
-          role="dialog"
-          aria-label={`${label} exclusion reasons`}
-        >
-          <strong>Exclusion reasons</strong>
-          <span>{state.reasons.map((reason) => reasonLabels[reason]).join(' · ')}</span>
-        </span>
-      )}
+      {isOpen &&
+        popoverPosition &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <span
+            className="scope-review__audit-popover"
+            id={popoverId}
+            ref={popoverRef}
+            role="dialog"
+            aria-label={`${label} exclusion reasons`}
+            style={popoverPosition}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            <strong>Exclusion reasons</strong>
+            <span>{state.reasons.map((reason) => reasonLabels[reason]).join(' · ')}</span>
+          </span>,
+          document.body,
+        )}
     </span>
   );
 }
@@ -200,7 +255,10 @@ function ScopeSelect({
   onChange,
 }: ScopeSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const id = controlId(label);
   const currentValues = typeof value === 'string' ? [value] : [...value];
   const selectedValues = new Set(currentValues);
@@ -214,6 +272,12 @@ function ScopeSelect({
     selectableValues.every((optionValue) => selectedValues.has(optionValue));
   const displayedLabel =
     triggerLabel ?? options.find((option) => option.value === currentValues[0])?.label ?? '';
+  const selectedOptionIndex = Math.max(
+    0,
+    options.findIndex((option) =>
+      option.value === allOptionValue ? allSelected : selectedValues.has(option.value),
+    ),
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -223,11 +287,13 @@ function ScopeSelect({
     const handlePointerDown = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
+        triggerRef.current?.focus();
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setIsOpen(false);
+        triggerRef.current?.focus();
       }
     };
 
@@ -239,10 +305,61 @@ function ScopeSelect({
     };
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      optionRefs.current[activeIndex]?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeIndex, isOpen]);
+
+  const focusOption = (index: number) => {
+    if (options.length === 0) {
+      return;
+    }
+    const nextIndex = (index + options.length) % options.length;
+    setActiveIndex(nextIndex);
+    optionRefs.current[nextIndex]?.focus();
+  };
+
+  const handleTriggerKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') {
+      return;
+    }
+    event.preventDefault();
+    if (!isOpen) {
+      setActiveIndex(selectedOptionIndex);
+      setIsOpen(true);
+      return;
+    }
+    focusOption(activeIndex + (event.key === 'ArrowDown' ? 1 : -1));
+  };
+
+  const handleOptionKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusOption(index + (event.key === 'ArrowDown' ? 1 : -1));
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      focusOption(0);
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      focusOption(options.length - 1);
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+    }
+  };
+
   const handleOptionClick = (optionValue: string) => {
     if (!multiple) {
       onChange(optionValue);
       setIsOpen(false);
+      triggerRef.current?.focus();
       return;
     }
 
@@ -250,6 +367,7 @@ function ScopeSelect({
     if (optionValue === allOptionValue) {
       onChange(allSelected ? [] : selectableValues);
       setIsOpen(false);
+      triggerRef.current?.focus();
       return;
     }
 
@@ -271,8 +389,18 @@ function ScopeSelect({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={label}
+        ref={triggerRef}
         disabled={disabled}
-        onClick={() => setIsOpen((open) => !open)}
+        onClick={() => {
+          if (isOpen) {
+            setIsOpen(false);
+            triggerRef.current?.focus();
+            return;
+          }
+          setActiveIndex(selectedOptionIndex);
+          setIsOpen(true);
+        }}
+        onKeyDown={handleTriggerKeyDown}
       >
         <span>{displayedLabel}</span>
         <ChevronDown aria-hidden="true" size={16} strokeWidth={1.8} />
@@ -286,7 +414,7 @@ function ScopeSelect({
           aria-label={`${label} options`}
           aria-multiselectable={multiple || undefined}
         >
-          {options.map((option) => {
+          {options.map((option, index) => {
             const selected =
               option.value === allOptionValue ? allSelected : selectedValues.has(option.value);
             return (
@@ -294,9 +422,14 @@ function ScopeSelect({
                 type="button"
                 className="scope-select__option"
                 key={option.value}
+                ref={(optionRef) => {
+                  optionRefs.current[index] = optionRef;
+                }}
                 role="option"
                 aria-selected={selected}
+                tabIndex={index === activeIndex ? 0 : -1}
                 onClick={() => handleOptionClick(option.value)}
+                onKeyDown={(event) => handleOptionKeyDown(event, index)}
               >
                 <span className="scope-select__option-indicator" aria-hidden="true">
                   {selected && <Check size={14} strokeWidth={2.2} />}

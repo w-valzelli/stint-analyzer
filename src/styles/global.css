@@ -850,10 +850,8 @@ input[type='checkbox']:focus-visible {
 }
 
 .scope-review__audit-popover {
-  position: absolute;
-  z-index: 30;
-  top: calc(100% + 5px);
-  right: 0;
+  position: fixed;
+  z-index: 100;
   display: grid;
   gap: 5px;
   min-width: 190px;
