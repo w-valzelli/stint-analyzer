@@ -1,6 +1,6 @@
 import type { Lap } from '../model/normalized';
 import type { CandidateStint, LapEligibility } from '../model/scope';
-import { numericStats } from './statistics';
+import { durationStats } from './statistics';
 import type { SectorStatsEntry } from './sectors';
 
 export type StintProgressionLap = {
@@ -67,7 +67,7 @@ export function calculateStintProgression(
         const result = eligibilityById.get(lapId);
         return lap && result?.pace.eligible && lap.lapTimeUs !== null ? [lap] : [];
       });
-      const lapStats = numericStats(
+      const lapStats = durationStats(
         paceLaps.flatMap((lap) => (lap.lapTimeUs === null ? [] : [lap.lapTimeUs])),
       );
       const driverMedians = sectorMediansByDriver.get(stint.driver) ?? new Map();

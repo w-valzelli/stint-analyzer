@@ -59,14 +59,18 @@ function emptyStats(): NullableNumericStats {
   };
 }
 
-function medianProximity(values: readonly number[], center: number): MedianProximity {
+function medianProximity(
+  values: readonly number[],
+  center: number,
+  thresholds: readonly [number, number, number],
+): MedianProximity {
   const percentageWithin = (threshold: number): number =>
     (values.filter((value) => value <= center + threshold).length / values.length) * 100;
 
   return {
-    pctWithin100: percentageWithin(100),
-    pctWithin200: percentageWithin(200),
-    pctWithin500: percentageWithin(500),
+    pctWithin100: percentageWithin(thresholds[0]),
+    pctWithin200: percentageWithin(thresholds[1]),
+    pctWithin500: percentageWithin(thresholds[2]),
   };
 }
 
@@ -89,7 +93,10 @@ export function iqrOutlierCount(values: readonly number[]): number {
   return iqrOutlierFlags(values).filter(Boolean).length;
 }
 
-export function numericStats(values: readonly number[]): NullableNumericStats {
+export function numericStats(
+  values: readonly number[],
+  proximityThresholds: readonly [number, number, number] = [100, 200, 500],
+): NullableNumericStats {
   assertFiniteValues(values);
   if (values.length === 0) {
     return emptyStats();
@@ -97,7 +104,7 @@ export function numericStats(values: readonly number[]): NullableNumericStats {
 
   const [min, max] = extent(values);
   const center = median(values);
-  const proximity = medianProximity(values, center);
+  const proximity = medianProximity(values, center, proximityThresholds);
 
   return {
     n: values.length,
@@ -115,4 +122,10 @@ export function numericStats(values: readonly number[]): NullableNumericStats {
     ...proximity,
     outlierCountIqr: iqrOutlierCount(values),
   };
+}
+
+export const durationProximityThresholdsUs = [100_000, 200_000, 500_000] as const;
+
+export function durationStats(values: readonly number[]): NullableNumericStats {
+  return numericStats(values, durationProximityThresholdsUs);
 }

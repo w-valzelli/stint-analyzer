@@ -116,7 +116,13 @@ describe('lap analytics', () => {
         runtimeLaps: 5,
         paceLaps: 2,
         runtimeUs: 56_000_000,
-        lapStats: { n: 2, best: 10_000_000, mean: 11_000_000, median: 11_000_000 },
+        lapStats: {
+          n: 2,
+          best: 10_000_000,
+          mean: 11_000_000,
+          median: 11_000_000,
+          pctWithin100: 50,
+        },
       },
       {
         driver: 'Bob',

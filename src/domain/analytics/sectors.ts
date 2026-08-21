@@ -1,7 +1,7 @@
 import type { Lap } from '../model/normalized';
 import type { LapEligibility } from '../model/scope';
 import { paceEligibleLaps } from './laps';
-import { numericStats, type NullableNumericStats } from './statistics';
+import { durationStats, type NullableNumericStats } from './statistics';
 
 export type SectorStatsEntry = {
   driver: string;
@@ -67,7 +67,7 @@ export function calculateSectorStats(
     return sectors.map((sector) => ({
       driver,
       sector,
-      stats: numericStats(
+      stats: durationStats(
         paceLaps.flatMap((lap) => {
           const value = lap.sectorsUs[sector];
           return value === null || value === undefined ? [] : [value];

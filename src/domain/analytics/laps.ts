@@ -1,6 +1,6 @@
 import type { Lap } from '../model/normalized';
 import type { LapEligibility } from '../model/scope';
-import { numericStats, type NullableNumericStats } from './statistics';
+import { durationStats, type NullableNumericStats } from './statistics';
 
 export type CleanLapPercentage = {
   cleanCount: number;
@@ -77,7 +77,7 @@ export function lapTimeStats(
   laps: readonly Lap[],
   eligibility: readonly LapEligibility[],
 ): NullableNumericStats {
-  return numericStats(
+  return durationStats(
     paceEligibleLaps(laps, eligibility).flatMap((lap) =>
       lap.lapTimeUs === null ? [] : [lap.lapTimeUs],
     ),
