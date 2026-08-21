@@ -43,6 +43,7 @@ No login, signup, profile, cloud save, workspace, shared history or cross-device
 ## 2. Why GitHub Pages works
 
 GitHub Pages is static hosting. That is sufficient because:
+
 - the deployed app is HTML/CSS/JS;
 - browser JavaScript can read user-selected local files;
 - parsing happens locally;
@@ -60,6 +61,7 @@ Use Astro static output.
 Use React through `@astrojs/react`.
 
 Recommended architecture:
+
 - Astro for page shell, metadata, static methodology/licenses pages;
 - one React island for the interactive analyzer.
 
@@ -74,6 +76,7 @@ Do not fragment tightly coupled analysis state into many independent islands.
 Avoid React Router for analyzer tabs.
 
 Use:
+
 - `/` static analyzer page;
 - internal tabs/state;
 - optional static Astro pages such as `/methodology/` and `/licenses/`.
@@ -87,6 +90,7 @@ This avoids GitHub Pages SPA deep-link 404 problems.
 Use current stable releases at implementation time and pin through `pnpm-lock.yaml`.
 
 ### Core
+
 - `astro`
 - `@astrojs/react`
 - `react`
@@ -94,6 +98,7 @@ Use current stable releases at implementation time and pin through `pnpm-lock.ya
 - `typescript`
 
 ### Styling/UI
+
 - `tailwindcss`
 - `@tailwindcss/vite`
 - `lucide-react`
@@ -104,6 +109,7 @@ Use current stable releases at implementation time and pin through `pnpm-lock.ya
 - optionally `sonner` for notifications
 
 Use shadcn selectively:
+
 - Button
 - Card
 - Tabs
@@ -118,14 +124,17 @@ Use shadcn selectively:
 Do not add Material UI/Ant/etc. alongside it.
 
 ### Drag/drop
+
 - `react-dropzone`
 
 Use for accessible local file selection. It is not a network uploader.
 
 ### XLSX read
+
 - `read-excel-file`
 
 Rationale:
+
 - focused browser XLSX reader;
 - supports `File`, `Blob`, `ArrayBuffer`;
 - supports multiple sheets;
@@ -133,9 +142,11 @@ Rationale:
 - enough for standardized Garage 61 data.
 
 ### XLSX write
+
 - `write-excel-file`
 
 Rationale:
+
 - browser-side workbook generation;
 - multiple sheets;
 - cell formats/styles;
@@ -143,14 +154,17 @@ Rationale:
 - browser worker support.
 
 ### Validation
+
 - `zod`
 
 Use Zod for normalized domain models, configuration and export validation.
 
 ### Statistics
+
 - `simple-statistics`
 
 Use it for:
+
 - mean;
 - median;
 - population standard deviation;
@@ -160,17 +174,20 @@ Use it for:
 Do not manually implement these statistics.
 
 ### Charts
+
 - `recharts`
 
 Charts should support tables, not replace them.
 
 Useful:
+
 - lap-time progression;
 - sector progression;
 - stint delta trend;
 - consistency comparisons.
 
 ### State
+
 - `zustand`
 
 Use for cross-feature UI/config/session state.
@@ -192,6 +209,7 @@ Permitted persistent browser state is limited to non-sensitive UI preferences su
 SheetJS CE remains a valid fallback and is capable of browser read/write. Its official current distribution is outside the stale npm registry package, and its community edition intentionally limits advanced spreadsheet styling.
 
 For this product:
+
 - input format is narrow and standardized;
 - output requires a polished but straightforward workbook.
 
@@ -245,6 +263,7 @@ No React imports in `src/domain`.
 Normal Garage 61 stint spreadsheets are modest. Avoid premature complexity.
 
 Strategy:
+
 - use browser-oriented XLSX library;
 - limit concurrent parse tasks (e.g. 4);
 - show file parse status;
@@ -253,6 +272,7 @@ Strategy:
 - avoid duplicate datasets.
 
 Suggested guardrails:
+
 - warning above 25 files;
 - warning above 50 MB per workbook;
 - defensive hard limit around 100 MB per workbook for MVP unless tested otherwise.
@@ -270,6 +290,7 @@ The app must make this statement true:
 > Analysis happens locally in your browser. Uploaded files are not sent to a server.
 
 Rules:
+
 - do not POST source data;
 - do not put filenames or data in URLs;
 - do not add analytics that capture filenames;
@@ -293,10 +314,12 @@ https://USERNAME.github.io/REPOSITORY/
 ```
 
 Astro must configure:
+
 - `site`
 - `base`
 
 Test all:
+
 - assets;
 - internal links;
 - static pages;
@@ -318,11 +341,13 @@ Do not hard-code root-relative assets that break under the repository path.
 Use Astro's official GitHub Pages deployment pattern.
 
 Repository setting:
+
 - Settings
 - Pages
 - Source: GitHub Actions
 
 Workflow should:
+
 - checkout;
 - install pnpm/dependencies;
 - build Astro;
@@ -336,6 +361,7 @@ Commit the lockfile.
 ## 11. GitHub Pages limitations
 
 As of 2026-08-21, official GitHub documentation states:
+
 - Pages is static hosting;
 - no server-side languages such as PHP, Ruby or Python;
 - published Pages site maximum is 1 GB;
@@ -349,6 +375,7 @@ This app should be far below these limits because user workbooks are local and n
 ### What Pages cannot do for this product
 
 Without an external backend:
+
 - no user accounts — intentionally;
 - no shared team database — intentionally;
 - no cross-device session history — intentionally;
@@ -368,6 +395,7 @@ Do **not** put an OpenAI/Anthropic/etc. private API key into the browser bundle.
 MVP uses `.md` / `.json` export for LLM interpretation.
 
 If direct hosted LLM analysis is added later:
+
 - add a backend/serverless proxy, or
 - explicitly support a user-provided local API key with clear security UX.
 
@@ -396,6 +424,7 @@ No URL-only share should reconstruct private analysis without explicitly supplie
 ## 14. Public-site safety
 
 Do not commit:
+
 - real private Garage 61 source files;
 - private user exports;
 - secrets;
@@ -411,6 +440,7 @@ Treat the published site as public even if repository visibility differs by plan
 ## 15. Browser compatibility
 
 Target current evergreen:
+
 - Chrome
 - Edge
 - Firefox
@@ -419,6 +449,7 @@ Target current evergreen:
 Gracefully report unsupported browser/file parsing behavior.
 
 Use web APIs already widely supported:
+
 - File/Blob
 - Web Crypto SHA-256
 - downloads/Blob URLs
@@ -428,6 +459,7 @@ Use web APIs already widely supported:
 ## 16. Development/testing dependencies
 
 Recommended:
+
 - `@astrojs/check`
 - ESLint
 - Prettier
@@ -443,37 +475,37 @@ Recommended:
 ## 17. Official references checked 2026-08-21
 
 Astro GitHub Pages:
-https://docs.astro.build/en/guides/deploy/github/
+<https://docs.astro.build/en/guides/deploy/github/>
 
 Astro rendering/static mode:
-https://docs.astro.build/en/basics/rendering-modes/
+<https://docs.astro.build/en/basics/rendering-modes/>
 
 Astro React:
-https://docs.astro.build/en/guides/integrations-guide/react/
+<https://docs.astro.build/en/guides/integrations-guide/react/>
 
 GitHub Pages overview:
-https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages
+<https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages>
 
 GitHub Pages static/server limitation:
-https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site
+<https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site>
 
 GitHub Pages limits:
-https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
+<https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits>
 
 react-dropzone:
-https://react-dropzone.org/
+<https://react-dropzone.org/>
 
 read-excel-file:
-https://github.com/catamphetamine/read-excel-file
+<https://github.com/catamphetamine/read-excel-file>
 
 write-excel-file:
-https://github.com/catamphetamine/write-excel-file
+<https://github.com/catamphetamine/write-excel-file>
 
 Zod:
-https://zod.dev/
+<https://zod.dev/>
 
 simple-statistics:
-https://simple-statistics.github.io/docs/
+<https://simple-statistics.github.io/docs/>
 
 TanStack Table:
-https://tanstack.com/table/latest/
+<https://tanstack.com/table/latest/>
