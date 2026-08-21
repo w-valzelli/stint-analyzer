@@ -161,27 +161,17 @@ export function groupLapsByDriver(laps: readonly Lap[]): DriverScopeGroup[] {
   return [...groups.values()].sort((left, right) => compareText(left.driver, right.driver));
 }
 
-function defaultStint(stints: readonly CandidateStint[]): CandidateStint | null {
-  return (
-    stints
-      .filter((stint) => stint.fullTimedLapCount > 0)
-      .sort(
-        (left, right) =>
-          right.fullTimedLapCount - left.fullTimedLapCount ||
-          left.sourceFileName.localeCompare(right.sourceFileName) ||
-          left.index - right.index,
-      )[0] ?? null
-  );
+function defaultStintIds(stints: readonly CandidateStint[]): string[] {
+  return stints
+    .filter((stint) => stint.fullTimedLapCount > 0)
+    .map((stint) => stint.id);
 }
 
 export function createDefaultScopeSelections(laps: readonly Lap[]): ScopeSelection[] {
-  return groupLapsByDriver(laps).map((group) => {
-    const stint = defaultStint(group.stints);
-    return {
-      scopeKey: group.scopeKey,
-      selectedStintIds: stint ? [stint.id] : [],
-    };
-  });
+  return groupLapsByDriver(laps).map((group) => ({
+    scopeKey: group.scopeKey,
+    selectedStintIds: defaultStintIds(group.stints),
+  }));
 }
 
 export function reconcileScopeSelections(
@@ -199,10 +189,7 @@ export function reconcileScopeSelections(
     );
     const selectedStintIds = previous
       ? previous.selectedStintIds.filter((stintId) => availableStintIds.has(stintId))
-      : (() => {
-          const fallback = defaultStint(group.stints);
-          return fallback ? [fallback.id] : [];
-        })();
+      : defaultStintIds(group.stints);
 
     return {
       scopeKey: group.scopeKey,

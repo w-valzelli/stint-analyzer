@@ -49,12 +49,13 @@ describe('scope grouping and stint detection', () => {
     ]);
   });
 
-  it('selects the longest non-empty candidate by default', () => {
+  it('selects every non-empty candidate by default', () => {
     const selections = createDefaultScopeSelections(stintFixtureLaps);
+    const expectedStintIds = groupLapsByDriver(stintFixtureLaps)[0]?.stints
+      .filter((stint) => stint.fullTimedLapCount > 0)
+      .map((stint) => stint.id);
 
-    expect(selections[0]).toMatchObject({
-      selectedStintIds: [expect.stringContaining('stint-1')],
-    });
+    expect(selections[0]?.selectedStintIds).toEqual(expectedStintIds);
   });
 
   it('does not select a driver when every candidate has zero timed laps', () => {

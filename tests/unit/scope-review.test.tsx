@@ -90,16 +90,11 @@ describe('ScopeReview', () => {
     expect(bobCard.querySelector('button[aria-label="Stints for Bob"]')).not.toBeInTheDocument();
   });
 
-  it('selects and clears all available stints through the All stints option', () => {
+  it('defaults to all available stints and can clear them through the All stints option', () => {
     render(<ScopeHarness laps={stintFixtureLaps} />);
     const driver = within(driverCard('Alice'));
     const trigger = driver.getByRole('button', { name: 'Stints for Alice' });
     const facts = driver.getByLabelText('Alice scope facts');
-
-    expect(facts).toHaveTextContent('2 runtime');
-    fireEvent.click(trigger);
-    fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
     expect(facts).toHaveTextContent('6 runtime');
     expect(facts).toHaveTextContent('3 pace');
@@ -109,6 +104,11 @@ describe('ScopeReview', () => {
     fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
     expect(facts).toHaveTextContent('0 runtime');
     expect(facts).toHaveTextContent('0 pace');
+
+    fireEvent.click(trigger);
+    fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
+    expect(facts).toHaveTextContent('6 runtime');
+    expect(facts).toHaveTextContent('3 pace');
   });
 
   it('updates the global pace counts for every driver', () => {
