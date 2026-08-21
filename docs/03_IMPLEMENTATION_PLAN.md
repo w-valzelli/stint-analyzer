@@ -246,10 +246,13 @@ Generate required sheets from `01_PRODUCT_DATA_EXPORT_SPEC.md`.
 
 ## Milestone 7 — Golden regression fixtures
 
-Create a synthetic Garage 61-style fixture representing:
+The approved runtime-only standings decision applies to this milestone. Do not add penalty
+inputs, penalty fixture data, adjusted runtime, or adjusted positions.
+
+Create a synthetic Garage 61-style full-export fixture representing:
 
 - 3 drivers;
-- 2 stints;
+- 2 stints per driver;
 - 7 sectors;
 - clean/unclean laps;
 - pit in/out;
@@ -257,20 +260,24 @@ Create a synthetic Garage 61-style fixture representing:
 - trailing partial;
 - one clean statistical outlier;
 - fuel values;
-- user-entered penalties.
 
-Keep real private session files out of the repo.
+Prefer a deterministic fixture generator plus a committed `.xlsx` fixture. Real exports may be
+used only to confirm the public workbook shape. Keep real private session files and all values,
+names, metadata, and document properties from them out of the repo.
 
 Add golden expected values for:
 
 - runtime;
-- clean %;
-- penalty;
-- adjusted position;
+- runtime position and gap;
+- clean numerator, denominator, and percentage;
 - best/mean/median;
 - SD/MAD/IQR;
 - benchmark gap;
 - theoretical lap.
+
+Assert the important expected fields directly rather than relying only on a whole-report
+snapshot. The committed workbook must round-trip through the browser parser before the report
+assertions run.
 
 ---
 
