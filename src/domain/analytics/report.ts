@@ -65,6 +65,7 @@ function toMetricStats(stats: NullableNumericStats): MetricStats {
   return {
     n: stats.n,
     bestUs: stats.best,
+    worstUs: stats.max,
     meanUs: stats.mean,
     medianUs: stats.median,
     sdUs: stats.sd,

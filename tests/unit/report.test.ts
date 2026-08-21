@@ -93,14 +93,14 @@ describe('canonical analysis report', () => {
         driver: 'Bob',
         runtimeUs: 18_500_000,
         gapUs: 0,
-        lapStats: { bestUs: 9_000_000, medianUs: 9_250_000 },
+        lapStats: { bestUs: 9_000_000, worstUs: 9_500_000, medianUs: 9_250_000 },
       },
       {
         position: 2,
         driver: 'Alice',
         runtimeUs: 21_000_000,
         gapUs: 2_500_000,
-        lapStats: { bestUs: 10_000_000, medianUs: 10_000_000 },
+        lapStats: { bestUs: 10_000_000, worstUs: 10_000_000, medianUs: 10_000_000 },
       },
     ]);
     expect(report.drivers[0]).toMatchObject({

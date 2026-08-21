@@ -45,6 +45,7 @@ export type AnalysisWarning = z.infer<typeof analysisWarningSchema>;
 const metricFields = {
   n: z.number().int().nonnegative(),
   bestUs: nullableFiniteNumberSchema,
+  worstUs: nullableFiniteNumberSchema,
   meanUs: nullableFiniteNumberSchema,
   medianUs: nullableFiniteNumberSchema,
   sdUs: nullableFiniteNumberSchema,

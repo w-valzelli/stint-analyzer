@@ -74,6 +74,7 @@ describe('M5 analysis views', () => {
   beforeEach(() => {
     useAnalysisViewStore.getState().setSectorBenchmark('median');
     useAnalysisViewStore.getState().setConsistencyMetric('sd');
+    useAnalysisViewStore.getState().setConsistencyMode('sectors');
     useAnalysisViewStore.getState().setSelectedDriver(null);
   });
 
@@ -162,7 +163,7 @@ describe('M5 analysis views', () => {
     expect(filteredPoints[3]).not.toHaveProperty('S2');
   });
 
-  it('switches sector benchmarks and consistency metrics', async () => {
+  it('switches sector benchmarks, consistency modes, and metrics', async () => {
     const user = userEvent.setup();
     const report = analysisReport();
     render(
@@ -189,6 +190,34 @@ describe('M5 analysis views', () => {
       within(sectorDetail).queryByRole('columnheader', { name: 'Driver' }),
     ).not.toBeInTheDocument();
     expect(screen.getByText(/selected MAD across drivers/i)).toBeInTheDocument();
+
+    const consistencyMatrix = screen.getByRole('table', { name: 'Consistency matrix' });
+    const matrixHeaders = within(consistencyMatrix).getAllByRole('columnheader');
+    expect(matrixHeaders[0]).toHaveClass('analysis-table__label');
+    expect(
+      matrixHeaders.slice(1).every((header) => header.classList.contains('analysis-table__value')),
+    ).toBe(true);
+
+    const driverSummary = screen.getByRole('table', { name: 'Driver consistency summary' });
+    expect(within(driverSummary).getByRole('columnheader', { name: 'Mean MAD' })).toHaveClass(
+      'analysis-table__value',
+    );
+    expect(screen.queryByText(/repeatable sectors/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Mode' }));
+    await user.click(screen.getByRole('option', { name: 'Laps' }));
+
+    expect(screen.queryByRole('table', { name: 'Consistency matrix' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('table', { name: 'Driver consistency summary' }),
+    ).not.toBeInTheDocument();
+    const lapSummary = screen.getByRole('table', { name: 'Lap consistency summary' });
+    expect(within(lapSummary).getByRole('columnheader', { name: 'N' })).toHaveClass(
+      'analysis-table__value',
+    );
+    expect(within(lapSummary).getByRole('columnheader', { name: 'Best lap' })).toBeInTheDocument();
+    expect(within(lapSummary).getByRole('columnheader', { name: 'Worst lap' })).toBeInTheDocument();
+    expect(within(lapSummary).getByRole('columnheader', { name: 'MAD' })).toBeInTheDocument();
   });
 
   it('switches driver detail from the shared driver control', async () => {

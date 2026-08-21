@@ -1147,6 +1147,14 @@ input[type='checkbox']:focus-visible {
   text-align: left;
 }
 
+.analysis-table-wrap .analysis-table__label {
+  text-align: left;
+}
+
+.analysis-table-wrap .analysis-table__value {
+  text-align: right;
+}
+
 .analysis-table-wrap tbody th {
   color: var(--calibration-ink);
   font-weight: 600;

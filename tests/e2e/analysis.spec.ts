@@ -41,6 +41,11 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await page.getByRole('button', { name: 'Metric' }).click();
   await page.getByRole('option', { name: 'MAD' }).click();
   await expect(page.getByText(/selected MAD across drivers/i)).toBeVisible();
+  await page.getByRole('button', { name: 'Mode' }).click();
+  await page.getByRole('option', { name: 'Laps' }).click();
+  await expect(page.getByRole('table', { name: 'Lap consistency summary' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Worst lap' })).toBeVisible();
+  await expect(page.getByRole('table', { name: 'Consistency matrix' })).not.toBeVisible();
 
   await page.getByRole('tab', { name: 'Drivers' }).click();
   await expect(page.getByRole('heading', { name: 'Theoretical lap' })).toBeVisible();
