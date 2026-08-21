@@ -1,6 +1,5 @@
 import type { ParsedWorkbook } from '../model/normalized';
 import { hashFiles, type HashableFile, type HashedFile } from './hash';
-import { parseWorkbookFile } from './workbook';
 
 export type ImportDuplicate = {
   name: string;
@@ -97,6 +96,7 @@ export async function importWorkbookFiles<T extends HashableFile>(
       const candidate = candidates[index];
 
       try {
+        const { parseWorkbookFile } = await import('./workbook');
         const result = await parseWorkbookFile(await candidate.file.arrayBuffer(), {
           id: candidate.hash,
           name: candidate.file.name,

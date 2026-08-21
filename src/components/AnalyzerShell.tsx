@@ -1,5 +1,5 @@
 import { Download, GitFork } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { deriveLapEligibility } from '../domain/analytics/eligibility';
 import { buildAnalysisReport } from '../domain/analytics/report';
@@ -10,10 +10,6 @@ import {
 } from '../domain/analytics/stints';
 import type { PaceMode, ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
-import { Consistency } from '../features/consistency/Consistency';
-import { Drivers } from '../features/drivers/Drivers';
-import { Overview } from '../features/overview/Overview';
-import { Sectors } from '../features/sectors/Sectors';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
 import { Button, buttonVariants } from './ui/button';
@@ -25,6 +21,23 @@ const tabs = [
   ['consistency', 'Consistency'],
   ['drivers', 'Driver scorecard'],
 ] as const;
+
+const Overview = lazy(() =>
+  import('../features/overview/Overview').then(({ Overview: component }) => ({
+    default: component,
+  })),
+);
+const Sectors = lazy(() =>
+  import('../features/sectors/Sectors').then(({ Sectors: component }) => ({ default: component })),
+);
+const Consistency = lazy(() =>
+  import('../features/consistency/Consistency').then(({ Consistency: component }) => ({
+    default: component,
+  })),
+);
+const Drivers = lazy(() =>
+  import('../features/drivers/Drivers').then(({ Drivers: component }) => ({ default: component })),
+);
 
 const emptyImportState: ImportRegisterState = {
   records: [],
@@ -175,35 +188,45 @@ export function AnalyzerShell() {
           </TabsList>
 
           <TabsContent value={activeTab}>
-            {report && activeTab === 'overview' ? (
-              <Overview report={report} />
-            ) : report && activeTab === 'sectors' ? (
-              <Sectors report={report} />
-            ) : report && activeTab === 'consistency' ? (
-              <Consistency report={report} />
-            ) : report && activeTab === 'drivers' ? (
-              <Drivers report={report} />
-            ) : (
-              <div className="calibration-panel">
-                <div className="calibration-panel__advisory">
-                  <h3>
-                    {hasWorkbooks
-                      ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
-                      : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
-                  </h3>
-                  <p>
-                    {hasWorkbooks
-                      ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
-                      : 'Import a workbook to populate this view from the same canonical report.'}
-                  </p>
-                  <div className="calibration-panel__rule" aria-hidden="true">
-                    <span />
-                    <span />
-                    <span />
+            <Suspense
+              fallback={
+                <div className="calibration-panel">
+                  <div className="calibration-panel__advisory">
+                    <p>Loading analysis view.</p>
                   </div>
                 </div>
-              </div>
-            )}
+              }
+            >
+              {report && activeTab === 'overview' ? (
+                <Overview report={report} />
+              ) : report && activeTab === 'sectors' ? (
+                <Sectors report={report} />
+              ) : report && activeTab === 'consistency' ? (
+                <Consistency report={report} />
+              ) : report && activeTab === 'drivers' ? (
+                <Drivers report={report} />
+              ) : (
+                <div className="calibration-panel">
+                  <div className="calibration-panel__advisory">
+                    <h3>
+                      {hasWorkbooks
+                        ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
+                        : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
+                    </h3>
+                    <p>
+                      {hasWorkbooks
+                        ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
+                        : 'Import a workbook to populate this view from the same canonical report.'}
+                    </p>
+                    <div className="calibration-panel__rule" aria-hidden="true">
+                      <span />
+                      <span />
+                      <span />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Suspense>
           </TabsContent>
         </Tabs>
       </section>
