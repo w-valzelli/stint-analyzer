@@ -1,12 +1,9 @@
-import { LockKeyhole, RotateCcw, Ruler, ShieldCheck, Waypoints } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { Download, GitFork, ShieldCheck } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
-import {
-  ImportRegister,
-  type ImportRegisterHandle,
-  type ImportRegisterState,
-} from '../features/import/ImportRegister';
-import { Button } from './ui/button';
+import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
+import { ThemeControl } from './ThemeControl';
+import { Button, buttonVariants } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const tabs = [
@@ -18,12 +15,6 @@ const tabs = [
   ['audit', 'Audit'],
 ] as const;
 
-const workflow = [
-  ['Register', 'local files'],
-  ['Compare', 'selected runs'],
-  ['Trace', 'source laps'],
-] as const;
-
 const emptyImportState: ImportRegisterState = {
   records: [],
   workbooks: [],
@@ -33,7 +24,6 @@ const emptyImportState: ImportRegisterState = {
 export function AnalyzerShell() {
   const [activeTab, setActiveTab] = useState('overview');
   const [importState, setImportState] = useState<ImportRegisterState>(emptyImportState);
-  const importRegisterRef = useRef<ImportRegisterHandle>(null);
   const handleImportStateChange = useCallback((nextState: ImportRegisterState) => {
     setImportState(nextState);
   }, []);
@@ -42,51 +32,35 @@ export function AnalyzerShell() {
   const driverNames = [...new Set(laps.map((lap) => lap.driver))].sort((left, right) =>
     left.localeCompare(right),
   );
-  const fullTimedLaps = laps.filter((lap) => lap.isFullTimedLap);
-  const parserWarningCount = importState.records.reduce(
-    (total, record) => total + record.warnings.length,
-    0,
-  );
-  const attentionCount = importState.records.filter(
-    (record) =>
-      record.status === 'duplicate' || record.status === 'error' || record.status === 'rejected',
-  ).length;
-  const warningCount = parserWarningCount + attentionCount;
-  const hasRecords = importState.records.length > 0;
   const hasWorkbooks = importState.workbooks.length > 0;
 
   return (
     <main className="calibration-app">
       <header className="calibration-header">
-        <a className="calibration-mark" href="#top" aria-label="Garage 61 Stint Analyzer home">
-          <span className="calibration-mark__badge">G61</span>
-          <h2 className="calibration-mark__name" aria-label="Garage 61 Stint Analyzer">
-            <strong>Garage 61</strong>
-            <span>Stint Analyzer</span>
+        <a className="calibration-mark" href="#top" aria-label="Stint Analyzer home">
+          <h2 className="calibration-mark__name" aria-label="Stint Analyzer">
+            <strong>STINT</strong>
+            <span>ANALYZER</span>
           </h2>
         </a>
 
-        <div className="calibration-header__status" aria-label="Analysis privacy status">
-          <span className="calibration-status-dot" aria-hidden="true" />
-          <LockKeyhole aria-hidden="true" size={14} />
-          <span>Local / ephemeral</span>
-        </div>
-
         <div className="calibration-header__actions">
-          {hasRecords && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => importRegisterRef.current?.reset()}
-              aria-label="Reset registered files"
-            >
-              <RotateCcw aria-hidden="true" size={14} />
-              Reset
-            </Button>
-          )}
-          <Button variant="outline" size="sm" disabled>
-            Export report
-          </Button>
+          <a
+            className={buttonVariants({
+              treatment: 'control',
+              tone: 'neutral',
+              size: 'sm',
+              content: 'icon',
+            })}
+            href="https://github.com/w-valzelli/stint-analyzer"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="View source on GitHub"
+            title="View source on GitHub"
+          >
+            <GitFork aria-hidden="true" size={16} strokeWidth={1.8} />
+          </a>
+          <ThemeControl />
         </div>
       </header>
 
@@ -97,70 +71,28 @@ export function AnalyzerShell() {
             <span>before you coach it.</span>
           </h1>
           <p className="calibration-intro__lede">
-            Register Garage 61 workbooks locally. See the driver gap first, then follow every result
-            back to the laps that produced it.
+            Add Garage 61 workbooks. Review the detected drivers and laps, then compare the runs
+            that matter.
           </p>
-
-          <div className="calibration-workflow" aria-label="Analysis workflow">
-            {workflow.map(([label, detail], index) => (
-              <div className="calibration-workflow__step" key={label}>
-                <span className="calibration-workflow__mark" aria-hidden="true">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <span>
-                  <strong>{label}</strong>
-                  <small>{detail}</small>
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div
           className="calibration-sheet"
-          aria-label={
-            hasWorkbooks
-              ? 'Comparison sheet with registered files'
-              : 'Comparison sheet waiting for files'
-          }
+          aria-label={hasWorkbooks ? 'Source files ready' : 'Source files waiting for import'}
         >
-          <div className="calibration-sheet__topline">
-            <span>Comparison sheet</span>
-            <span>G61 / 001</span>
-          </div>
           <div className="calibration-sheet__body">
-            <div className="calibration-sheet__title-row">
+            <div className="calibration-sheet__heading">
               <div>
-                <h2>{hasWorkbooks ? 'Source register ready' : 'Waiting for source files'}</h2>
-              </div>
-              <Waypoints aria-hidden="true" size={25} strokeWidth={1.5} />
-            </div>
-            <p>
-              {hasWorkbooks
-                ? 'The app found local workbook data. Review the source rows before scope and pace analysis.'
-                : 'Add one or more local exports to open the measured comparison. Nothing leaves this browser.'}
-            </p>
-
-            <div className="calibration-sheet__readout" aria-label="Current analysis count">
-              <div>
-                <span>Drivers</span>
-                <strong>{String(driverNames.length).padStart(2, '0')}</strong>
-              </div>
-              <div>
-                <span>Full timed laps</span>
-                <strong>{String(fullTimedLaps.length).padStart(2, '0')}</strong>
-              </div>
-              <div>
-                <span>Warnings</span>
-                <strong>{String(warningCount).padStart(2, '0')}</strong>
+                <h2>Source files</h2>
+                <p>
+                  {hasWorkbooks
+                    ? 'Review the detected drivers and laps before selecting a scope.'
+                    : 'Choose one or more Garage 61 files to begin.'}
+                </p>
               </div>
             </div>
 
-            <ImportRegister ref={importRegisterRef} onStateChange={handleImportStateChange} />
-          </div>
-          <div className="calibration-sheet__footer">
-            <span>Clean is not a penalty</span>
-            <span>Runtime and pace stay separate</span>
+            <ImportRegister onStateChange={handleImportStateChange} />
           </div>
         </div>
       </section>
@@ -216,7 +148,7 @@ export function AnalyzerShell() {
                       <td>
                         <span className="calibration-table__trace">
                           <ShieldCheck aria-hidden="true" size={14} />
-                          {sectorCount} sectors registered
+                          {sectorCount} sectors available
                         </span>
                       </td>
                     </tr>
@@ -231,9 +163,12 @@ export function AnalyzerShell() {
       <section className="calibration-index" aria-labelledby="index-title">
         <div className="calibration-index__heading">
           <div>
-            <h2 id="index-title">Choose a view when the sheet is registered.</h2>
+            <h2 id="index-title">Analysis views</h2>
           </div>
-          <Ruler aria-hidden="true" size={24} strokeWidth={1.5} />
+          <Button treatment="outline" tone="neutral" size="sm" disabled>
+            <Download aria-hidden="true" size={14} />
+            Export report
+          </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -249,12 +184,12 @@ export function AnalyzerShell() {
             <div className="calibration-panel">
               <h3>
                 {hasWorkbooks
-                  ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the registered report.`
-                  : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for the register.`}
+                  ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
+                  : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
               </h3>
               <p>
                 {hasWorkbooks
-                  ? 'Milestone 1 has registered the source rows. Scope and report calculations arrive in the next analysis steps.'
+                  ? 'The source rows are ready. Scope and report calculations arrive in the next analysis steps.'
                   : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
               </p>
               <div className="calibration-panel__rule" aria-hidden="true">
@@ -268,8 +203,8 @@ export function AnalyzerShell() {
       </section>
 
       <footer className="calibration-footer">
-        <span>Garage 61 Stint Analyzer</span>
-        <span>No account. No upload. Analyze locally and export when done.</span>
+        <span>Stint Analyzer</span>
+        <span>All workbook data stays in your browser.</span>
       </footer>
     </main>
   );

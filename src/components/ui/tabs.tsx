@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { Button } from './button';
 import { cn } from '../../lib/utils';
 
 type TabsContextValue = {
@@ -50,26 +51,35 @@ export function TabsList({ className, ...props }: React.HTMLAttributes<HTMLDivEl
   return <div role="tablist" className={cn('calibration-tabs__list', className)} {...props} />;
 }
 
-export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface TabsTriggerProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'content'
+> {
   value: string;
 }
 
-export function TabsTrigger({ className, value, children, ...props }: TabsTriggerProps) {
+export function TabsTrigger({ className, value, children, onClick, ...props }: TabsTriggerProps) {
   const context = useTabsContext();
   const isSelected = context.value === value;
 
   return (
-    <button
-      type="button"
+    <Button
+      treatment="tab"
+      size="tab"
       role="tab"
       aria-selected={isSelected}
       data-state={isSelected ? 'active' : 'inactive'}
       className={cn('calibration-tabs__trigger', className)}
-      onClick={() => context.onValueChange(value)}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) {
+          context.onValueChange(value);
+        }
+      }}
       {...props}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
