@@ -23,7 +23,7 @@ test('registers a Garage 61 workbook and shows detected source facts', async ({ 
   await expect(page.getByText('Car', { exact: true })).not.toBeVisible();
   await page.getByText('File information').click();
   await expect(
-    page.locator('.calibration-sheet').getByText('Alice', { exact: true }),
+    page.locator('.calibration-intro .calibration-sheet').getByText('Alice', { exact: true }),
   ).toBeVisible();
   await expect(page.getByText('Driver name')).toBeVisible();
   await expect(page.getByText('Track', { exact: true })).toBeVisible();

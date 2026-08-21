@@ -19,7 +19,7 @@ describe('AnalyzerShell', () => {
     );
     expect(screen.getByRole('button', { name: /Theme: System/ })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Source files' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Analysis views' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Analysis views.' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Export report/ })).toBeDisabled();
     expect(screen.queryByRole('button', { name: /Reset source files/ })).not.toBeInTheDocument();
     expect(screen.queryByText('Local / ephemeral')).not.toBeInTheDocument();
