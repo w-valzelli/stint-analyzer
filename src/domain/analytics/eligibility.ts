@@ -1,10 +1,11 @@
 import type { Lap } from '../model/normalized';
 import {
-  scopeKeyForLap,
+  driverScopeKeyForLap,
   type CandidateStint,
   type EligibilityReason,
   type EligibilityState,
   type LapEligibility,
+  type PaceMode,
   type ScopeSelection,
 } from '../model/scope';
 
@@ -16,97 +17,50 @@ function uniqueReasons(reasons: EligibilityReason[]): EligibilityReason[] {
   return [...new Set(reasons)];
 }
 
-function selectedStintFor(
-  selection: ScopeSelection | undefined,
-  stints: readonly CandidateStint[],
-): CandidateStint | null {
-  if (!selection?.selectedStintId) {
-    return null;
+function inherentReasons(lap: Lap): EligibilityReason[] {
+  const reasons: EligibilityReason[] = [];
+  if (!lap.isFullTimedLap) {
+    reasons.push('not-full-timed');
   }
-  return stints.find((stint) => stint.id === selection.selectedStintId) ?? null;
+  if (lap.lapTimeUs === null) {
+    reasons.push('lap-time-unavailable');
+  }
+  return reasons;
 }
 
-function boundIndexes(
-  stint: CandidateStint,
-  selection: ScopeSelection,
-): { start: number; end: number } | null {
-  if (!selection.startLapId || !selection.endLapId) {
-    return null;
-  }
-
-  const start = stint.lapIds.indexOf(selection.startLapId);
-  const end = stint.lapIds.indexOf(selection.endLapId);
-  if (start < 0 || end < 0 || start > end) {
-    return null;
-  }
-
-  return { start, end };
-}
-
-function scopeReasons(
-  lap: Lap,
+function selectionReasons(
   selection: ScopeSelection | undefined,
-  stint: CandidateStint | null,
+  candidate: CandidateStint | undefined,
 ): EligibilityReason[] {
   if (!selection) {
     return ['scope-not-configured'];
   }
-  if (!selection.included) {
-    return ['scope-excluded'];
+  if (!candidate || !selection.selectedStintIds.includes(candidate.id)) {
+    return ['stint-not-selected'];
   }
-  if (!stint) {
-    return ['no-stint-selected'];
-  }
-  if (!stint.lapIds.includes(lap.id)) {
-    return ['outside-selected-stint'];
-  }
-
-  const bounds = boundIndexes(stint, selection);
-  if (!bounds) {
-    return ['lap-bounds-unset'];
-  }
-
-  const lapIndex = stint.lapIds.indexOf(lap.id);
-  if (lapIndex < bounds.start || lapIndex > bounds.end) {
-    return ['outside-lap-bounds'];
-  }
-
   return [];
 }
 
-function runtimeState(lap: Lap, reasons: EligibilityReason[]): EligibilityState {
-  const nextReasons = [...reasons];
-  if (nextReasons.length === 0 && !lap.isFullTimedLap) {
-    nextReasons.push('not-full-timed');
-  }
-  if (nextReasons.length === 0 && lap.lapTimeUs === null) {
-    nextReasons.push('lap-time-unavailable');
-  }
-  return state(uniqueReasons(nextReasons));
+function runtimeState(reasons: EligibilityReason[]): EligibilityState {
+  return state(uniqueReasons(reasons));
 }
 
 function paceState(
   lap: Lap,
   reasons: EligibilityReason[],
-  paceMode: ScopeSelection['paceMode'] | undefined,
+  paceMode: PaceMode,
 ): EligibilityState {
   const nextReasons = [...reasons];
-  if (nextReasons.length === 0 && !lap.isFullTimedLap) {
-    nextReasons.push('not-full-timed');
-  }
-  if (nextReasons.length === 0 && lap.lapTimeUs === null) {
-    nextReasons.push('lap-time-unavailable');
-  }
-  if (nextReasons.length === 0 && lap.pitIn) {
+  if (lap.pitIn) {
     nextReasons.push('pit-in');
   }
-  if (nextReasons.length === 0 && lap.pitOut) {
+  if (lap.pitOut) {
     nextReasons.push('pit-out');
   }
-  if (nextReasons.length === 0 && paceMode === 'clean-non-pit' && lap.clean === false) {
+  if (paceMode === 'clean-non-pit' && lap.clean === false) {
     nextReasons.push('clean-false');
   }
-  if (nextReasons.length === 0 && paceMode === 'clean-non-pit' && lap.clean === null) {
+  if (paceMode === 'clean-non-pit' && lap.clean === null) {
     nextReasons.push('clean-status-unavailable');
   }
   return state(uniqueReasons(nextReasons));
@@ -116,21 +70,22 @@ export function deriveLapEligibility(
   laps: readonly Lap[],
   selections: readonly ScopeSelection[],
   stints: readonly CandidateStint[],
+  paceMode: PaceMode,
 ): LapEligibility[] {
   const selectionsByKey = new Map(selections.map((selection) => [selection.scopeKey, selection]));
-  const stintsByKey = new Map<string, CandidateStint[]>();
+  const stintsByLapId = new Map<string, CandidateStint>();
 
   for (const stint of stints) {
-    const groupStints = stintsByKey.get(stint.scopeKey) ?? [];
-    groupStints.push(stint);
-    stintsByKey.set(stint.scopeKey, groupStints);
+    for (const lapId of stint.lapIds) {
+      stintsByLapId.set(lapId, stint);
+    }
   }
 
   return laps.map((lap) => {
-    const scopeKey = scopeKeyForLap(lap);
+    const scopeKey = driverScopeKeyForLap(lap);
     const selection = selectionsByKey.get(scopeKey);
-    const selectedStint = selectedStintFor(selection, stintsByKey.get(scopeKey) ?? []);
-    const reasons = scopeReasons(lap, selection, selectedStint);
+    const candidate = stintsByLapId.get(lap.id);
+    const reasons = [...inherentReasons(lap), ...selectionReasons(selection, candidate)];
 
     return {
       lapId: lap.id,
@@ -140,8 +95,9 @@ export function deriveLapEligibility(
       driver: lap.driver,
       rowNumber: lap.rowNumber,
       lapNumber: lap.lapNumber,
-      runtime: runtimeState(lap, reasons),
-      pace: paceState(lap, reasons, selection?.paceMode),
+      stintId: candidate?.id ?? null,
+      runtime: runtimeState(reasons),
+      pace: paceState(lap, reasons, paceMode),
     };
   });
 }

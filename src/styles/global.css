@@ -570,6 +570,12 @@ select:focus-visible {
   gap: 30px;
 }
 
+.scope-review__heading-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+
 .scope-review h2 {
   margin: 0;
   font-size: clamp(1.45rem, 2.6vw, 2.25rem);
@@ -604,63 +610,38 @@ select:focus-visible {
   margin-top: 29px;
 }
 
-.scope-review__group {
-  padding: 22px;
-  border: 1px solid var(--calibration-rule-strong);
-  border-radius: var(--calibration-radius-lg);
-  background: var(--calibration-sheet);
+.scope-review__driver .calibration-sheet__body {
+  padding: clamp(24px, 3vw, 34px);
 }
 
-.scope-review__group-header {
+.scope-review__driver-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
+  gap: 24px;
 }
 
-.scope-review__group h3 {
+.scope-review__driver-header h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.025em;
 }
 
-.scope-review__group-header p {
-  margin: 5px 0 0;
-  color: var(--calibration-muted);
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.03em;
-  overflow-wrap: anywhere;
-}
-
-.scope-review__include {
-  display: inline-flex;
-  align-items: center;
-  flex: 0 0 auto;
-  gap: 8px;
-  color: var(--calibration-ink-soft);
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.scope-review__include input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--calibration-cobalt);
+.scope-review__driver-header .scope-review__facts {
+  justify-content: flex-end;
+  max-width: 460px;
 }
 
 .scope-review__controls {
-  display: grid;
-  grid-template-columns: minmax(190px, 1.4fr) repeat(3, minmax(140px, 1fr));
-  gap: 12px;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
-.scope-review__controls label {
+.scope-review__stint-control,
+.scope-review__pace-control {
   display: grid;
-  gap: 6px;
+  align-content: start;
+  gap: 7px;
   color: var(--calibration-muted);
   font-family: var(--font-mono);
   font-size: 0.6rem;
@@ -668,28 +649,50 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
-.scope-review__controls select {
+.scope-review__stint-control {
+  max-width: 620px;
+}
+
+.scope-review__stint-control select,
+.scope-review__pace-control select {
   min-width: 0;
   min-height: 38px;
-  padding: 0 9px;
+  padding: 7px 9px;
   border: 1px solid var(--calibration-rule-strong);
   border-radius: var(--calibration-radius-sm);
-  background: var(--calibration-paper);
+  background: var(--calibration-sheet);
   color: var(--calibration-ink);
   font-family: var(--font-sans);
   font-size: 0.75rem;
 }
 
-.scope-review__facts {
-  margin-top: 16px;
+.scope-review__stint-control select {
+  min-height: 136px;
+}
+
+.scope-review__pace-control--global {
+  width: 190px;
+}
+
+.scope-review__pace-control select:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.scope-review__no-stints {
+  margin: 9px 0 0;
+  color: var(--calibration-muted);
+  font-size: 0.78rem;
 }
 
 .scope-review__warning {
+  margin: 18px 0 0;
   color: var(--calibration-ochre);
+  font-size: 0.76rem;
 }
 
 .scope-review__audit {
-  margin-top: 18px;
+  margin-top: 20px;
   border-top: 1px solid var(--calibration-rule);
   color: var(--calibration-muted);
   font-family: var(--font-mono);
@@ -713,7 +716,7 @@ select:focus-visible {
 
 .scope-review__audit table {
   width: 100%;
-  min-width: 720px;
+  min-width: 560px;
   border-collapse: collapse;
   text-align: left;
 }
@@ -1119,17 +1122,31 @@ select:focus-visible {
     gap: 15px;
   }
 
-  .scope-review__group {
-    padding: 17px;
+  .scope-review__driver .calibration-sheet__body {
+    padding: 22px 19px;
   }
 
-  .scope-review__group-header {
+  .scope-review__heading-actions {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .scope-review__pace-control--global {
+    width: min(100%, 260px);
+  }
+
+  .scope-review__driver-header {
     flex-direction: column;
     gap: 13px;
   }
 
+  .scope-review__driver-header .scope-review__facts {
+    justify-content: flex-start;
+  }
+
   .scope-review__controls {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 
   .calibration-table th,

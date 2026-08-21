@@ -3,7 +3,7 @@ import type { Lap } from './normalized';
 export const paceModes = ['clean-non-pit', 'all-non-pit'] as const;
 export type PaceMode = (typeof paceModes)[number];
 
-export type ScopeGroup = {
+export type SourceScopeGroup = {
   scopeKey: string;
   sourceFileId: string;
   sourceFileName: string;
@@ -13,7 +13,11 @@ export type ScopeGroup = {
 
 export type CandidateStint = {
   id: string;
-  scopeKey: string;
+  sourceScopeKey: string;
+  driverScopeKey: string;
+  sourceFileId: string;
+  sourceFileName: string;
+  driver: string;
   index: number;
   lapIds: readonly string[];
   firstLapId: string | null;
@@ -26,22 +30,21 @@ export type CandidateStint = {
   fullTimedLapCount: number;
 };
 
+export type DriverScopeGroup = {
+  scopeKey: string;
+  driver: string;
+  laps: readonly Lap[];
+  stints: readonly CandidateStint[];
+};
+
 export type ScopeSelection = {
   scopeKey: string;
-  included: boolean;
-  selectedStintId: string | null;
-  startLapId: string | null;
-  endLapId: string | null;
-  paceMode: PaceMode;
+  selectedStintIds: readonly string[];
 };
 
 export type EligibilityReason =
   | 'scope-not-configured'
-  | 'scope-excluded'
-  | 'no-stint-selected'
-  | 'outside-selected-stint'
-  | 'lap-bounds-unset'
-  | 'outside-lap-bounds'
+  | 'stint-not-selected'
   | 'not-full-timed'
   | 'lap-time-unavailable'
   | 'pit-in'
@@ -62,6 +65,7 @@ export type LapEligibility = {
   driver: string;
   rowNumber: number;
   lapNumber: number | null;
+  stintId: string | null;
   runtime: EligibilityState;
   pace: EligibilityState;
 };
@@ -70,6 +74,14 @@ export function scopeKeyFor(sourceFileId: string, driver: string): string {
   return JSON.stringify([sourceFileId, driver]);
 }
 
+export function driverScopeKeyFor(driver: string): string {
+  return JSON.stringify([driver]);
+}
+
 export function scopeKeyForLap(lap: Pick<Lap, 'sourceFileId' | 'driver'>): string {
   return scopeKeyFor(lap.sourceFileId, lap.driver);
+}
+
+export function driverScopeKeyForLap(lap: Pick<Lap, 'driver'>): string {
+  return driverScopeKeyFor(lap.driver);
 }

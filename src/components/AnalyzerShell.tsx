@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { deriveLapEligibility } from '../domain/analytics/eligibility';
 import {
   detectStints,
-  groupLapsByScope,
+  groupLapsByDriver,
   reconcileScopeSelections,
 } from '../domain/analytics/stints';
-import type { ScopeSelection } from '../domain/model/scope';
+import type { PaceMode, ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
@@ -33,6 +33,7 @@ export function AnalyzerShell() {
   const [activeTab, setActiveTab] = useState('overview');
   const [importState, setImportState] = useState<ImportRegisterState>(emptyImportState);
   const [scopeSelections, setScopeSelections] = useState<ScopeSelection[]>([]);
+  const [paceMode, setPaceMode] = useState<PaceMode>('clean-non-pit');
   const handleImportStateChange = useCallback((nextState: ImportRegisterState) => {
     setImportState(nextState);
   }, []);
@@ -41,11 +42,11 @@ export function AnalyzerShell() {
     () => importState.workbooks.flatMap((workbook) => workbook.laps),
     [importState.workbooks],
   );
-  const scopeGroups = useMemo(() => groupLapsByScope(laps), [laps]);
+  const scopeGroups = useMemo(() => groupLapsByDriver(laps), [laps]);
   const candidateStints = useMemo(() => detectStints(laps), [laps]);
   const eligibility = useMemo(
-    () => deriveLapEligibility(laps, scopeSelections, candidateStints),
-    [candidateStints, laps, scopeSelections],
+    () => deriveLapEligibility(laps, scopeSelections, candidateStints, paceMode),
+    [candidateStints, laps, paceMode, scopeSelections],
   );
   const driverNames = useMemo(
     () =>
@@ -138,7 +139,7 @@ export function AnalyzerShell() {
             <h2 id="ledger-title">Detected drivers and laps.</h2>
           </div>
           <span className="calibration-ledger__count">
-            {driverNames.length} drivers / {laps.length} rows
+            {driverNames.length} drivers / {laps.length} laps
           </span>
         </div>
 
@@ -197,16 +198,17 @@ export function AnalyzerShell() {
 
       <ScopeReview
         groups={scopeGroups}
-        stints={candidateStints}
         selections={scopeSelections}
         eligibility={eligibility}
+        paceMode={paceMode}
+        onPaceModeChange={setPaceMode}
         onSelectionChange={handleScopeSelectionChange}
       />
 
       <section className="calibration-index" aria-labelledby="index-title">
         <div className="calibration-index__heading">
           <div>
-            <h2 id="index-title">Analysis views</h2>
+            <h2 id="index-title">Analysis views.</h2>
           </div>
           <Button treatment="outline" tone="neutral" size="sm" disabled>
             <Download aria-hidden="true" size={14} />

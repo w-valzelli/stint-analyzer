@@ -3,19 +3,20 @@ import { describe, expect, it } from 'vitest';
 import {
   createDefaultScopeSelections,
   detectCandidateStints,
+  groupLapsByDriver,
   groupLapsByScope,
 } from '../../src/domain/analytics/stints';
 import { makeLap, stintFixtureLaps } from '../fixtures/scopeLaps';
 
 describe('scope grouping and stint detection', () => {
-  it('keeps the same driver in separate source groups', () => {
-    const groups = groupLapsByScope(stintFixtureLaps);
+  it('keeps source boundaries internally and merges the driver view', () => {
+    const sourceGroups = groupLapsByScope(stintFixtureLaps);
+    const driverGroups = groupLapsByDriver(stintFixtureLaps);
 
-    expect(groups).toHaveLength(2);
-    expect(groups.map((group) => [group.sourceFileId, group.driver])).toEqual([
-      ['source-a', 'Alice'],
-      ['source-b', 'Alice'],
-    ]);
+    expect(sourceGroups).toHaveLength(2);
+    expect(driverGroups).toHaveLength(1);
+    expect(driverGroups[0]?.driver).toBe('Alice');
+    expect(driverGroups[0]?.stints).toHaveLength(4);
   });
 
   it('splits candidates at pit transitions, run changes, and lap resets', () => {
@@ -31,7 +32,7 @@ describe('scope grouping and stint detection', () => {
     expect(stints[1]?.outLapId).toBe('alice-3');
   });
 
-  it('uses timestamps only when every timestamp in a group is valid', () => {
+  it('uses timestamps only when every timestamp in a source group is valid', () => {
     const timestamped = [
       makeLap({ id: 'late', rowNumber: 1, startedAt: '2026-01-01T10:02:00Z' }),
       makeLap({ id: 'early', rowNumber: 2, startedAt: '2026-01-01T10:01:00Z' }),
@@ -48,14 +49,22 @@ describe('scope grouping and stint detection', () => {
     ]);
   });
 
-  it('selects the longest candidate and breaks ties by earliest candidate', () => {
+  it('selects the longest non-empty candidate by default', () => {
     const selections = createDefaultScopeSelections(stintFixtureLaps);
 
     expect(selections[0]).toMatchObject({
-      selectedStintId: expect.stringContaining('stint-1'),
-      startLapId: 'alice-1',
-      endLapId: 'alice-2',
-      paceMode: 'clean-non-pit',
+      selectedStintIds: [expect.stringContaining('stint-1')],
     });
+  });
+
+  it('does not select a driver when every candidate has zero timed laps', () => {
+    const partial = makeLap({
+      id: 'partial',
+      isFullTimedLap: false,
+      classification: 'partial',
+      lapTimeUs: null,
+    });
+
+    expect(createDefaultScopeSelections([partial])[0]?.selectedStintIds).toEqual([]);
   });
 });

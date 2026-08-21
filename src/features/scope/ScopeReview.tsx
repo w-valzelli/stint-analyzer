@@ -1,41 +1,43 @@
+import { useEffect, useState, type ChangeEvent } from 'react';
+
 import type { Lap } from '../../domain/model/normalized';
 import type {
   CandidateStint,
+  DriverScopeGroup,
   EligibilityReason,
   LapEligibility,
-  ScopeGroup,
+  PaceMode,
   ScopeSelection,
 } from '../../domain/model/scope';
 
+const ALL_STINTS_OPTION = '__all_stints__';
+
 const reasonLabels: Record<EligibilityReason, string> = {
-  'scope-not-configured': 'scope is not configured',
-  'scope-excluded': 'source and driver are excluded',
-  'no-stint-selected': 'no stint is selected',
-  'outside-selected-stint': 'outside the selected stint',
-  'lap-bounds-unset': 'lap bounds are not set',
-  'outside-lap-bounds': 'outside the selected lap bounds',
-  'not-full-timed': 'not a full timed lap',
-  'lap-time-unavailable': 'lap time is unavailable',
-  'pit-in': 'pit-in lap',
-  'pit-out': 'pit-out lap',
-  'clean-false': 'Clean is false',
-  'clean-status-unavailable': 'Clean is unavailable',
+  'scope-not-configured': 'Scope unavailable',
+  'stint-not-selected': 'Stint not selected',
+  'not-full-timed': 'Incomplete lap',
+  'lap-time-unavailable': 'Lap time unavailable',
+  'pit-in': 'Inlap',
+  'pit-out': 'Outlap',
+  'clean-false': 'Not clean',
+  'clean-status-unavailable': 'Clean status unavailable',
 };
 
 type ScopeReviewProps = {
-  groups: readonly ScopeGroup[];
-  stints: readonly CandidateStint[];
+  groups: readonly DriverScopeGroup[];
   selections: readonly ScopeSelection[];
   eligibility: readonly LapEligibility[];
+  paceMode: PaceMode;
+  onPaceModeChange: (paceMode: PaceMode) => void;
   onSelectionChange: (scopeKey: string, update: Partial<Omit<ScopeSelection, 'scopeKey'>>) => void;
 };
 
-function controlId(scopeKey: string, suffix: string): string {
-  return `scope-${scopeKey.replace(/[^a-z0-9]+/gi, '-')}-${suffix}`;
+function lapLabel(lap: Lap): string {
+  return `Lap ${lap.lapNumber ?? '—'}`;
 }
 
-function lapLabel(lap: Lap): string {
-  return `Lap ${lap.lapNumber ?? '—'} · row ${lap.rowNumber}`;
+function driverHeadingId(driver: string): string {
+  return `scope-driver-${driver.replace(/[^a-z0-9]+/gi, '-')}`;
 }
 
 function stateLabel(state: LapEligibility['runtime']): string {
@@ -52,51 +54,95 @@ function selectionFor(
   return selections.find((selection) => selection.scopeKey === scopeKey);
 }
 
-function stintsFor(stints: readonly CandidateStint[], scopeKey: string): readonly CandidateStint[] {
-  return stints.filter((stint) => stint.scopeKey === scopeKey);
+function availableStints(stints: readonly CandidateStint[]): CandidateStint[] {
+  return stints.filter((stint) => stint.fullTimedLapCount > 0);
 }
 
-function selectedStintFor(
+function selectedStintIdsFor(
   stints: readonly CandidateStint[],
   selection: ScopeSelection | undefined,
-): CandidateStint | undefined {
-  return stints.find((stint) => stint.id === selection?.selectedStintId);
+): Set<string> {
+  const availableIds = new Set(availableStints(stints).map((stint) => stint.id));
+  return new Set(
+    (selection?.selectedStintIds ?? []).filter((stintId) => availableIds.has(stintId)),
+  );
 }
 
-function fullTimedLapsFor(group: ScopeGroup, stint: CandidateStint | undefined): Lap[] {
-  if (!stint) {
+function selectedValues(
+  stints: readonly CandidateStint[],
+  selectedIds: ReadonlySet<string>,
+): string[] {
+  const available = availableStints(stints);
+  const allSelected = available.length > 0 && selectedIds.size === available.length;
+  return allSelected
+    ? [ALL_STINTS_OPTION, ...available.map((stint) => stint.id)]
+    : [...selectedIds];
+}
+
+function nextSelectedStintIds(
+  event: ChangeEvent<HTMLSelectElement>,
+  stints: readonly CandidateStint[],
+  previousIds: ReadonlySet<string>,
+): string[] {
+  const available = availableStints(stints);
+  const availableIds = available.map((stint) => stint.id);
+  const values = [...event.currentTarget.selectedOptions].map((option) => option.value);
+  const hasAllOption = values.includes(ALL_STINTS_OPTION);
+  const selectedIds = values.filter((value) => value !== ALL_STINTS_OPTION);
+  const wasAllSelected = previousIds.size === available.length && available.length > 0;
+
+  if (hasAllOption && !wasAllSelected) {
+    return availableIds;
+  }
+  if (hasAllOption) {
+    return selectedIds.length === availableIds.length ? availableIds : selectedIds;
+  }
+  if (wasAllSelected && selectedIds.length === availableIds.length) {
     return [];
   }
-
-  const stintLapIds = new Set(stint.lapIds);
-  return group.laps.filter((lap) => stintLapIds.has(lap.id) && lap.isFullTimedLap);
+  return selectedIds;
 }
 
 export function ScopeReview({
   groups,
-  stints,
   selections,
   eligibility,
+  paceMode,
+  onPaceModeChange,
   onSelectionChange,
 }: ScopeReviewProps) {
-  const includedCount = selections.filter((selection) => selection.included).length;
+  const [isHydrated, setIsHydrated] = useState(false);
   const runtimeCount = eligibility.filter((item) => item.runtime.eligible).length;
   const paceCount = eligibility.filter((item) => item.pace.eligible).length;
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   return (
     <section className="scope-review" aria-labelledby="scope-review-title">
       <div className="scope-review__heading">
         <div>
           <h2 id="scope-review-title">Review scope.</h2>
-          <p>
-            Select one candidate stint and lap range for each source and driver group. Runtime and
-            pace use separate eligibility rules.
-          </p>
+          <p>Select the stints for each driver. Runtime and pace use separate eligibility rules.</p>
         </div>
-        <div className="scope-review__summary" aria-label="Scope totals">
-          <span>{includedCount} included groups</span>
-          <span>{runtimeCount} runtime laps</span>
-          <span>{paceCount} pace laps</span>
+        <div className="scope-review__heading-actions">
+          <div className="scope-review__summary" aria-label="Scope totals">
+            <span>{groups.length} drivers</span>
+            <span>{runtimeCount} runtime laps</span>
+            <span>{paceCount} pace laps</span>
+          </div>
+          <label className="scope-review__pace-control scope-review__pace-control--global">
+            Pace mode
+            <select
+              value={paceMode}
+              disabled={isHydrated ? groups.length === 0 : undefined}
+              onChange={(event) => onPaceModeChange(event.target.value as PaceMode)}
+            >
+              <option value="clean-non-pit">Clean non-pit</option>
+              <option value="all-non-pit">All non-pit</option>
+            </select>
+          </label>
         </div>
       </div>
 
@@ -108,170 +154,106 @@ export function ScopeReview({
         <div className="scope-review__groups">
           {groups.map((group) => {
             const selection = selectionFor(selections, group.scopeKey);
-            const groupStints = stintsFor(stints, group.scopeKey);
-            const selectedStint = selectedStintFor(groupStints, selection);
-            const fullTimedLaps = fullTimedLapsFor(group, selectedStint);
+            const selectableStints = availableStints(group.stints);
+            const selectedIds = selectedStintIdsFor(group.stints, selection);
             const groupEligibility = eligibility.filter((item) => item.scopeKey === group.scopeKey);
             const cleanUnavailableCount = group.laps.filter((lap) => lap.clean === null).length;
-            const selectedStintValue = selection?.selectedStintId ?? '';
-            const startLapValue = selection?.startLapId ?? '';
-            const endLapValue = selection?.endLapId ?? '';
-            const stintControlId = controlId(group.scopeKey, 'stint');
-            const startControlId = controlId(group.scopeKey, 'start');
-            const endControlId = controlId(group.scopeKey, 'end');
-            const paceControlId = controlId(group.scopeKey, 'pace');
-            const includeControlId = controlId(group.scopeKey, 'include');
+
+            const headingId = driverHeadingId(group.driver);
 
             return (
-              <article className="scope-review__group" key={group.scopeKey}>
-                <div className="scope-review__group-header">
-                  <div>
-                    <h3>{group.driver}</h3>
-                    <p>{group.sourceFileName}</p>
+              <article
+                className="calibration-sheet scope-review__driver"
+                key={group.scopeKey}
+                aria-labelledby={headingId}
+              >
+                <div className="calibration-sheet__body">
+                  <div className="scope-review__driver-header">
+                    <h3 id={headingId}>{group.driver}</h3>
+                    <div className="scope-review__facts" aria-label={`${group.driver} scope facts`}>
+                      <span>{group.laps.length} laps</span>
+                      <span>
+                        {group.laps.filter((lap) => lap.isFullTimedLap).length} timed laps
+                      </span>
+                      <span>
+                        {groupEligibility.filter((item) => item.runtime.eligible).length} runtime
+                        laps
+                      </span>
+                      <span>
+                        {groupEligibility.filter((item) => item.pace.eligible).length} pace laps
+                      </span>
+                    </div>
                   </div>
-                  <label className="scope-review__include" htmlFor={includeControlId}>
-                    <input
-                      id={includeControlId}
-                      type="checkbox"
-                      checked={selection?.included ?? false}
-                      onChange={(event) =>
-                        onSelectionChange(group.scopeKey, { included: event.target.checked })
-                      }
-                    />
-                    Include group
-                  </label>
-                </div>
 
-                <div className="scope-review__controls">
-                  <label htmlFor={stintControlId}>
-                    Candidate stint
-                    <select
-                      id={stintControlId}
-                      value={selectedStintValue}
-                      onChange={(event) => {
-                        const nextStint = groupStints.find(
-                          (stint) => stint.id === event.target.value,
-                        );
-                        onSelectionChange(group.scopeKey, {
-                          selectedStintId: nextStint?.id ?? null,
-                          startLapId: nextStint?.firstFullTimedLapId ?? null,
-                          endLapId: nextStint?.lastFullTimedLapId ?? null,
-                        });
-                      }}
-                    >
-                      <option value="">No candidate stint</option>
-                      {groupStints.map((stint) => (
-                        <option key={stint.id} value={stint.id}>
-                          Stint {stint.index + 1} · {stint.fullTimedLapCount} timed /{' '}
-                          {stint.lapCount} rows
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label htmlFor={startControlId}>
-                    Runtime start
-                    <select
-                      id={startControlId}
-                      value={startLapValue}
-                      onChange={(event) =>
-                        onSelectionChange(group.scopeKey, {
-                          startLapId: event.target.value || null,
-                        })
-                      }
-                    >
-                      <option value="">Not set</option>
-                      {fullTimedLaps.map((lap) => (
-                        <option key={lap.id} value={lap.id}>
-                          {lapLabel(lap)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label htmlFor={endControlId}>
-                    Runtime end
-                    <select
-                      id={endControlId}
-                      value={endLapValue}
-                      onChange={(event) =>
-                        onSelectionChange(group.scopeKey, {
-                          endLapId: event.target.value || null,
-                        })
-                      }
-                    >
-                      <option value="">Not set</option>
-                      {fullTimedLaps.map((lap) => (
-                        <option key={lap.id} value={lap.id}>
-                          {lapLabel(lap)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label htmlFor={paceControlId}>
-                    Pace mode
-                    <select
-                      id={paceControlId}
-                      value={selection?.paceMode ?? 'clean-non-pit'}
-                      onChange={(event) =>
-                        onSelectionChange(group.scopeKey, {
-                          paceMode: event.target.value as ScopeSelection['paceMode'],
-                        })
-                      }
-                    >
-                      <option value="clean-non-pit">Clean non-pit</option>
-                      <option value="all-non-pit">All non-pit</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div className="scope-review__facts" aria-label={`${group.driver} scope facts`}>
-                  <span>{group.laps.length} rows</span>
-                  <span>{group.laps.filter((lap) => lap.isFullTimedLap).length} full timed</span>
-                  <span>
-                    {groupEligibility.filter((item) => item.runtime.eligible).length} runtime
-                  </span>
-                  <span>{groupEligibility.filter((item) => item.pace.eligible).length} pace</span>
-                  {cleanUnavailableCount > 0 && (
-                    <span className="scope-review__warning">
-                      Clean unavailable on {cleanUnavailableCount} row
-                      {cleanUnavailableCount === 1 ? '' : 's'}
-                    </span>
-                  )}
-                </div>
-
-                <details className="scope-review__audit">
-                  <summary>Lap audit ({group.laps.length} rows)</summary>
-                  <div className="scope-review__audit-wrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th scope="col">Row</th>
-                          <th scope="col">Lap</th>
-                          <th scope="col">Runtime</th>
-                          <th scope="col">Pace</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {group.laps.map((lap) => {
-                          const result = groupEligibility.find((item) => item.lapId === lap.id);
-                          if (!result) {
-                            return null;
+                  <div className="scope-review__controls">
+                    <label className="scope-review__stint-control">
+                      Stints
+                      {selectableStints.length === 0 ? (
+                        <p className="scope-review__no-stints">No timed stints available.</p>
+                      ) : (
+                        <select
+                          multiple
+                          size={Math.min(selectableStints.length + 1, 6)}
+                          value={selectedValues(group.stints, selectedIds)}
+                          onChange={(event) =>
+                            onSelectionChange(group.scopeKey, {
+                              selectedStintIds: nextSelectedStintIds(
+                                event,
+                                group.stints,
+                                selectedIds,
+                              ),
+                            })
                           }
-                          return (
-                            <tr key={lap.id}>
-                              <th scope="row">{lap.rowNumber}</th>
-                              <td>{lap.lapNumber ?? '—'}</td>
-                              <td>{stateLabel(result.runtime)}</td>
-                              <td>{stateLabel(result.pace)}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                          aria-label={`Stints for ${group.driver}`}
+                        >
+                          <option value={ALL_STINTS_OPTION}>All stints</option>
+                          {selectableStints.map((stint, index) => (
+                            <option key={stint.id} value={stint.id}>
+                              Stint {index + 1} · {stint.fullTimedLapCount} timed laps
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </label>
                   </div>
-                </details>
+
+                  {cleanUnavailableCount > 0 && (
+                    <p className="scope-review__warning">
+                      Clean status unavailable on {cleanUnavailableCount}{' '}
+                      {cleanUnavailableCount === 1 ? 'lap' : 'laps'}.
+                    </p>
+                  )}
+
+                  <details className="scope-review__audit">
+                    <summary>Lap audit ({group.laps.length} laps)</summary>
+                    <div className="scope-review__audit-wrap">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th scope="col">Lap</th>
+                            <th scope="col">Runtime</th>
+                            <th scope="col">Pace</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.laps.map((lap) => {
+                            const result = groupEligibility.find((item) => item.lapId === lap.id);
+                            if (!result) {
+                              return null;
+                            }
+                            return (
+                              <tr key={lap.id}>
+                                <th scope="row">{lapLabel(lap)}</th>
+                                <td>{stateLabel(result.runtime)}</td>
+                                <td>{stateLabel(result.pace)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+                </div>
               </article>
             );
           })}

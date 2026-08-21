@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
 import { deriveLapEligibility } from '../../src/domain/analytics/eligibility';
-import { detectCandidateStints, groupLapsByScope } from '../../src/domain/analytics/stints';
+import { detectStints, groupLapsByDriver } from '../../src/domain/analytics/stints';
 import type { ScopeSelection } from '../../src/domain/model/scope';
-import { makeLap } from '../fixtures/scopeLaps';
+import { makeLap, stintFixtureLaps } from '../fixtures/scopeLaps';
 
-function selectionFor(
-  laps: Parameters<typeof deriveLapEligibility>[0],
-  paceMode: ScopeSelection['paceMode'] = 'clean-non-pit',
-): { selection: ScopeSelection; stints: ReturnType<typeof detectCandidateStints> } {
-  const group = groupLapsByScope(laps)[0];
-  const stints = detectCandidateStints(group);
-  const stint = stints[0];
-  if (!stint) {
+function selectionFor(laps: Parameters<typeof deriveLapEligibility>[0]): {
+  selection: ScopeSelection;
+  stints: ReturnType<typeof detectStints>;
+} {
+  const group = groupLapsByDriver(laps)[0];
+  const stints = detectStints(laps);
+  const stint = group?.stints[0];
+  if (!group || !stint) {
     throw new Error('The test needs one candidate stint.');
   }
 
@@ -20,11 +20,7 @@ function selectionFor(
     stints,
     selection: {
       scopeKey: group.scopeKey,
-      included: true,
-      selectedStintId: stint.id,
-      startLapId: stint.firstFullTimedLapId,
-      endLapId: stint.lastFullTimedLapId,
-      paceMode,
+      selectedStintIds: [stint.id],
     },
   };
 }
@@ -47,7 +43,7 @@ describe('lap eligibility', () => {
       makeLap({ id: 'pit-in', rowNumber: 5, pitIn: true, lapNumber: 5 }),
     ];
     const { selection, stints } = selectionFor(laps);
-    const results = deriveLapEligibility(laps, [selection], stints);
+    const results = deriveLapEligibility(laps, [selection], stints, 'clean-non-pit');
 
     expect(results.map((result) => result.runtime.eligible)).toEqual([
       true,
@@ -75,36 +71,61 @@ describe('lap eligibility', () => {
       makeLap({ id: 'unclean', rowNumber: 2, clean: false, lapNumber: 2 }),
       makeLap({ id: 'unknown', rowNumber: 3, clean: null, lapNumber: 3 }),
     ];
-    const { selection, stints } = selectionFor(laps, 'all-non-pit');
-    const results = deriveLapEligibility(laps, [selection], stints);
+    const { selection, stints } = selectionFor(laps);
+    const results = deriveLapEligibility(laps, [selection], stints, 'all-non-pit');
 
     expect(results.every((result) => result.pace.eligible)).toBe(true);
   });
 
-  it('reports explicit reasons for missing, excluded, and out-of-bound scopes', () => {
+  it('aggregates multiple selected stints for one driver', () => {
+    const stints = detectStints(stintFixtureLaps);
+    const group = groupLapsByDriver(stintFixtureLaps)[0];
+    if (!group) {
+      throw new Error('The test needs one driver.');
+    }
+    const selection: ScopeSelection = {
+      scopeKey: group.scopeKey,
+      selectedStintIds: group.stints
+        .filter((stint) => stint.fullTimedLapCount > 0)
+        .map((stint) => stint.id),
+    };
+    const results = deriveLapEligibility(stintFixtureLaps, [selection], stints, 'all-non-pit');
+
+    expect(results.every((result) => result.runtime.eligible)).toBe(true);
+    expect(results.filter((result) => result.pace.eligible)).toHaveLength(4);
+  });
+
+  it('reports explicit reasons for missing scope and unselected stints', () => {
     const laps = [
       makeLap({ id: 'first', rowNumber: 1 }),
-      makeLap({ id: 'second', rowNumber: 2, lapNumber: 2 }),
+      makeLap({ id: 'second', rowNumber: 2, lapNumber: 2, run: 2 }),
     ];
-    const { selection, stints } = selectionFor(laps);
-    const bounded = { ...selection, startLapId: 'second', endLapId: 'second' };
-    const boundedResults = deriveLapEligibility(laps, [bounded], stints);
-    const excludedResults = deriveLapEligibility(
-      laps,
-      [{ ...selection, included: false }],
-      stints,
-    );
-    const missingResults = deriveLapEligibility(laps, [], stints);
+    const stints = detectStints(laps);
+    const group = groupLapsByDriver(laps)[0];
+    if (!group || !stints[0]) {
+      throw new Error('The test needs one driver and one stint.');
+    }
 
-    expect(boundedResults[0]?.runtime.reasons).toContain('outside-lap-bounds');
-    expect(excludedResults[0]?.runtime.reasons).toEqual(['scope-excluded']);
+    const selectedFirstOnly: ScopeSelection = {
+      scopeKey: group.scopeKey,
+      selectedStintIds: [stints[0].id],
+    };
+    const selectedResults = deriveLapEligibility(
+      laps,
+      [selectedFirstOnly],
+      stints,
+      'clean-non-pit',
+    );
+    const missingResults = deriveLapEligibility(laps, [], stints, 'clean-non-pit');
+
+    expect(selectedResults[1]?.runtime.reasons).toContain('stint-not-selected');
     expect(missingResults[0]?.runtime.reasons).toEqual(['scope-not-configured']);
   });
 
   it('keeps pit-out laps in runtime and excludes them from pace', () => {
     const laps = [makeLap({ id: 'pit-out', pitOut: true })];
     const { selection, stints } = selectionFor(laps);
-    const result = deriveLapEligibility(laps, [selection], stints)[0];
+    const result = deriveLapEligibility(laps, [selection], stints, 'clean-non-pit')[0];
 
     expect(result?.runtime.eligible).toBe(true);
     expect(result?.pace.eligible).toBe(false);

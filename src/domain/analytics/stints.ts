@@ -1,9 +1,11 @@
 import type { Lap } from '../model/normalized';
 import {
+  driverScopeKeyFor,
   scopeKeyForLap,
   type CandidateStint,
-  type ScopeGroup,
+  type DriverScopeGroup,
   type ScopeSelection,
+  type SourceScopeGroup,
 } from '../model/scope';
 
 function parsedTimestamp(value: string | null): number | null {
@@ -38,8 +40,8 @@ function orderLaps(laps: readonly Lap[]): Lap[] {
     .map(({ lap }) => lap);
 }
 
-export function groupLapsByScope(laps: readonly Lap[]): ScopeGroup[] {
-  const groups = new Map<string, ScopeGroup>();
+export function groupLapsByScope(laps: readonly Lap[]): SourceScopeGroup[] {
+  const groups = new Map<string, SourceScopeGroup>();
 
   for (const lap of laps) {
     const scopeKey = scopeKeyForLap(lap);
@@ -85,7 +87,7 @@ function startsNewStint(previous: Lap | undefined, current: Lap): boolean {
 }
 
 function buildCandidateStint(
-  scopeKey: string,
+  group: SourceScopeGroup,
   index: number,
   laps: readonly Lap[],
 ): CandidateStint {
@@ -95,8 +97,12 @@ function buildCandidateStint(
   const inLap = [...laps].reverse().find((lap) => lap.pitIn);
 
   return {
-    id: `${scopeKey}:stint-${index + 1}`,
-    scopeKey,
+    id: `${group.scopeKey}:stint-${index + 1}`,
+    sourceScopeKey: group.scopeKey,
+    driverScopeKey: driverScopeKeyFor(group.driver),
+    sourceFileId: group.sourceFileId,
+    sourceFileName: group.sourceFileName,
+    driver: group.driver,
     index,
     lapIds: laps.map((lap) => lap.id),
     firstLapId: laps[0]?.id ?? null,
@@ -110,7 +116,7 @@ function buildCandidateStint(
   };
 }
 
-export function detectCandidateStints(group: ScopeGroup): CandidateStint[] {
+export function detectCandidateStints(group: SourceScopeGroup): CandidateStint[] {
   const candidates: Lap[][] = [];
 
   for (const lap of group.laps) {
@@ -123,46 +129,59 @@ export function detectCandidateStints(group: ScopeGroup): CandidateStint[] {
     }
   }
 
-  return candidates.map((laps, index) => buildCandidateStint(group.scopeKey, index, laps));
+  return candidates.map((laps, index) => buildCandidateStint(group, index, laps));
 }
 
 export function detectStints(laps: readonly Lap[]): CandidateStint[] {
   return groupLapsByScope(laps).flatMap((group) => detectCandidateStints(group));
 }
 
+export function groupLapsByDriver(laps: readonly Lap[]): DriverScopeGroup[] {
+  const groups = new Map<string, DriverScopeGroup>();
+
+  for (const sourceGroup of groupLapsByScope(laps)) {
+    const driverScopeKey = driverScopeKeyFor(sourceGroup.driver);
+    const existing = groups.get(driverScopeKey);
+    const sourceStints = detectCandidateStints(sourceGroup);
+
+    if (existing) {
+      existing.laps = [...existing.laps, ...sourceGroup.laps];
+      existing.stints = [...existing.stints, ...sourceStints];
+      continue;
+    }
+
+    groups.set(driverScopeKey, {
+      scopeKey: driverScopeKey,
+      driver: sourceGroup.driver,
+      laps: [...sourceGroup.laps],
+      stints: sourceStints,
+    });
+  }
+
+  return [...groups.values()].sort((left, right) => compareText(left.driver, right.driver));
+}
+
 function defaultStint(stints: readonly CandidateStint[]): CandidateStint | null {
   return (
-    [...stints].sort(
-      (left, right) => right.fullTimedLapCount - left.fullTimedLapCount || left.index - right.index,
-    )[0] ?? null
+    stints
+      .filter((stint) => stint.fullTimedLapCount > 0)
+      .sort(
+        (left, right) =>
+          right.fullTimedLapCount - left.fullTimedLapCount ||
+          left.sourceFileName.localeCompare(right.sourceFileName) ||
+          left.index - right.index,
+      )[0] ?? null
   );
 }
 
 export function createDefaultScopeSelections(laps: readonly Lap[]): ScopeSelection[] {
-  return groupLapsByScope(laps).map((group) => {
-    const stint = defaultStint(detectCandidateStints(group));
+  return groupLapsByDriver(laps).map((group) => {
+    const stint = defaultStint(group.stints);
     return {
       scopeKey: group.scopeKey,
-      included: true,
-      selectedStintId: stint?.id ?? null,
-      startLapId: stint?.firstFullTimedLapId ?? null,
-      endLapId: stint?.lastFullTimedLapId ?? null,
-      paceMode: 'clean-non-pit',
+      selectedStintIds: stint ? [stint.id] : [],
     };
   });
-}
-
-function validFullLapId(
-  group: ScopeGroup,
-  stint: CandidateStint | null,
-  lapId: string | null,
-): boolean {
-  return (
-    lapId !== null &&
-    stint !== null &&
-    stint.lapIds.includes(lapId) &&
-    group.laps.some((lap) => lap.id === lapId && lap.isFullTimedLap)
-  );
 }
 
 export function reconcileScopeSelections(
@@ -173,26 +192,21 @@ export function reconcileScopeSelections(
     previousSelections.map((selection) => [selection.scopeKey, selection]),
   );
 
-  return groupLapsByScope(laps).map((group) => {
-    const stints = detectCandidateStints(group);
-    const fallback = createDefaultScopeSelections(group.laps)[0];
+  return groupLapsByDriver(laps).map((group) => {
     const previous = previousByKey.get(group.scopeKey);
-    const selectedStint = stints.find((stint) => stint.id === previous?.selectedStintId);
-    const stint = selectedStint ?? defaultStint(stints);
-    const startLapId = validFullLapId(group, stint, previous?.startLapId ?? null)
-      ? (previous?.startLapId ?? null)
-      : (stint?.firstFullTimedLapId ?? null);
-    const endLapId = validFullLapId(group, stint, previous?.endLapId ?? null)
-      ? (previous?.endLapId ?? null)
-      : (stint?.lastFullTimedLapId ?? null);
+    const availableStintIds = new Set(
+      group.stints.filter((stint) => stint.fullTimedLapCount > 0).map((stint) => stint.id),
+    );
+    const selectedStintIds = previous
+      ? previous.selectedStintIds.filter((stintId) => availableStintIds.has(stintId))
+      : (() => {
+          const fallback = defaultStint(group.stints);
+          return fallback ? [fallback.id] : [];
+        })();
 
     return {
       scopeKey: group.scopeKey,
-      included: previous?.included ?? fallback?.included ?? true,
-      selectedStintId: stint?.id ?? null,
-      startLapId,
-      endLapId,
-      paceMode: previous?.paceMode ?? fallback?.paceMode ?? 'clean-non-pit',
+      selectedStintIds,
     };
   });
 }
