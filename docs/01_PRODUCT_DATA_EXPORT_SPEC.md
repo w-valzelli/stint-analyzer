@@ -533,7 +533,7 @@ Never independently recalculate report values inside the XLSX or Markdown export
 ```text
 Upload
   ↓
-Review detected drivers and scope
+Review driver scope
   ↓
 Overview | Leaderboard | Sectors | Consistency | Drivers | Audit
   ↓
@@ -580,7 +580,7 @@ Do not show source filenames or workbook row counts in driver cards. Merge stint
 
 Controls:
 
-- one native multi-select per driver;
+- one select-like multi-stint picker per driver;
 - `All stints` as the first option;
 - only stints with at least one full timed lap;
 - one global pace mode: clean non-pit or all non-pit.

@@ -73,7 +73,7 @@
 - merge candidates into one driver scope;
 - omit zero-timed stints from selection;
 - build source-card-styled driver cards;
-- add native multi-select controls with `All stints`;
+- add select-like multi-stint controls with `All stints`;
 - expose lap counts instead of workbook row counts;
 - expose user-facing audit reasons.
 
