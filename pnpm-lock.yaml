@@ -44,6 +44,9 @@ importers:
       read-excel-file:
         specifier: 9.3.10
         version: 9.3.10
+      simple-statistics:
+        specifier: ^7.10.2
+        version: 7.10.2
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
@@ -2564,6 +2567,9 @@ packages:
 
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
+
+  simple-statistics@7.10.2:
+    resolution: {integrity: sha512-g6GAVcNXkSg/Sm9wQ8RR906KHaGaGb9SCZR8K1l0AyXPP/s5YsdCwd4qHOJflToeqROYr6XyVdP073zwsBf38g==}
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
@@ -5518,6 +5524,8 @@ snapshots:
       '@types/hast': 3.0.5
 
   siginfo@2.0.0: {}
+
+  simple-statistics@7.10.2: {}
 
   sisteransi@1.0.5: {}
 

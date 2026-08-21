@@ -30,6 +30,7 @@
     "react-dom": "^19.2.8",
     "react-dropzone": "20.1.1",
     "read-excel-file": "9.3.10",
+    "simple-statistics": "^7.10.2",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.3",
     "zod": "4.4.3"
