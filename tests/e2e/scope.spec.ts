@@ -21,20 +21,33 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   const scope = page.locator('.scope-review');
   await expect(scope.getByRole('heading', { name: 'Review scope.' })).toBeVisible();
   await expect(scope.getByRole('heading', { name: 'Alice' })).toBeVisible();
-  await expect(scope.getByRole('listbox', { name: 'Stints for Alice' })).toBeVisible();
-  await expect(scope.getByRole('option', { name: 'All stints' })).toBeVisible();
+  const stints = scope.getByRole('button', { name: 'Stints for Alice' });
+  await expect(stints).toBeVisible();
   await expect(scope.getByLabel('Pace mode')).toBeEnabled();
 
-  const stints = scope.getByRole('listbox', { name: 'Stints for Alice' });
-  await stints.selectOption('__all_stints__');
+  await stints.click();
+  const allStints = scope.getByRole('option', { name: /All stints/ });
+  await expect(allStints).toBeVisible();
+  await expect(allStints).toHaveAttribute('aria-selected', 'true');
+  await expect(stints).toHaveText('All stints');
   await expect(scope.getByText(/runtime laps/).first()).toBeVisible();
+  await stints.click();
 
-  await scope.getByLabel('Pace mode').selectOption('all-non-pit');
-  await expect(scope.getByLabel('Pace mode')).toHaveValue('all-non-pit');
+  const paceMode = scope.getByLabel('Pace mode');
+  await paceMode.click();
+  await scope.getByRole('option', { name: 'All non-pit' }).click();
+  await expect(paceMode).toHaveText('All non-pit');
 
   const audit = scope.getByText(/Lap audit \(\d+ laps\)/).first();
   await audit.click();
-  await expect(scope.getByText(/Inlap|Outlap|Incomplete lap/).first()).toBeVisible();
+  const excludedStatus = scope.getByRole('button', { name: /Excluded:/ }).first();
+  await excludedStatus.hover();
+  await expect(scope.getByRole('dialog').first()).toBeVisible();
+  await excludedStatus.click();
+  await page.mouse.move(10, 10);
+  await expect(scope.getByRole('dialog').first()).toBeVisible();
+  await page.mouse.click(10, 10);
+  await expect(scope.getByRole('dialog').first()).not.toBeVisible();
   await expect(scope.getByText(/pit-in|pit-out/)).not.toBeVisible();
 
   await page.getByRole('button', { name: `Remove ${path.basename(fixture)}` }).click();

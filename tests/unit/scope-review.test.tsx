@@ -67,7 +67,8 @@ describe('ScopeReview', () => {
     expect(screen.getAllByRole('heading', { name: 'Alice' })).toHaveLength(1);
     expect(screen.queryByText('source-a.xlsx')).not.toBeInTheDocument();
     expect(screen.queryByText('source-b.xlsx')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('listbox', { name: 'Stints for Alice' })).toHaveLength(1);
+    const aliceCard = driverCard('Alice');
+    expect(aliceCard.querySelector('button[aria-label="Stints for Alice"]')).toBeInTheDocument();
     expect(screen.getAllByLabelText('Pace mode')).toHaveLength(1);
   });
 
@@ -83,31 +84,30 @@ describe('ScopeReview', () => {
     });
     render(<ScopeHarness laps={[...stintFixtureLaps, partial]} />);
 
-    const bob = within(driverCard('Bob'));
+    const bobCard = driverCard('Bob');
+    const bob = within(bobCard);
     expect(bob.getByText('No timed stints available.')).toBeVisible();
-    expect(bob.queryByRole('listbox', { name: 'Stints for Bob' })).not.toBeInTheDocument();
+    expect(bobCard.querySelector('button[aria-label="Stints for Bob"]')).not.toBeInTheDocument();
   });
 
   it('selects and clears all available stints through the All stints option', () => {
     render(<ScopeHarness laps={stintFixtureLaps} />);
     const driver = within(driverCard('Alice'));
-    const listbox = driver.getByRole('listbox', { name: 'Stints for Alice' }) as HTMLSelectElement;
-    const allOption = within(listbox).getByRole('option', {
-      name: 'All stints',
-    }) as HTMLOptionElement;
+    const trigger = driver.getByRole('button', { name: 'Stints for Alice' });
+    const facts = driver.getByLabelText('Alice scope facts');
 
-    expect(driver.getByText('2 runtime laps')).toBeInTheDocument();
-    allOption.selected = true;
-    fireEvent.change(listbox);
+    expect(facts).toHaveTextContent('2 runtime');
+    fireEvent.click(trigger);
+    fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
 
-    expect(driver.getByText('6 runtime laps')).toBeInTheDocument();
-    expect(driver.getByText('3 pace laps')).toBeInTheDocument();
-    expect(listbox.value).toContain('__all_stints__');
+    expect(facts).toHaveTextContent('6 runtime');
+    expect(facts).toHaveTextContent('3 pace');
+    expect(trigger).toHaveTextContent('All stints');
 
-    allOption.selected = false;
-    fireEvent.change(listbox);
-    expect(driver.getByText('0 runtime laps')).toBeInTheDocument();
-    expect(driver.getByText('0 pace laps')).toBeInTheDocument();
+    fireEvent.click(trigger);
+    fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
+    expect(facts).toHaveTextContent('0 runtime');
+    expect(facts).toHaveTextContent('0 pace');
   });
 
   it('updates the global pace counts for every driver', () => {
@@ -118,12 +118,11 @@ describe('ScopeReview', () => {
     render(<ScopeHarness laps={laps} />);
     const driver = within(driverCard('Alice'));
 
-    expect(driver.getByText('1 pace laps')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Pace mode'), {
-      target: { value: 'all-non-pit' },
-    });
+    expect(driver.getByLabelText('Alice scope facts')).toHaveTextContent('1 pace');
+    fireEvent.click(screen.getByLabelText('Pace mode'));
+    fireEvent.click(screen.getByRole('option', { name: 'All non-pit' }));
 
-    expect(driver.getByText('2 pace laps')).toBeInTheDocument();
+    expect(driver.getByLabelText('Alice scope facts')).toHaveTextContent('2 pace');
   });
 
   it('disables the global pace selector before import', () => {
@@ -138,9 +137,11 @@ describe('ScopeReview', () => {
     const audit = within(card).getByText('Lap audit (6 laps)');
     fireEvent.click(audit);
 
-    expect(within(card).getByText(/Inlap/)).toBeVisible();
-    expect(within(card).getByText(/Outlap/)).toBeVisible();
-    expect(within(card).getByText(/Not clean/)).toBeVisible();
+    const excludedStatuses = within(card).getAllByRole('button', { name: /Excluded:/ });
+    expect(excludedStatuses.length).toBeGreaterThan(0);
+    fireEvent.click(excludedStatuses[0]);
+
+    expect(within(card).getByRole('dialog')).toHaveTextContent(/Inlap|Not clean|Outlap/);
     expect(within(card).queryByText(/pit-in|pit-out|Clean is false|row/)).not.toBeInTheDocument();
   });
 });
