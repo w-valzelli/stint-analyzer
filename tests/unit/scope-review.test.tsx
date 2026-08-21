@@ -72,6 +72,28 @@ describe('ScopeReview', () => {
     expect(screen.getAllByLabelText('Pace mode')).toHaveLength(1);
   });
 
+  it('hides incomplete laps from scope facts while keeping them in the audit', () => {
+    const partial = makeLap({
+      id: 'alice-partial',
+      rowNumber: 7,
+      lapNumber: 6,
+      isFullTimedLap: false,
+      classification: 'partial',
+      lapTimeUs: null,
+      sectorsUs: { S1: null, S2: null },
+      exclusionReason: 'One or more sector times are missing.',
+    });
+    render(<ScopeHarness laps={[...stintFixtureLaps, partial]} />);
+
+    const card = driverCard('Alice');
+    const facts = within(card).getByLabelText('Alice scope facts');
+    expect(facts).toHaveTextContent('6 completed');
+    expect(facts).not.toHaveTextContent('7 completed');
+
+    fireEvent.click(within(card).getByText('Lap audit (7 laps)'));
+    expect(within(card).getAllByRole('button', { name: /Excluded:/ })).toHaveLength(5);
+  });
+
   it('omits zero-timed stints from the multi-select', () => {
     const partial = makeLap({
       id: 'bob-partial',

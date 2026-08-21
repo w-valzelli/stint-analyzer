@@ -515,7 +515,8 @@ export function ScopeReview({
             const selectableStints = availableStints(group.stints);
             const selectedIds = selectedStintIdsFor(group.stints, selection);
             const groupEligibility = eligibility.filter((item) => item.scopeKey === group.scopeKey);
-            const cleanUnavailableCount = group.laps.filter((lap) => lap.clean === null).length;
+            const completedLaps = group.laps.filter((lap) => lap.isFullTimedLap);
+            const cleanUnavailableCount = completedLaps.filter((lap) => lap.clean === null).length;
             const headingId = driverHeadingId(group.driver);
 
             return (
@@ -529,11 +530,10 @@ export function ScopeReview({
                     <h3 id={headingId}>{group.driver}</h3>
                     <div className="scope-review__facts" aria-label={`${group.driver} scope facts`}>
                       <span>
-                        <strong>{group.laps.length}</strong> laps
+                        <strong>{completedLaps.length}</strong> completed
                       </span>
                       <span>
-                        <strong>{group.laps.filter((lap) => lap.isFullTimedLap).length}</strong>{' '}
-                        timed
+                        <strong>{completedLaps.length}</strong> timed
                       </span>
                       <span>
                         <strong>
