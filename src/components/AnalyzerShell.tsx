@@ -104,7 +104,8 @@ export function AnalyzerShell() {
             <span>before you coach it.</span>
           </h1>
           <p className="calibration-intro__lede">
-            Add Garage 61 workbooks. Review the imported laps, then compare the runs that matter.
+            Add Garage 61 workbooks. <br /> Review the imported laps, then compare the runs that
+            matter.
           </p>
         </div>
 

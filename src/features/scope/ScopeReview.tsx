@@ -467,7 +467,10 @@ export function ScopeReview({
     <section className="scope-review" aria-labelledby="scope-review-title">
       <div className="scope-review__heading">
         <h2 id="scope-review-title">Review scope.</h2>
-        <p>Choose the stints that belong in the comparison. Runtime and pace use separate rules.</p>
+        <p>
+          Choose the stints that belong in the comparison. <br /> Runtime and pace use separate
+          rules.
+        </p>
       </div>
 
       <div className="scope-review__summary-row">
