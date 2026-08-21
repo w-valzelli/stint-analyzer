@@ -3,6 +3,7 @@
 ## 1. Test layers
 
 Use:
+
 1. domain unit tests;
 2. React component/integration tests;
 3. Playwright E2E tests.
@@ -14,6 +15,7 @@ Domain correctness is the priority.
 ## 2. Parser tests
 
 Cover:
+
 - exact session sheet name;
 - fallback sheet detection by headers;
 - header case/whitespace normalization;
@@ -34,6 +36,7 @@ Cover:
 ## 3. Eligibility tests
 
 Explicitly prove:
+
 - clean non-pit full lap -> pace eligible;
 - clean pit-in -> pace ineligible;
 - clean pit-out -> pace ineligible;
@@ -50,6 +53,7 @@ Explicitly prove:
 Use small hand-checkable arrays.
 
 Test:
+
 - mean;
 - median;
 - population SD;
@@ -72,6 +76,7 @@ Use tolerances only where floating conversion requires it.
 ## 5. Leaderboard tests
 
 Test:
+
 - runtime sum;
 - 0 penalty default;
 - manual count;
@@ -92,6 +97,7 @@ two identical datasets differing only in `Clean` flags must have identical penal
 Commit synthetic, non-private fixtures mimicking Garage 61.
 
 Fixture should include:
+
 - 3 drivers;
 - 7 sectors;
 - at least 2 stints;
@@ -115,6 +121,7 @@ Create an expected report fixture with known values.
 Do not rely only on giant snapshot equality.
 
 Assert important fields directly:
+
 - runtime seconds;
 - clean numerator/denominator;
 - clean %;
@@ -133,13 +140,14 @@ Assert important fields directly:
 ## 8. Component tests
 
 Test:
+
 - dropzone accepts multiple XLSX;
 - rejects unsupported files;
 - parsing state;
 - warning rendering;
 - one driver card across multiple source files;
 - no source filename or row count in driver scope cards;
-- native multi-select stint control;
+- shared select-like multi-stint control;
 - `All stints` option;
 - zero-timed stints omitted;
 - global pace-mode control;
@@ -156,9 +164,10 @@ Test:
 ## 9. E2E scenarios
 
 ### Happy path
+
 1. open app;
 2. drop 3 fixture workbooks;
-3. see detected drivers;
+3. see the driver scope;
 4. analyze;
 5. verify leaderboard;
 6. open sectors;
@@ -167,35 +176,43 @@ Test:
 9. download Markdown.
 
 ### Penalty
+
 1. import;
 2. set penalty seconds/count;
 3. verify adjusted time/order/gap;
 4. verify export includes manual source.
 
 ### Bad file
+
 Drop unrelated workbook.
 Expected: actionable rejection, no crash.
 
 ### No clean laps
+
 Runtime still available; pace stats show unavailable warning.
 
 ### Driver scope
+
 Import files for the same driver.
 Expected: one driver card, merged stints, and no source filename in the scope card.
 Select `All stints`.
 Expected: every non-empty stint contributes to runtime and pace eligibility.
 
 ### Duplicate
+
 Drop same bytes twice.
 Expected: duplicate identified.
 
 ### Base path
+
 Run production output from `/garage61-analyzer/`.
 Verify no asset or navigation failures.
 
 ### Privacy and ephemeral lifecycle
+
 Intercept network while importing workbook.
 Assert no request contains:
+
 - workbook bytes;
 - filename;
 - parsed driver/lap data.
@@ -203,6 +220,7 @@ Assert no request contains:
 Static asset requests are allowed.
 
 Also verify:
+
 1. no login/signup/profile/workspace UI exists;
 2. no session data is automatically written to localStorage or IndexedDB;
 3. refresh may clear the current analysis;
@@ -214,7 +232,9 @@ Also verify:
 ## 10. Export tests
 
 ### Markdown
+
 Assert:
+
 - YAML frontmatter parseable;
 - schema version;
 - deterministic section order;
@@ -225,10 +245,13 @@ Assert:
 - Full includes lap audit.
 
 ### JSON
+
 Validate against Zod schema.
 
 ### XLSX
+
 Read generated workbook back:
+
 - expected sheet names;
 - expected row counts;
 - key values are numeric;
@@ -243,6 +266,7 @@ Correctness > styling.
 ## 11. Accessibility
 
 Minimum:
+
 - keyboard usable upload;
 - visible focus;
 - controls have labels;
@@ -260,6 +284,7 @@ Add automated accessibility tooling if current maintained package fits cleanly; 
 Test with ~20 representative small/medium session workbooks.
 
 Requirements:
+
 - UI does not appear frozen;
 - parsing progress/status visible;
 - post-parse benchmark/filter interactions are immediate enough;
@@ -272,6 +297,7 @@ Do not invent strict latency targets until fixture sizes are known.
 ## 13. GitHub Pages acceptance
 
 Verify:
+
 - official Actions deployment;
 - Astro static output;
 - non-root base path;
