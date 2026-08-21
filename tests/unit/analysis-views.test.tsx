@@ -6,6 +6,7 @@ import { Consistency } from '../../src/features/consistency/Consistency';
 import { Drivers } from '../../src/features/drivers/Drivers';
 import { Overview } from '../../src/features/overview/Overview';
 import { pointsForReport } from '../../src/features/analysis/ProgressionChart';
+import { pointsForReport as sectorPointsForReport } from '../../src/features/analysis/SectorProgressionChart';
 import { Sectors } from '../../src/features/sectors/Sectors';
 import { useAnalysisViewStore } from '../../src/state/analysis-view';
 import { buildAnalysisReport } from '../../src/domain/analytics/report';
@@ -80,7 +81,7 @@ describe('M5 analysis views', () => {
     const user = userEvent.setup();
     render(<Overview report={analysisReport()} />);
 
-    expect(screen.getByText('Run register')).toBeInTheDocument();
+    expect(screen.getByText('Leaderboard')).toBeInTheDocument();
     expect(screen.getByText('Pace progression')).toBeInTheDocument();
     expect(screen.getByRole('table', { name: 'Leaderboard' })).toBeInTheDocument();
     expect(screen.getByTitle('Fastest best pace')).toBeInTheDocument();
@@ -128,6 +129,39 @@ describe('M5 analysis views', () => {
     });
   });
 
+  it('preserves sector progression gaps, dirty markers, duplicate laps, and filtering', () => {
+    const report = analysisReport([
+      makeLap({ id: 'alice-3', rowNumber: 3, lapNumber: 3, clean: false, pitIn: true }),
+      makeLap({
+        id: 'alice-4',
+        rowNumber: 4,
+        lapNumber: 3,
+        clean: false,
+        sectorsUs: { S1: 5_200_000, S2: 4_800_000 },
+      }),
+    ]);
+    const points = sectorPointsForReport(report, 'Alice', ['S1', 'S2']);
+    const filteredPoints = sectorPointsForReport(report, 'Alice', ['S1']);
+
+    expect(points).toHaveLength(4);
+    expect(points.filter((point) => point.lapNumber === 3)).toHaveLength(2);
+    expect(points[2]).toMatchObject({
+      lapKey: '3:0',
+      S1: null,
+      S2: null,
+      S1__dirty: null,
+      S2__dirty: null,
+    });
+    expect(points[3]).toMatchObject({
+      lapKey: '3:1',
+      S1: 150_000,
+      S2: -250_000,
+      S1__dirty: 150_000,
+      S2__dirty: -250_000,
+    });
+    expect(filteredPoints[3]).not.toHaveProperty('S2');
+  });
+
   it('switches sector benchmarks and consistency metrics', async () => {
     const user = userEvent.setup();
     const report = analysisReport();
@@ -142,8 +176,12 @@ describe('M5 analysis views', () => {
     await user.click(screen.getByRole('option', { name: 'Average' }));
     await user.click(screen.getByRole('button', { name: 'Metric' }));
     await user.click(screen.getByRole('option', { name: 'MAD' }));
+    const sectors = screen.getByRole('button', { name: 'Sectors' });
+    await user.click(sectors);
+    await user.click(screen.getByRole('option', { name: 'S1' }));
 
     expect(screen.getByText('Fastest Average')).toBeInTheDocument();
+    expect(sectors).toHaveTextContent('S2');
     expect(screen.getByText('Sector progression')).toBeInTheDocument();
     expect(screen.queryByText(/Pace mode/i)).not.toBeInTheDocument();
     const sectorDetail = screen.getByRole('table', { name: 'Sector detail table' });

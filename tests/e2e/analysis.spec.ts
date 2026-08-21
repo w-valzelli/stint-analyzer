@@ -17,7 +17,7 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await page.locator('input[type="file"]').setInputFiles(fixture);
 
   await page.getByRole('tab', { name: 'Overview' }).click();
-  await expect(page.getByRole('heading', { name: 'Run register' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leaderboard' })).toBeVisible();
   await expect(page.getByRole('table', { name: 'Leaderboard' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pace progression' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Drivers' })).toHaveText('All drivers');
@@ -25,6 +25,13 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
 
   await page.getByRole('tab', { name: 'Sectors' }).click();
   await expect(page.getByRole('table', { name: 'Sector benchmark matrix' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Sectors' })).toHaveText('All sectors');
+  await expect(page.getByText('Pace mode', { exact: true })).not.toBeVisible();
+  await expect(
+    page
+      .getByRole('table', { name: 'Sector detail table' })
+      .getByRole('columnheader', { name: 'Driver' }),
+  ).not.toBeVisible();
   await page.getByRole('button', { name: 'Benchmark' }).click();
   await page.getByRole('option', { name: 'Average' }).click();
   await expect(page.getByRole('columnheader', { name: 'Fastest Average' })).toBeVisible();

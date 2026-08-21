@@ -169,7 +169,7 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
         <div>
           <h3>{driver ? `${driver} pace progression` : 'Pace progression'}</h3>
           <p>
-            All selected completed laps are shown. Pit laps create gaps; ochre dots mark dirty laps.
+            All selected completed laps are shown. <br/> Pit laps create gaps; ochre dots mark dirty laps.
           </p>
         </div>
         {!driver && (

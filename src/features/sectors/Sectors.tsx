@@ -67,7 +67,6 @@ export function Sectors({ report }: SectorsProps) {
           options={benchmarkOptions}
           onChange={(value) => setBenchmark(value as SectorBenchmark)}
         />
-        <DriverControl report={report} />
       </div>
 
       <AnalysisSurface className="analysis-surface--table">
@@ -76,7 +75,6 @@ export function Sectors({ report }: SectorsProps) {
             <h3>Sector benchmark matrix</h3>
             <p>Signed gaps show time from the fastest {selectedBenchmarkLabel.toLowerCase()}.</p>
           </div>
-          <span className="analysis-surface__count">{drivers.length} drivers</span>
         </div>
         <div className="analysis-table-wrap">
           <table aria-label="Sector benchmark matrix">
@@ -111,11 +109,20 @@ export function Sectors({ report }: SectorsProps) {
         </div>
       </AnalysisSurface>
 
+      <div
+        className="analysis-controls analysis-controls--detail"
+        aria-label="Sector detail controls"
+      >
+        <DriverControl report={report} />
+      </div>
+
       <AnalysisSurface className="analysis-surface--table">
         <div className="analysis-surface__header">
           <div>
             <h3>Sector detail</h3>
-            <p>Each value uses the selected pace sample. N keeps small samples visible.</p>
+            <p>
+              Each value uses the selected pace sample. <br /> N keeps small samples visible.
+            </p>
           </div>
         </div>
         <div className="analysis-table-wrap">
