@@ -22,11 +22,11 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
 
   await page.getByRole('tab', { name: 'Sectors' }).click();
   await expect(page.getByRole('table', { name: 'Sector benchmark matrix' })).toBeVisible();
-  await page.getByLabel('Benchmark').selectOption('average');
-  await expect(page.getByText('Fastest Average')).toBeVisible();
+  await page.locator('.analysis-control').filter({ hasText: 'Benchmark' }).locator('select').selectOption('average');
+  await expect(page.getByRole('columnheader', { name: 'Fastest Average' })).toBeVisible();
 
   await page.getByRole('tab', { name: 'Consistency' }).click();
-  await page.getByLabel('Metric').selectOption('mad');
+  await page.locator('.analysis-control').filter({ hasText: 'Metric' }).locator('select').selectOption('mad');
   await expect(page.getByText(/selected MAD across drivers/i)).toBeVisible();
 
   await page.getByRole('tab', { name: 'Drivers' }).click();
