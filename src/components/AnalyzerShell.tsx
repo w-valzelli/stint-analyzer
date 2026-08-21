@@ -10,7 +10,6 @@ import {
 } from '../domain/analytics/stints';
 import type { PaceMode, ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
-import { Audit } from '../features/audit/Audit';
 import { Consistency } from '../features/consistency/Consistency';
 import { Drivers } from '../features/drivers/Drivers';
 import { Overview } from '../features/overview/Overview';
@@ -25,7 +24,6 @@ const tabs = [
   ['sectors', 'Sectors'],
   ['consistency', 'Consistency'],
   ['drivers', 'Drivers'],
-  ['audit', 'Audit'],
 ] as const;
 
 const emptyImportState: ImportRegisterState = {
@@ -185,8 +183,6 @@ export function AnalyzerShell() {
               <Consistency report={report} />
             ) : report && activeTab === 'drivers' ? (
               <Drivers report={report} />
-            ) : report && activeTab === 'audit' ? (
-              <Audit report={report} />
             ) : (
               <div className="calibration-panel">
                 <div className="calibration-panel__advisory">
@@ -198,7 +194,7 @@ export function AnalyzerShell() {
                   <p>
                     {hasWorkbooks
                       ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
-                      : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
+                      : 'Import a workbook to populate this view from the same canonical report.'}
                   </p>
                   <div className="calibration-panel__rule" aria-hidden="true">
                     <span />

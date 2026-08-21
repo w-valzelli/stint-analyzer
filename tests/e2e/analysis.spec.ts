@@ -21,6 +21,7 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await expect(page.getByRole('table', { name: 'Leaderboard' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Pace progression' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Drivers' })).toHaveText('All drivers');
+  await expect(page.getByRole('tab', { name: 'Audit' })).not.toBeVisible();
 
   await page.getByRole('tab', { name: 'Sectors' }).click();
   await expect(page.getByRole('table', { name: 'Sector benchmark matrix' })).toBeVisible();
@@ -36,10 +37,4 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await page.getByRole('tab', { name: 'Drivers' }).click();
   await expect(page.getByRole('heading', { name: 'Theoretical lap' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Factual observations' })).toBeVisible();
-
-  await page.getByRole('tab', { name: 'Audit' }).click();
-  await expect(page.getByRole('table', { name: 'Normalized lap audit' })).toBeVisible();
-  await page.getByLabel('Filter rows').fill('Alice');
-  await expect(page.getByText(/Showing \d+ of \d+ rows/)).toBeVisible();
-  await page.getByRole('button', { name: /Lap time/ }).click();
 });

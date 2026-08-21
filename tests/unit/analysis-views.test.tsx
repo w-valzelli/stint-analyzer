@@ -1,8 +1,7 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { Audit } from '../../src/features/audit/Audit';
 import { Consistency } from '../../src/features/consistency/Consistency';
 import { Drivers } from '../../src/features/drivers/Drivers';
 import { Overview } from '../../src/features/overview/Overview';
@@ -158,21 +157,5 @@ describe('M5 analysis views', () => {
 
     expect(screen.getByText('Bob pace progression')).toBeInTheDocument();
     expect(screen.getByText(/Bob's best actual lap/)).toBeInTheDocument();
-  });
-
-  it('sorts and filters normalized audit rows', async () => {
-    const user = userEvent.setup();
-    render(<Audit report={analysisReport()} />);
-
-    const table = screen.getByRole('table', { name: 'Normalized lap audit' });
-    expect(within(table).getAllByRole('row')).toHaveLength(5);
-
-    await user.type(screen.getByLabelText('Filter rows'), 'Bob');
-
-    expect(screen.getByText('Showing 2 of 4 rows')).toBeInTheDocument();
-    expect(within(table).getAllByRole('row')).toHaveLength(3);
-
-    await user.click(within(table).getByRole('button', { name: /Lap time/ }));
-    expect(within(table).getByRole('button', { name: /Lap time/ })).toBeInTheDocument();
   });
 });

@@ -29,6 +29,7 @@ describe('AnalyzerShell', () => {
     expect(screen.queryByText('Clean is not a penalty')).not.toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('tab', { name: 'Leaderboard' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Audit' })).not.toBeInTheDocument();
     expect(document.querySelectorAll('select')).toHaveLength(0);
   });
 });
