@@ -55,7 +55,10 @@ function selectionLabel(selectedDrivers: readonly string[], drivers: readonly st
   return `${selectedDrivers.length} drivers selected`;
 }
 
-function pointsForReport(report: AnalysisReport, drivers: readonly string[]): ProgressionPoint[] {
+export function pointsForReport(
+  report: AnalysisReport,
+  drivers: readonly string[],
+): ProgressionPoint[] {
   const selectedDrivers = new Set(drivers);
   const rowsByDriver = new Map<string, Map<number, LapAuditRow>>();
 
@@ -160,7 +163,8 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
           </p>
         </div>
         {!driver && (
-          <div className="analysis-chart__control">
+          <div className="analysis-chart__control analysis-control">
+            <span>Drivers</span>
             <CustomSelect
               label="Drivers"
               triggerLabel={selectionLabel(selectedDrivers, driverNames)}
@@ -168,11 +172,7 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
               multiple
               allOptionValue={ALL_DRIVERS_OPTION}
               options={[
-                {
-                  value: ALL_DRIVERS_OPTION,
-                  label: 'All drivers',
-                  detail: `${driverNames.length} ${driverNames.length === 1 ? 'driver' : 'drivers'}`,
-                },
+                { value: ALL_DRIVERS_OPTION, label: 'All drivers' },
                 ...driverNames.map((entry) => ({ value: entry, label: entry })),
               ]}
               disabled={driverNames.length === 0}

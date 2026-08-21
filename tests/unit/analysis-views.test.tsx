@@ -6,6 +6,7 @@ import { Audit } from '../../src/features/audit/Audit';
 import { Consistency } from '../../src/features/consistency/Consistency';
 import { Drivers } from '../../src/features/drivers/Drivers';
 import { Overview } from '../../src/features/overview/Overview';
+import { pointsForReport } from '../../src/features/analysis/ProgressionChart';
 import { Sectors } from '../../src/features/sectors/Sectors';
 import { useAnalysisViewStore } from '../../src/state/analysis-view';
 import { buildAnalysisReport } from '../../src/domain/analytics/report';
@@ -13,7 +14,7 @@ import { createDefaultScopeSelections } from '../../src/domain/analytics/stints'
 import type { Lap, ParsedWorkbook } from '../../src/domain/model/normalized';
 import { makeLap } from '../fixtures/scopeLaps';
 
-function analysisReport() {
+function analysisReport(extraLaps: readonly Lap[] = []) {
   const laps: Lap[] = [
     makeLap({ id: 'alice-1', driver: 'Alice', lapNumber: 1 }),
     makeLap({
@@ -37,6 +38,7 @@ function analysisReport() {
       lapTimeUs: 11_200_000,
       sectorsUs: { S1: 5_600_000, S2: 5_600_000 },
     }),
+    ...extraLaps,
   ];
   const workbook: ParsedWorkbook = {
     source: {
@@ -92,6 +94,29 @@ describe('M5 analysis views', () => {
     await user.click(screen.getByRole('option', { name: 'Bob' }));
 
     expect(drivers).toHaveTextContent('Alice');
+  });
+
+  it('aligns completed laps and marks dirty and pit laps in progression data', () => {
+    const report = analysisReport([
+      makeLap({ id: 'alice-3', rowNumber: 3, lapNumber: 3, clean: false, pitIn: true }),
+      makeLap({
+        id: 'bob-3',
+        rowNumber: 3,
+        driver: 'Bob',
+        lapNumber: 3,
+        clean: false,
+      }),
+    ]);
+    const lapThree = pointsForReport(report, ['Alice', 'Bob']).find(
+      (point) => point.lapNumber === 3,
+    );
+
+    expect(lapThree).toMatchObject({
+      Alice: null,
+      Bob: 10_000_000,
+      Alice__dirty: null,
+      Bob__dirty: 10_000_000,
+    });
   });
 
   it('switches sector benchmarks and consistency metrics', async () => {
