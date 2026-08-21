@@ -42,12 +42,12 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   await audit.click();
   const excludedStatus = scope.getByRole('button', { name: /Excluded:/ }).first();
   await excludedStatus.hover();
-  await expect(scope.getByRole('dialog').first()).toBeVisible();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
   await excludedStatus.click();
   await page.mouse.move(10, 10);
-  await expect(scope.getByRole('dialog').first()).toBeVisible();
+  await expect(page.getByRole('dialog').first()).toBeVisible();
   await page.mouse.click(10, 10);
-  await expect(scope.getByRole('dialog').first()).not.toBeVisible();
+  await expect(page.getByRole('dialog').first()).not.toBeVisible();
   await expect(scope.getByText(/pit-in|pit-out/)).not.toBeVisible();
 
   await page.getByRole('button', { name: `Remove ${path.basename(fixture)}` }).click();

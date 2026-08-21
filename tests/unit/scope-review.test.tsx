@@ -99,6 +99,7 @@ describe('ScopeReview', () => {
     expect(facts).toHaveTextContent('2 runtime');
     fireEvent.click(trigger);
     fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
     expect(facts).toHaveTextContent('6 runtime');
     expect(facts).toHaveTextContent('3 pace');
@@ -121,8 +122,47 @@ describe('ScopeReview', () => {
     expect(driver.getByLabelText('Alice scope facts')).toHaveTextContent('1 pace');
     fireEvent.click(screen.getByLabelText('Pace mode'));
     fireEvent.click(screen.getByRole('option', { name: 'All non-pit' }));
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
 
     expect(driver.getByLabelText('Alice scope facts')).toHaveTextContent('2 pace');
+  });
+
+  it('supports keyboard navigation and returns focus to the trigger', () => {
+    render(<ScopeHarness laps={stintFixtureLaps} />);
+    const trigger = within(driverCard('Alice')).getByRole('button', {
+      name: 'Stints for Alice',
+    });
+
+    fireEvent.click(trigger);
+    const options = screen.getAllByRole('option');
+    options[0].focus();
+    fireEvent.keyDown(options[0], { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(options[1]);
+    fireEvent.keyDown(options[1], { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(options[0]);
+    fireEvent.keyDown(options[0], { key: 'End' });
+    expect(document.activeElement).toBe(options.at(-1));
+    fireEvent.keyDown(options.at(-1) as HTMLElement, { key: 'Home' });
+    expect(document.activeElement).toBe(options[0]);
+    fireEvent.keyDown(options[0], { key: 'Escape' });
+
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('closes custom controls after an outside click', () => {
+    render(<ScopeHarness laps={stintFixtureLaps} />);
+    const driver = within(driverCard('Alice'));
+    const stintTrigger = driver.getByRole('button', { name: 'Stints for Alice' });
+    const paceTrigger = screen.getByLabelText('Pace mode');
+
+    fireEvent.click(stintTrigger);
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+
+    fireEvent.click(paceTrigger);
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
   });
 
   it('disables the global pace selector before import', () => {
@@ -141,7 +181,7 @@ describe('ScopeReview', () => {
     expect(excludedStatuses.length).toBeGreaterThan(0);
     fireEvent.click(excludedStatuses[0]);
 
-    expect(within(card).getByRole('dialog')).toHaveTextContent(/Inlap|Not clean|Outlap/);
+    expect(screen.getByRole('dialog')).toHaveTextContent(/Inlap|Not clean|Outlap/);
     expect(within(card).queryByText(/pit-in|pit-out|Clean is false|row/)).not.toBeInTheDocument();
   });
 });
