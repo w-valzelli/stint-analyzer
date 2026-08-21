@@ -187,6 +187,18 @@ describe('sector analytics', () => {
       executionGapUs: 1_000_000,
     });
   });
+
+  it('preserves a negative execution gap when sector totals exceed the best lap', () => {
+    const theoretical = calculateTheoreticalBests(
+      [
+        { driver: 'Alice', sector: 'S1', stats: numericStats([6]) },
+        { driver: 'Alice', sector: 'S2', stats: numericStats([6]) },
+      ],
+      [{ driver: 'Alice', lapStats: numericStats([10]) }],
+    );
+
+    expect(theoretical[0]?.executionGapUs).toBe(-2);
+  });
 });
 
 describe('stint progression', () => {

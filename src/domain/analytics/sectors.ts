@@ -150,7 +150,7 @@ export function calculateTheoreticalBests(
       executionGapUs:
         bestActualUs === null || theoreticalBestUs === null
           ? null
-          : Math.max(0, bestActualUs - theoreticalBestUs),
+          : bestActualUs - theoreticalBestUs,
     };
   });
 }
