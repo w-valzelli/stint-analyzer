@@ -42,7 +42,7 @@ export const analysisWarningSchema = z.object({
 });
 export type AnalysisWarning = z.infer<typeof analysisWarningSchema>;
 
-export const metricStatsSchema = z.object({
+const metricFields = {
   n: z.number().int().nonnegative(),
   bestUs: nullableFiniteNumberSchema,
   meanUs: nullableFiniteNumberSchema,
@@ -57,14 +57,16 @@ export const metricStatsSchema = z.object({
   pctWithin200msOfMedian: nullableFiniteNumberSchema,
   pctWithin500msOfMedian: nullableFiniteNumberSchema,
   outlierCountIqr: z.number().int().nonnegative(),
-});
+};
+
+export const metricStatsSchema = z.object(metricFields);
 export type MetricStats = z.infer<typeof metricStatsSchema>;
 
-const sectorGapSchema = z.object({
+const sectorGapFields = {
   gapToBestSingleUs: nullableFiniteNumberSchema,
   gapToBestMeanUs: nullableFiniteNumberSchema,
   gapToBestMedianUs: nullableFiniteNumberSchema,
-});
+};
 
 export const leaderboardRowSchema = z.object({
   driver: z.string().min(1),
@@ -81,8 +83,8 @@ export const leaderboardRowSchema = z.object({
 export type LeaderboardRow = z.infer<typeof leaderboardRowSchema>;
 
 const sectorMetricFields = {
-  ...metricStatsSchema.shape,
-  ...sectorGapSchema.shape,
+  ...metricFields,
+  ...sectorGapFields,
 };
 
 export const driverSectorAnalysisSchema = z

@@ -135,27 +135,36 @@ function observationsForDriver(
   return observations;
 }
 
-function warningBase(
-  kind: AnalysisWarning['kind'],
-  code: string,
-  severity: AnalysisWarning['severity'],
-  message: string,
-  values: Partial<Pick<AnalysisWarning, 'sourceFileName' | 'rowNumber' | 'driver' | 'sector'>> = {},
-): AnalysisWarning {
-  return {
-    kind,
-    code,
-    severity,
-    message,
-    sourceFileName: values.sourceFileName ?? null,
-    rowNumber: values.rowNumber ?? null,
-    driver: values.driver ?? null,
-    sector: values.sector ?? null,
-  };
+type WarningBaseInput = {
+  kind: AnalysisWarning['kind'];
+  code: string;
+  severity: AnalysisWarning['severity'];
+  message: string;
+  sourceFileName?: string | null;
+  rowNumber?: number | null;
+  driver?: string | null;
+  sector?: string | null;
+};
+
+function warningBase({
+  kind,
+  code,
+  severity,
+  message,
+  sourceFileName = null,
+  rowNumber = null,
+  driver = null,
+  sector = null,
+}: WarningBaseInput): AnalysisWarning {
+  return { kind, code, severity, message, sourceFileName, rowNumber, driver, sector };
 }
 
 function parserWarningToAnalysisWarning(warning: ParserWarning): AnalysisWarning {
-  return warningBase('parser', warning.code, warning.severity, warning.message, {
+  return warningBase({
+    kind: 'parser',
+    code: warning.code,
+    severity: warning.severity,
+    message: warning.message,
     sourceFileName: warning.sourceFileName,
     rowNumber: warning.rowNumber,
   });
@@ -165,13 +174,21 @@ function countDescription(values: readonly { driver: string; count: number }[]):
   return values.map((value) => `${value.driver} ${value.count}`).join(', ');
 }
 
-function analysisWarnings(
-  workbooks: readonly ParsedWorkbook[],
-  laps: Parameters<typeof driverLapAnalyses>[0],
-  eligibility: Parameters<typeof driverLapAnalyses>[1],
-  lapAnalyses: ReturnType<typeof driverLapAnalyses>,
-  sectorGaps: readonly ReturnType<typeof calculateSectorGaps>[number][],
-): AnalysisWarning[] {
+type AnalysisWarningContext = {
+  workbooks: readonly ParsedWorkbook[];
+  laps: Parameters<typeof driverLapAnalyses>[0];
+  eligibility: Parameters<typeof driverLapAnalyses>[1];
+  lapAnalyses: ReturnType<typeof driverLapAnalyses>;
+  sectorGaps: readonly ReturnType<typeof calculateSectorGaps>[number][];
+};
+
+function analysisWarnings({
+  workbooks,
+  laps,
+  eligibility,
+  lapAnalyses,
+  sectorGaps,
+}: AnalysisWarningContext): AnalysisWarning[] {
   const warnings = workbooks.flatMap((workbook) =>
     workbook.warnings.map(parserWarningToAnalysisWarning),
   );
@@ -186,23 +203,23 @@ function analysisWarnings(
 
   if (new Set(runtimeCounts.map((value) => value.count)).size > 1) {
     warnings.push(
-      warningBase(
-        'analysis',
-        'different-runtime-lengths',
-        'warning',
-        `Selected runtime lap counts differ between drivers: ${countDescription(runtimeCounts)}.`,
-      ),
+      warningBase({
+        kind: 'analysis',
+        code: 'different-runtime-lengths',
+        severity: 'warning',
+        message: `Selected runtime lap counts differ between drivers: ${countDescription(runtimeCounts)}.`,
+      }),
     );
   }
 
   if (new Set(paceCounts.map((value) => value.count)).size > 1) {
     warnings.push(
-      warningBase(
-        'analysis',
-        'different-pace-sample-sizes',
-        'warning',
-        `Eligible pace lap counts differ between drivers: ${countDescription(paceCounts)}.`,
-      ),
+      warningBase({
+        kind: 'analysis',
+        code: 'different-pace-sample-sizes',
+        severity: 'warning',
+        message: `Eligible pace lap counts differ between drivers: ${countDescription(paceCounts)}.`,
+      }),
     );
   }
 
@@ -215,13 +232,13 @@ function analysisWarnings(
     ).length;
     if (missingCleanCount > 0) {
       warnings.push(
-        warningBase(
-          'analysis',
-          'missing-clean-status',
-          'warning',
-          `${driver} has ${missingCleanCount} selected full timed non-pit lap${missingCleanCount === 1 ? '' : 's'} without Clean status.`,
-          { driver },
-        ),
+        warningBase({
+          kind: 'analysis',
+          code: 'missing-clean-status',
+          severity: 'warning',
+          message: `${driver} has ${missingCleanCount} selected full timed non-pit lap${missingCleanCount === 1 ? '' : 's'} without Clean status.`,
+          driver,
+        }),
       );
     }
   }
@@ -229,13 +246,14 @@ function analysisWarnings(
   for (const entry of sectorGaps) {
     if (entry.stats.n < 3) {
       warnings.push(
-        warningBase(
-          'analysis',
-          'low-sector-sample',
-          'info',
-          `${entry.driver} ${entry.sector} has only ${entry.stats.n} eligible sector sample${entry.stats.n === 1 ? '' : 's'}.`,
-          { driver: entry.driver, sector: entry.sector },
-        ),
+        warningBase({
+          kind: 'analysis',
+          code: 'low-sector-sample',
+          severity: 'info',
+          message: `${entry.driver} ${entry.sector} has only ${entry.stats.n} eligible sector sample${entry.stats.n === 1 ? '' : 's'}.`,
+          driver: entry.driver,
+          sector: entry.sector,
+        }),
       );
     }
   }
@@ -246,15 +264,15 @@ function analysisWarnings(
   }));
   if (new Set(layouts.map((layout) => JSON.stringify(layout.sectors))).size > 1) {
     warnings.push(
-      warningBase(
-        'analysis',
-        'inconsistent-sector-layout',
-        'warning',
-        `Selected sources expose different sector layouts: ${layouts
+      warningBase({
+        kind: 'analysis',
+        code: 'inconsistent-sector-layout',
+        severity: 'warning',
+        message: `Selected sources expose different sector layouts: ${layouts
           .sort((left, right) => compareText(left.name, right.name))
           .map((layout) => `${layout.name} [${layout.sectors.join(', ')}]`)
           .join('; ')}.`,
-      ),
+      }),
     );
   }
 
@@ -477,7 +495,7 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
     sources: workbooks
       .map((workbook) => workbook.source)
       .sort((left, right) => compareText(left.name, right.name) || compareText(left.id, right.id)),
-    warnings: analysisWarnings(workbooks, laps, eligibility, lapAnalyses, sectorGaps),
+    warnings: analysisWarnings({ workbooks, laps, eligibility, lapAnalyses, sectorGaps }),
     leaderboard,
     drivers: [...driverByName.values()],
     sectors: buildSectorAnalyses(sectorGaps, sectorBenchmarks, sectors),
