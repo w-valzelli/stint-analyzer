@@ -24,11 +24,12 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await expect(page.getByRole('tab', { name: 'Audit' })).not.toBeVisible();
 
   await page.getByRole('tab', { name: 'Sectors' }).click();
+  const sectorsView = page.locator('.analysis-view');
   await expect(page.getByRole('table', { name: 'Sector benchmark matrix' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sectors' })).toHaveText('All sectors');
-  await expect(page.getByText('Pace mode', { exact: true })).not.toBeVisible();
+  await expect(sectorsView.getByText('Pace mode', { exact: true })).not.toBeVisible();
   await expect(
-    page
+    sectorsView
       .getByRole('table', { name: 'Sector detail table' })
       .getByRole('columnheader', { name: 'Driver' }),
   ).not.toBeVisible();
