@@ -3,8 +3,11 @@ import type {
   ConsistencyMetricSummary,
   ConsistencySummary,
   DriverAnalysis,
+  DriverScorecard,
   LeaderboardRow,
+  MetricStats,
   OverviewSummary,
+  ScorecardMetric,
   SectorAnalysis,
 } from '../model/report';
 import type { SourceSummary } from '../model/normalized';
@@ -108,4 +111,104 @@ export function buildConsistencySummaries(
     range: consistencyMetricSummary(sectors, driver.driver, 'rangeUs'),
     iqrOutlierCount: driver.sectors.reduce((total, sector) => total + sector.outlierCountIqr, 0),
   }));
+}
+
+export type ScorecardDriverInput = {
+  driver: string;
+  lapStats: Pick<MetricStats, 'n' | 'medianUs' | 'madUs'>;
+  cleanPercentage: number | null;
+  cleanLapCount: number;
+  eligibleNonPitLapCount: number;
+  fuelUsedMeanLiters: number | null;
+  fuelUsedLapCount: number;
+  executionGapUs: number | null;
+};
+
+function buildScorecardMetric(
+  driver: ScorecardDriverInput,
+  drivers: readonly ScorecardDriverInput[],
+  leaderboardDrivers: ReadonlySet<string>,
+  leaderboardDriverCount: number,
+  valueFor: (entry: ScorecardDriverInput) => number | null,
+  sampleSizeFor: (entry: ScorecardDriverInput) => number,
+  lowerIsBetter: boolean,
+): ScorecardMetric {
+  const available = drivers.flatMap((entry) => {
+    const value = valueFor(entry);
+    return leaderboardDrivers.has(entry.driver) && value !== null ? [{ value }] : [];
+  });
+  const value = valueFor(driver);
+  const rank =
+    !leaderboardDrivers.has(driver.driver) || value === null
+      ? null
+      : available.filter((entry) => (lowerIsBetter ? entry.value < value : entry.value > value))
+          .length + 1;
+  const fieldSize = available.length;
+
+  return {
+    rank,
+    fieldSize,
+    radarScore: rank === null ? null : leaderboardDriverCount - rank + 1,
+    sampleSize: sampleSizeFor(driver),
+  };
+}
+
+export function buildDriverScorecards(
+  drivers: readonly ScorecardDriverInput[],
+  leaderboardDrivers: readonly string[],
+): Map<string, DriverScorecard> {
+  const leaderboardDriverSet = new Set(leaderboardDrivers);
+
+  return new Map(
+    drivers.map((driver) => [
+      driver.driver,
+      {
+        pace: buildScorecardMetric(
+          driver,
+          drivers,
+          leaderboardDriverSet,
+          leaderboardDrivers.length,
+          (entry) => entry.lapStats.medianUs,
+          (entry) => entry.lapStats.n,
+          true,
+        ),
+        potential: buildScorecardMetric(
+          driver,
+          drivers,
+          leaderboardDriverSet,
+          leaderboardDrivers.length,
+          (entry) => entry.executionGapUs,
+          (entry) => entry.lapStats.n,
+          false,
+        ),
+        efficiency: buildScorecardMetric(
+          driver,
+          drivers,
+          leaderboardDriverSet,
+          leaderboardDrivers.length,
+          (entry) => entry.fuelUsedMeanLiters,
+          (entry) => entry.fuelUsedLapCount,
+          true,
+        ),
+        cleanliness: buildScorecardMetric(
+          driver,
+          drivers,
+          leaderboardDriverSet,
+          leaderboardDrivers.length,
+          (entry) => entry.cleanPercentage,
+          (entry) => entry.eligibleNonPitLapCount,
+          false,
+        ),
+        consistency: buildScorecardMetric(
+          driver,
+          drivers,
+          leaderboardDriverSet,
+          leaderboardDrivers.length,
+          (entry) => entry.lapStats.madUs,
+          (entry) => entry.lapStats.n,
+          true,
+        ),
+      },
+    ]),
+  );
 }

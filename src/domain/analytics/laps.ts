@@ -1,6 +1,6 @@
 import type { Lap } from '../model/normalized';
 import type { LapEligibility } from '../model/scope';
-import { durationStats, type NullableNumericStats } from './statistics';
+import { durationStats, numericStats, type NullableNumericStats } from './statistics';
 
 export type CleanLapPercentage = {
   cleanCount: number;
@@ -15,6 +15,8 @@ export type DriverLapAnalysis = {
   runtimeUs: number;
   lapStats: NullableNumericStats;
   cleanPercentage: CleanLapPercentage;
+  fuelUsedMeanLiters: number | null;
+  fuelUsedLapCount: number;
 };
 
 function eligibilityByLapId(
@@ -84,6 +86,15 @@ export function lapTimeStats(
   );
 }
 
+function fuelUsedValues(laps: readonly Lap[], eligibility: readonly LapEligibility[]): number[] {
+  return runtimeEligibleLaps(laps, eligibility).flatMap((lap) => {
+    if (lap.pitIn || lap.pitOut || lap.fuelUsed === null) {
+      return [];
+    }
+    return [lap.fuelUsed];
+  });
+}
+
 export function driverLapAnalyses(
   laps: readonly Lap[],
   eligibility: readonly LapEligibility[],
@@ -97,6 +108,7 @@ export function driverLapAnalyses(
     const driverEligibility = eligibility.filter((item) => item.driver === driver);
     const runtime = runtimeEligibleLaps(driverLaps, driverEligibility);
     const pace = paceEligibleLaps(driverLaps, driverEligibility);
+    const fuelUsedStats = numericStats(fuelUsedValues(driverLaps, driverEligibility));
     return {
       driver,
       runtimeLaps: runtime.length,
@@ -104,6 +116,8 @@ export function driverLapAnalyses(
       runtimeUs: runtime.reduce((total, lap) => total + (lap.lapTimeUs ?? 0), 0),
       lapStats: lapTimeStats(driverLaps, driverEligibility),
       cleanPercentage: cleanLapPercentage(driverLaps, driverEligibility),
+      fuelUsedMeanLiters: fuelUsedStats.mean,
+      fuelUsedLapCount: fuelUsedStats.n,
     };
   });
 }

@@ -134,6 +134,46 @@ describe('lap analytics', () => {
     ]);
   });
 
+  it('averages fuel use across selected full timed non-pit laps', () => {
+    const laps = [
+      makeLap({ id: 'fuel-clean', rowNumber: 1, fuelUsed: 5 }),
+      makeLap({ id: 'fuel-dirty', rowNumber: 2, fuelUsed: 7, clean: false }),
+      makeLap({ id: 'fuel-pit', rowNumber: 3, fuelUsed: 50, pitIn: true }),
+      makeLap({ id: 'fuel-out-of-scope', rowNumber: 4, fuelUsed: 90, run: 2 }),
+      makeLap({
+        id: 'fuel-partial',
+        rowNumber: 5,
+        fuelUsed: 100,
+        run: 2,
+        lapTimeUs: null,
+        sectorsUs: { S1: null, S2: null },
+        isFullTimedLap: false,
+        classification: 'partial',
+        exclusionReason: 'One or more sector times are missing.',
+      }),
+    ];
+    const stints = detectStints(laps);
+    const selectedStint = stints.find((stint) => stint.lapIds.includes('fuel-clean'));
+    if (!selectedStint) {
+      throw new Error('The fuel fixture needs a selected stint.');
+    }
+    const scopeGroup = groupLapsByDriver(laps)[0];
+    if (!scopeGroup) {
+      throw new Error('The fuel fixture needs a driver scope.');
+    }
+    const eligibility = deriveLapEligibility(
+      laps,
+      [{ scopeKey: scopeGroup.scopeKey, selectedStintIds: [selectedStint.id] }],
+      stints,
+      'clean-non-pit',
+    );
+
+    expect(driverLapAnalyses(laps, eligibility)[0]).toMatchObject({
+      fuelUsedMeanLiters: 6,
+      fuelUsedLapCount: 2,
+    });
+  });
+
   it('uses all non-pit laps when exploratory pace mode is selected', () => {
     const laps = analyticsFixture();
     const { eligibility } = deriveAll(laps, 'all-non-pit');

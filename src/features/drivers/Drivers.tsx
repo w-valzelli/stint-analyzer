@@ -3,12 +3,11 @@ import { formatDurationUs } from '../../lib/durations';
 import {
   AnalysisSurface,
   DriverControl,
-  formatPercentage,
   formatSignedDurationUs,
-  MetricStrip,
   useActiveDriver,
 } from '../analysis/AnalysisPrimitives';
 import { ProgressionChart } from '../analysis/ProgressionChart';
+import { DriverScorecard } from './DriverScorecard';
 
 type DriversProps = {
   report: AnalysisReport;
@@ -32,63 +31,30 @@ export function Drivers({ report }: DriversProps) {
         <DriverControl report={report} />
       </div>
 
-      <MetricStrip
-        items={[
-          { label: 'Best lap', value: formatDurationUs(driver.lapStats.bestUs) },
-          { label: 'Mean lap', value: formatDurationUs(driver.lapStats.meanUs) },
-          { label: 'Median lap', value: formatDurationUs(driver.lapStats.medianUs) },
-          { label: 'Population SD', value: formatDurationUs(driver.lapStats.sdUs) },
-          {
-            label: 'Clean percentage',
-            value: formatPercentage(driver.cleanPercentage),
-            detail: `${driver.cleanLapCount} / ${driver.eligibleNonPitLapCount}`,
-          },
-          { label: 'Pace laps', value: String(driver.paceLapCount) },
-        ]}
-      />
+      <DriverScorecard driver={driver} driverCount={report.leaderboard.length} />
 
-      <div className="analysis-driver-grid">
-        <AnalysisSurface className="analysis-surface--table">
-          <div className="analysis-surface__header">
-            <div>
-              <h3>Theoretical lap</h3>
-              <p>Personal best sectors combined. This is not an actual lap.</p>
-            </div>
+      <AnalysisSurface className="analysis-surface--table">
+        <div className="analysis-surface__header">
+          <div>
+            <h3>Theoretical potential</h3>
+            <p>Personal best sectors combined. This is not an actual lap.</p>
           </div>
-          <div className="analysis-comparison">
-            <div>
-              <span>Best actual</span>
-              <strong>{formatDurationUs(driver.lapStats.bestUs)}</strong>
-            </div>
-            <div>
-              <span>Theoretical best</span>
-              <strong>{formatDurationUs(driver.theoreticalBestUs)}</strong>
-            </div>
-            <div>
-              <span>Execution gap</span>
-              <strong>{formatSignedDurationUs(driver.executionGapUs)}</strong>
-            </div>
+        </div>
+        <div className="analysis-comparison">
+          <div>
+            <span>Best actual</span>
+            <strong>{formatDurationUs(driver.lapStats.bestUs)}</strong>
           </div>
-        </AnalysisSurface>
-
-        <AnalysisSurface>
-          <div className="analysis-surface__header">
-            <div>
-              <h3>Factual observations</h3>
-              <p>These observations describe the selected report sample.</p>
-            </div>
+          <div>
+            <span>Theoretical best</span>
+            <strong>{formatDurationUs(driver.theoreticalBestUs)}</strong>
           </div>
-          {driver.observations.length === 0 ? (
-            <p className="analysis-empty">No observations are available for this driver.</p>
-          ) : (
-            <ul className="analysis-observation-list">
-              {driver.observations.map((observation) => (
-                <li key={observation}>{observation}</li>
-              ))}
-            </ul>
-          )}
-        </AnalysisSurface>
-      </div>
+          <div>
+            <span>Execution gap</span>
+            <strong>{formatSignedDurationUs(driver.executionGapUs)}</strong>
+          </div>
+        </div>
+      </AnalysisSurface>
 
       <AnalysisSurface className="analysis-surface--table">
         <div className="analysis-surface__header">

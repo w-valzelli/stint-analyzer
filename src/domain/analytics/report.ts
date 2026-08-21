@@ -22,7 +22,12 @@ import {
   sectorNamesForLaps,
 } from './sectors';
 import { detectStints } from './stints';
-import { buildConsistencySummaries, buildOverviewSummary, medianRankForDriver } from './summaries';
+import {
+  buildConsistencySummaries,
+  buildDriverScorecards,
+  buildOverviewSummary,
+  medianRankForDriver,
+} from './summaries';
 import type { NullableNumericStats } from './statistics';
 
 export type BuildAnalysisReportInput = {
@@ -386,7 +391,7 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
   const theoreticalByDriver = new Map(
     theoreticalBests.map((analysis) => [analysis.driver, analysis]),
   );
-  const drivers: DriverAnalysis[] = lapAnalyses.map((analysis) => {
+  const driverFacts = lapAnalyses.map((analysis) => {
     const theoretical = theoreticalByDriver.get(analysis.driver);
     const driverSectors: DriverSectorAnalysis[] = sectorGaps
       .filter((entry) => entry.driver === analysis.driver)
@@ -409,6 +414,8 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
       eligibleNonPitLapCount: analysis.cleanPercentage.eligibleNonPitCount,
       cleanPercentage: analysis.cleanPercentage.percentage,
       lapStats: toMetricStats(analysis.lapStats),
+      fuelUsedMeanLiters: analysis.fuelUsedMeanLiters,
+      fuelUsedLapCount: analysis.fuelUsedLapCount,
       theoreticalBestUs: theoretical?.theoreticalBestUs ?? null,
       executionGapUs: theoretical?.executionGapUs ?? null,
       sectors: driverSectors,
@@ -419,8 +426,7 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
       ),
     };
   });
-  const driverByName = new Map(drivers.map((driver) => [driver.driver, driver]));
-  const sortedDrivers = drivers
+  const sortedDrivers = driverFacts
     .filter((driver) => driver.runtimeLapCount > 0)
     .sort(
       (left, right) => left.runtimeUs - right.runtimeUs || compareText(left.driver, right.driver),
@@ -440,6 +446,18 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
     theoreticalBestUs: driver.theoreticalBestUs,
     executionGapUs: driver.executionGapUs,
   }));
+  const scorecards = buildDriverScorecards(
+    driverFacts,
+    leaderboard.map((row) => row.driver),
+  );
+  const drivers: DriverAnalysis[] = driverFacts.map((driver) => {
+    const scorecard = scorecards.get(driver.driver);
+    if (!scorecard) {
+      throw new Error(`Driver scorecard ${driver.driver} is missing.`);
+    }
+    return { ...driver, scorecard };
+  });
+  const driverByName = new Map(drivers.map((driver) => [driver.driver, driver]));
 
   const progression = calculateStintProgression(laps, eligibility, stints, sectorEntries);
   const stintsById = new Map(stints.map((stint) => [stint.id, stint]));

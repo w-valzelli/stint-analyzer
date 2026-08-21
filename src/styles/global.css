@@ -1252,6 +1252,98 @@ input[type='checkbox']:focus-visible {
   width: 180px;
 }
 
+.analysis-scorecard__body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(300px, 1.1fr);
+  gap: 24px;
+  padding: 0 20px 20px;
+}
+
+.analysis-scorecard__chart {
+  display: grid;
+  min-width: 0;
+  height: 300px;
+  padding-right: 20px;
+  place-items: center;
+}
+
+.analysis-scorecard__chart .analysis-empty {
+  padding: 20px;
+}
+
+.analysis-scorecard__metrics {
+  display: grid;
+  align-content: start;
+  margin: 0;
+}
+
+.analysis-scorecard__metric {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--calibration-rule);
+}
+
+.analysis-scorecard__metric:last-child {
+  border-bottom: 0;
+}
+
+.analysis-scorecard__metric dt {
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.analysis-scorecard__metric dd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0;
+  text-align: left;
+}
+
+.analysis-scorecard__rank,
+.analysis-scorecard__value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.analysis-scorecard__rank {
+  color: var(--calibration-ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.analysis-scorecard__value {
+  color: var(--calibration-ink-soft);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.analysis-scorecard__tooltip {
+  display: grid;
+  gap: 4px;
+  padding: 9px 11px;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-sm);
+  background: var(--calibration-sheet);
+  color: var(--calibration-ink);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  line-height: 1.35;
+}
+
+.analysis-scorecard__tooltip strong {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+}
+
 .analysis-comparison {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1661,6 +1753,18 @@ input[type='checkbox']:focus-visible {
     align-items: flex-start;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .analysis-scorecard__body {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 20px 20px;
+  }
+
+  .analysis-scorecard__chart {
+    height: 230px;
+    padding-right: 0;
+    border-right: 0;
   }
 
   .analysis-comparison {

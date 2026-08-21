@@ -47,7 +47,10 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await expect(page.getByRole('columnheader', { name: 'Worst lap' })).toBeVisible();
   await expect(page.getByRole('table', { name: 'Consistency matrix' })).not.toBeVisible();
 
-  await page.getByRole('tab', { name: 'Drivers' }).click();
-  await expect(page.getByRole('heading', { name: 'Theoretical lap' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Factual observations' })).toBeVisible();
+  await page.getByRole('tab', { name: 'Driver scorecard' }).click();
+  await expect(page.getByRole('heading', { name: 'Field profile' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Theoretical potential' })).toBeVisible();
+  await expect(page.getByLabel(/scorecard metrics/)).toBeVisible();
+  await expect(page.getByRole('img', { name: /score profile radar chart/ })).toBeVisible();
+  await expect(page.getByText('Factual observations')).not.toBeVisible();
 });

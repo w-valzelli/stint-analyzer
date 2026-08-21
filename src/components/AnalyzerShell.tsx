@@ -23,7 +23,7 @@ const tabs = [
   ['overview', 'Overview'],
   ['sectors', 'Sectors'],
   ['consistency', 'Consistency'],
-  ['drivers', 'Drivers'],
+  ['drivers', 'Driver scorecard'],
 ] as const;
 
 const emptyImportState: ImportRegisterState = {

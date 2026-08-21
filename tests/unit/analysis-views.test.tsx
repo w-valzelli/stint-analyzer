@@ -16,13 +16,14 @@ import { makeLap } from '../fixtures/scopeLaps';
 
 function analysisReport(extraLaps: readonly Lap[] = []) {
   const laps: Lap[] = [
-    makeLap({ id: 'alice-1', driver: 'Alice', lapNumber: 1 }),
+    makeLap({ id: 'alice-1', driver: 'Alice', lapNumber: 1, fuelUsed: 6.1 }),
     makeLap({
       id: 'alice-2',
       driver: 'Alice',
       lapNumber: 2,
       lapTimeUs: 10_200_000,
       sectorsUs: { S1: 5_100_000, S2: 5_100_000 },
+      fuelUsed: 6.3,
     }),
     makeLap({
       id: 'bob-1',
@@ -30,6 +31,7 @@ function analysisReport(extraLaps: readonly Lap[] = []) {
       lapNumber: 1,
       lapTimeUs: 11_000_000,
       sectorsUs: { S1: 5_500_000, S2: 5_500_000 },
+      fuelUsed: 7.1,
     }),
     makeLap({
       id: 'bob-2',
@@ -37,6 +39,7 @@ function analysisReport(extraLaps: readonly Lap[] = []) {
       lapNumber: 2,
       lapTimeUs: 11_200_000,
       sectorsUs: { S1: 5_600_000, S2: 5_600_000 },
+      fuelUsed: 7.3,
     }),
     ...extraLaps,
   ];
@@ -220,14 +223,30 @@ describe('M5 analysis views', () => {
     expect(within(lapSummary).getByRole('columnheader', { name: 'MAD' })).toBeInTheDocument();
   });
 
-  it('switches driver detail from the shared driver control', async () => {
+  it('renders the driver scorecard and switches drivers from the shared control', async () => {
     const user = userEvent.setup();
     render(<Drivers report={analysisReport()} />);
+
+    expect(screen.getByRole('heading', { name: 'Field profile' })).toBeInTheDocument();
+    const aliceScorecard = screen.getByLabelText('Alice scorecard metrics');
+    expect(aliceScorecard).toBeInTheDocument();
+    expect(within(aliceScorecard).queryByText(/n=/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Alice score profile radar chart' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Pace')).toBeInTheDocument();
+    expect(screen.getByText('Potential')).toBeInTheDocument();
+    expect(screen.getByText('Cleanliness')).toBeInTheDocument();
+    expect(screen.getByText('Consistency')).toBeInTheDocument();
+    expect(screen.getByText('Efficiency')).toBeInTheDocument();
+    expect(screen.queryByText('Factual observations')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Theoretical potential' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Driver' }));
     await user.click(screen.getByRole('option', { name: 'Bob' }));
 
     expect(screen.getByText('Bob pace progression')).toBeInTheDocument();
-    expect(screen.getByText(/Bob's best actual lap/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Bob scorecard metrics')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Bob score profile radar chart' })).toBeInTheDocument();
   });
 });

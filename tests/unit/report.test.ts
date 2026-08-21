@@ -4,6 +4,10 @@ import { buildAnalysisReport } from '../../src/domain/analytics/report';
 import { createDefaultScopeSelections, detectStints } from '../../src/domain/analytics/stints';
 import type { Lap, ParsedWorkbook } from '../../src/domain/model/normalized';
 import type { ScopeSelection } from '../../src/domain/model/scope';
+import {
+  buildDriverScorecards,
+  type ScorecardDriverInput,
+} from '../../src/domain/analytics/summaries';
 import { makeLap } from '../fixtures/scopeLaps';
 
 function reportLaps(): Lap[] {
@@ -79,6 +83,119 @@ function reportInput() {
     generatedAt: '2026-08-21T12:00:00.000Z',
   };
 }
+
+function scorecardDriver(
+  driver: string,
+  overrides: Partial<ScorecardDriverInput> = {},
+): ScorecardDriverInput {
+  return {
+    driver,
+    lapStats: { n: 4, medianUs: 100, madUs: 10 },
+    cleanPercentage: 80,
+    cleanLapCount: 8,
+    eligibleNonPitLapCount: 10,
+    fuelUsedMeanLiters: 7,
+    fuelUsedLapCount: 4,
+    executionGapUs: 1,
+    ...overrides,
+  };
+}
+
+describe('driver scorecard rankings', () => {
+  it('ranks each dimension independently and maps ranks to radar scores', () => {
+    const scorecards = buildDriverScorecards(
+      [
+        scorecardDriver('Alice', {
+          lapStats: { n: 4, medianUs: 100, madUs: 10 },
+          cleanPercentage: 80,
+          fuelUsedMeanLiters: 7,
+          executionGapUs: 2,
+        }),
+        scorecardDriver('Bob', {
+          lapStats: { n: 4, medianUs: 110, madUs: 10 },
+          cleanPercentage: 90,
+          fuelUsedMeanLiters: 6,
+          executionGapUs: 1,
+        }),
+        scorecardDriver('Cara', {
+          lapStats: { n: 4, medianUs: 120, madUs: 20 },
+          cleanPercentage: 80,
+          fuelUsedMeanLiters: 8,
+          executionGapUs: 3,
+        }),
+      ],
+      ['Alice', 'Bob', 'Cara'],
+    );
+
+    expect(scorecards.get('Alice')).toMatchObject({
+      pace: { rank: 1, fieldSize: 3, radarScore: 3 },
+      potential: { rank: 2, fieldSize: 3, radarScore: 2 },
+      efficiency: { rank: 2, fieldSize: 3, radarScore: 2 },
+      cleanliness: { rank: 2, fieldSize: 3, radarScore: 2 },
+      consistency: { rank: 1, fieldSize: 3, radarScore: 3 },
+    });
+    expect(scorecards.get('Bob')).toMatchObject({
+      pace: { rank: 2, fieldSize: 3, radarScore: 2 },
+      potential: { rank: 3, fieldSize: 3, radarScore: 1 },
+      efficiency: { rank: 1, fieldSize: 3, radarScore: 3 },
+      cleanliness: { rank: 1, fieldSize: 3, radarScore: 3 },
+      consistency: { rank: 1, fieldSize: 3, radarScore: 3 },
+    });
+    expect(scorecards.get('Cara')?.potential).toEqual({
+      rank: 1,
+      fieldSize: 3,
+      radarScore: 3,
+      sampleSize: 4,
+    });
+  });
+
+  it('keeps missing metrics unavailable and gives single-driver profiles a shape', () => {
+    const scorecards = buildDriverScorecards(
+      [
+        scorecardDriver('Alice', {
+          fuelUsedMeanLiters: null,
+          fuelUsedLapCount: 0,
+          executionGapUs: null,
+        }),
+        scorecardDriver('Bob', { fuelUsedMeanLiters: 6, fuelUsedLapCount: 2 }),
+        scorecardDriver('Cara', { lapStats: { n: 4, medianUs: 90, madUs: 8 } }),
+      ],
+      ['Alice', 'Bob'],
+    );
+
+    expect(scorecards.get('Alice')?.efficiency).toEqual({
+      rank: null,
+      fieldSize: 1,
+      radarScore: null,
+      sampleSize: 0,
+    });
+    expect(scorecards.get('Bob')?.efficiency).toEqual({
+      rank: 1,
+      fieldSize: 1,
+      radarScore: 2,
+      sampleSize: 2,
+    });
+    expect(scorecards.get('Alice')?.potential).toEqual({
+      rank: null,
+      fieldSize: 1,
+      radarScore: null,
+      sampleSize: 4,
+    });
+    expect(scorecards.get('Cara')?.pace).toMatchObject({
+      rank: null,
+      fieldSize: 2,
+      radarScore: null,
+    });
+
+    const soloScorecard = buildDriverScorecards([scorecardDriver('Solo')], ['Solo']).get('Solo');
+    expect(soloScorecard?.pace).toEqual({
+      rank: 1,
+      fieldSize: 1,
+      radarScore: 1,
+      sampleSize: 4,
+    });
+  });
+});
 
 describe('canonical analysis report', () => {
   it('derives the report from one fixed input and keeps the important values exact', () => {

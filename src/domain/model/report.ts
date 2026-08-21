@@ -122,6 +122,23 @@ export const sectorDriverAnalysisSchema = z
   .extend(sectorMetricFields);
 export type SectorDriverAnalysis = z.infer<typeof sectorDriverAnalysisSchema>;
 
+const scorecardMetricSchema = z.object({
+  rank: z.number().int().positive().nullable(),
+  fieldSize: z.number().int().nonnegative(),
+  radarScore: nullableFiniteNumberSchema,
+  sampleSize: z.number().int().nonnegative(),
+});
+export type ScorecardMetric = z.infer<typeof scorecardMetricSchema>;
+
+export const driverScorecardSchema = z.object({
+  pace: scorecardMetricSchema,
+  potential: scorecardMetricSchema,
+  efficiency: scorecardMetricSchema,
+  cleanliness: scorecardMetricSchema,
+  consistency: scorecardMetricSchema,
+});
+export type DriverScorecard = z.infer<typeof driverScorecardSchema>;
+
 export const driverAnalysisSchema = z.object({
   driver: z.string().min(1),
   runtimeUs: z.number().int().nonnegative(),
@@ -131,10 +148,13 @@ export const driverAnalysisSchema = z.object({
   eligibleNonPitLapCount: z.number().int().nonnegative(),
   cleanPercentage: nullableFiniteNumberSchema,
   lapStats: metricStatsSchema,
+  fuelUsedMeanLiters: nullableFiniteNumberSchema,
+  fuelUsedLapCount: z.number().int().nonnegative(),
   theoreticalBestUs: nullableFiniteNumberSchema,
   executionGapUs: nullableFiniteNumberSchema,
   sectors: z.array(driverSectorAnalysisSchema),
   observations: z.array(z.string().min(1)),
+  scorecard: driverScorecardSchema,
 });
 export type DriverAnalysis = z.infer<typeof driverAnalysisSchema>;
 
