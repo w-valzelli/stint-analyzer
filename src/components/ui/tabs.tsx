@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { Button } from './button';
 import { cn } from '../../lib/utils';
 
 type TabsContextValue = {
@@ -39,7 +40,7 @@ export function Tabs({
 
   return (
     <TabsContext.Provider value={{ value: currentValue, onValueChange: changeValue }}>
-      <div className={cn('w-full', className)} {...props}>
+      <div className={cn('calibration-tabs', className)} {...props}>
         {children}
       </div>
     </TabsContext.Provider>
@@ -47,41 +48,38 @@ export function Tabs({
 }
 
 export function TabsList({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      role="tablist"
-      className={cn(
-        'inline-flex max-w-full flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1',
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <div role="tablist" className={cn('calibration-tabs__list', className)} {...props} />;
 }
 
-export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface TabsTriggerProps extends Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'content'
+> {
   value: string;
 }
 
-export function TabsTrigger({ className, value, children, ...props }: TabsTriggerProps) {
+export function TabsTrigger({ className, value, children, onClick, ...props }: TabsTriggerProps) {
   const context = useTabsContext();
   const isSelected = context.value === value;
 
   return (
-    <button
-      type="button"
+    <Button
+      treatment="tab"
+      size="tab"
       role="tab"
       aria-selected={isSelected}
-      className={cn(
-        'rounded-md px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-white',
-        isSelected && 'bg-slate-800 text-white shadow-sm',
-        className,
-      )}
-      onClick={() => context.onValueChange(value)}
+      data-state={isSelected ? 'active' : 'inactive'}
+      className={cn('calibration-tabs__trigger', className)}
+      onClick={(event) => {
+        onClick?.(event);
+        if (!event.defaultPrevented) {
+          context.onValueChange(value);
+        }
+      }}
       {...props}
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -97,7 +95,7 @@ export function TabsContent({ className, value, children, ...props }: TabsConten
   }
 
   return (
-    <div role="tabpanel" className={cn('mt-6', className)} {...props}>
+    <div role="tabpanel" className={cn('calibration-tabs__content', className)} {...props}>
       {children}
     </div>
   );

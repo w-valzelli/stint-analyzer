@@ -2,7 +2,7 @@
 
 ## 1. Product goal
 
-Build **Garage 61 Stint Analyzer**, a browser-based motorsport analysis tool for Garage 61 session `.xlsx` exports.
+Build **Stint Analyzer**, a browser-based analysis tool for Garage 61 session `.xlsx` exports.
 
 A user drops in multiple driver/session exports and gets a comparable stint/run report answering:
 
@@ -20,7 +20,6 @@ A user drops in multiple driver/session exports and gets a comparable stint/run 
 The MVP stops before raw telemetry analysis.
 
 ---
-
 
 ## 1.1 Product boundary: accountless and ephemeral
 
@@ -41,6 +40,7 @@ user keeps, shares, uploads or discards those exports as they please
 ```
 
 Do not build:
+
 - user accounts;
 - signup/login;
 - profiles;
@@ -98,11 +98,13 @@ Requirements:
 - detect/reject unrelated spreadsheets with a useful message.
 
 Minimum viable analysis columns:
+
 - Driver
 - Lap time
 - at least one Sector column
 
 Recommended:
+
 - Lap
 - Run
 - Clean
@@ -119,29 +121,29 @@ Use a domain type similar to:
 
 ```ts
 type Lap = {
-  id: string
-  sourceFileId: string
-  sourceFileName: string
+  id: string;
+  sourceFileId: string;
+  sourceFileName: string;
 
-  driver: string
-  run: number | null
-  lapNumber: number | null
-  startedAt: string | null
+  driver: string;
+  run: number | null;
+  lapNumber: number | null;
+  startedAt: string | null;
 
-  lapTimeUs: number | null
-  sectorsUs: Record<string, number | null>
+  lapTimeUs: number | null;
+  sectorsUs: Record<string, number | null>;
 
-  clean: boolean | null
-  pitIn: boolean
-  pitOut: boolean
+  clean: boolean | null;
+  pitIn: boolean;
+  pitOut: boolean;
 
-  fuelLevel: number | null
-  fuelUsed: number | null
-  fuelAdded: number | null
+  fuelLevel: number | null;
+  fuelUsed: number | null;
+  fuelAdded: number | null;
 
-  trackTemp: number | null
-  airTemp: number | null
-}
+  trackTemp: number | null;
+  airTemp: number | null;
+};
 ```
 
 Normalize durations once. Prefer integer microseconds internally.
@@ -160,6 +162,7 @@ Do not round statistical inputs to milliseconds.
 ## 4. Full timed lap detection
 
 Garage 61 exports can contain:
+
 - lap 0 rows;
 - partial out-lap rows;
 - trailing fragments;
@@ -167,6 +170,7 @@ Garage 61 exports can contain:
 - non-time string placeholders in sector columns.
 
 A representative full timed lap should normally have:
+
 - numeric positive lap time;
 - numeric time values for all discovered sectors;
 - plausible sector sum relative to lap time.
@@ -192,7 +196,8 @@ raw_runtime = sum(full timed lap times inside selected runtime scope)
 - `Clean` does not affect runtime.
 - Pit-in/pit-out laps remain part of runtime when they are part of the selected run.
 - Partial setup/output rows outside the run do not count.
-- The exact runtime lap scope is visible and editable.
+- The selected stint set defines the runtime scope.
+- Each selected stint uses its full timed-lap range.
 
 ### Pace eligibility
 
@@ -235,6 +240,7 @@ clean_pct = numerator / denominator
 ```
 
 Always show:
+
 - numerator;
 - denominator;
 - percentage.
@@ -254,9 +260,11 @@ MVP penalty source is manual unless a future import format exposes a genuine, ex
 UI:
 
 Global:
+
 - seconds per penalty; default `1.000`
 
 Per driver:
+
 - penalty count;
 - optional direct penalty-seconds override;
 - penalty source: `none | manual | imported`
@@ -273,6 +281,7 @@ adjusted_runtime =
 ```
 
 Leaderboard:
+
 - rank ascending by adjusted runtime;
 - gap = adjusted runtime − leader adjusted runtime.
 
@@ -283,6 +292,7 @@ Show raw runtime and penalty separately.
 ## 8. Stint detection
 
 Build suggested stint groupings from:
+
 - `Run`;
 - `Pit out`;
 - `Pit in`;
@@ -292,6 +302,7 @@ Build suggested stint groupings from:
 Do not assume `Run` alone always maps perfectly to a fuel stint.
 
 Represent:
+
 - stint index;
 - out-lap;
 - representative laps;
@@ -299,7 +310,7 @@ Represent:
 - start/end lap;
 - pace-eligible count.
 
-Allow the user to correct/select scope.
+Allow the user to select any non-empty stints. The user can select all stints.
 
 ---
 
@@ -308,6 +319,7 @@ Allow the user to correct/select scope.
 Use `simple-statistics`.
 
 For each driver's eligible lap times:
+
 - count;
 - best;
 - arithmetic mean;
@@ -329,19 +341,20 @@ For every driver × sector:
 
 ```ts
 type SectorStats = {
-  n: number
-  bestUs: number | null
-  meanUs: number | null
-  medianUs: number | null
-  sdUs: number | null
-  madUs: number | null
-  iqrUs: number | null
-  rangeUs: number | null
-  pctWithin100msOfMedian: number | null
-  pctWithin200msOfMedian: number | null
-  pctWithin500msOfMedian: number | null
-  outlierCountIqr: number
-}
+  n: number;
+  bestUs: number | null;
+  worstUs: number | null;
+  meanUs: number | null;
+  medianUs: number | null;
+  sdUs: number | null;
+  madUs: number | null;
+  iqrUs: number | null;
+  rangeUs: number | null;
+  pctWithin100msOfMedian: number | null;
+  pctWithin200msOfMedian: number | null;
+  pctWithin500msOfMedian: number | null;
+  outlierCountIqr: number;
+};
 ```
 
 Also compute best-to-worst range and Q1/Q3 if useful for details.
@@ -369,6 +382,7 @@ gap_to_best_single = driver_best   − best_single
 A benchmark leader displays `0.000`.
 
 User can switch primary benchmark:
+
 - Average
 - Median
 - Best
@@ -398,6 +412,7 @@ This indicates how much demonstrated sector potential was not combined into one 
 ## 13. Consistency
 
 Required per sector:
+
 - population SD;
 - MAD;
 - IQR;
@@ -428,6 +443,7 @@ This matters because a `Clean = 1` lap can still contain a non-representative sl
 Generate deterministic observations, not AI coaching.
 
 Examples:
+
 - closest median sector to benchmark;
 - largest median deficit;
 - highest-SD sector;
@@ -446,6 +462,7 @@ Do not infer corner technique from sector XLSX data.
 ## 15. Stint progression
 
 For every selected stint:
+
 - lap index;
 - lap time;
 - delta to stint median;
@@ -459,6 +476,7 @@ Display pace progression, not claimed tyre degradation.
 ## 16. Data-quality warnings
 
 Warn when:
+
 - different selected runtime lengths;
 - different pace sample sizes;
 - `n < 3` for sector statistics;
@@ -490,19 +508,19 @@ All UI views and exports consume one derived object:
 
 ```ts
 type AnalysisReport = {
-  schemaVersion: "1.0"
-  generatedAt: string
-  configuration: AnalysisConfig
-  methodology: Methodology
-  sources: SourceSummary[]
-  warnings: AnalysisWarning[]
+  schemaVersion: '1.0';
+  generatedAt: string;
+  configuration: AnalysisConfig;
+  methodology: Methodology;
+  sources: SourceSummary[];
+  warnings: AnalysisWarning[];
 
-  leaderboard: LeaderboardRow[]
-  drivers: DriverAnalysis[]
-  sectors: SectorAnalysis[]
-  stints: StintAnalysis[]
-  lapAudit: LapAuditRow[]
-}
+  leaderboard: LeaderboardRow[];
+  drivers: DriverAnalysis[];
+  sectors: SectorAnalysis[];
+  stints: StintAnalysis[];
+  lapAudit: LapAuditRow[];
+};
 ```
 
 Never independently recalculate report values inside the XLSX or Markdown exporters.
@@ -516,9 +534,9 @@ Never independently recalculate report values inside the XLSX or Markdown export
 ```text
 Upload
   ↓
-Review detected files/scope
+Review driver scope
   ↓
-Overview | Leaderboard | Sectors | Consistency | Drivers | Audit
+Overview | Sectors | Consistency | Drivers
   ↓
 Export
 ```
@@ -526,45 +544,58 @@ Export
 One primary React application; tab navigation is internal state, not SPA routes.
 
 ### Header
-- product name;
-- `Local analysis — files stay in browser`;
-- reset;
-- export.
+
+- Stint Analyzer wordmark;
+- icon-only GitHub source link;
+- System/Light/Dark icon toggle;
+
+The source card has no reset action. Each processed file keeps one remove action. Export belongs beside the analysis views heading. Keep local processing as one factual footer statement: `All workbook data stays in your browser.`
 
 Do not show login, signup, profile, workspace, sync, save-to-cloud, or account controls.
 
 ### Upload
+
 Drag/drop multiple `.xlsx`.
 
-File cards show:
-- basename;
-- detected driver;
-- detected sectors;
-- timed laps;
-- warnings;
-- parsing state.
+File rows show:
+
+- basename and status;
+- a collapsed `File information` disclosure with Driver name, Track, and Car;
+- warnings in a separate collapsed disclosure;
+- parsing state;
+- a single-file remove action after processing.
 
 ### Scope review
-Table:
-- driver;
-- source;
-- candidate runtime scope;
-- detected stints;
-- timed laps;
-- clean pace laps.
+
+Show one source-card-styled card per imported driver.
+
+Driver cards show:
+
+- driver name;
+- lap count;
+- timed-lap count;
+- selected runtime-lap count;
+- eligible pace-lap count.
+
+Do not show source filenames or workbook row counts in driver cards. Merge stints from all files for the same driver. Keep source identity in internal audit data.
 
 Controls:
-- include driver;
-- runtime start/end;
-- stint selection;
-- clean-only vs all non-pit.
+
+- one select-like multi-stint picker per driver;
+- `All stints` as the first option;
+- only stints with at least one full timed lap;
+- one global pace mode: clean non-pit or all non-pit.
+
+Use the full timed-lap range for every selected stint. Disable the global pace control before a file is imported.
 
 ### Penalty editor
+
 - seconds per count;
 - count per driver;
 - override seconds.
 
 Explicit text:
+
 > Garage 61 `Clean` is not used as a penalty count.
 
 ---
@@ -572,6 +603,7 @@ Explicit text:
 ## 20. Overview
 
 Show:
+
 - driver count;
 - source file count;
 - selected runtime laps;
@@ -581,6 +613,7 @@ Show:
 - warning count.
 
 Include:
+
 - compact leaderboard;
 - lap pace progression chart;
 - sector leader summary.
@@ -590,6 +623,7 @@ Include:
 ## 21. Leaderboard
 
 Columns:
+
 - Pos
 - Driver
 - Raw runtime
@@ -607,8 +641,8 @@ Columns:
 ## 22. Sector screen
 
 Controls:
+
 - Benchmark: Average | Median | Best
-- Pace mode
 - Driver selection
 
 Primary matrix:
@@ -620,7 +654,8 @@ Primary matrix:
 Driver cells are signed gaps.
 
 Sector detail table:
-- Driver
+
+- Sector
 - N
 - Best
 - Mean
@@ -631,35 +666,39 @@ Sector detail table:
 - Gap
 
 Optional supporting chart:
+
 - sector time over lap index.
 
 ---
 
 ## 23. Consistency screen
 
-Metric selector:
-- SD
-- MAD
-- IQR
-- Range
+Controls:
 
-Matrix:
-- sector rows;
-- driver columns.
+- Mode: Sectors | Laps
+- Metric: SD | MAD | IQR | Range
 
-Also show:
-- most/least consistent sector;
-- mean SD;
-- mean MAD;
-- outlier count.
+Sectors mode shows:
 
-Lower is better.
+- a matrix with sector rows and driver columns;
+- a driver summary with mean variation, most/least consistent sector, and IQR outliers.
+
+Laps mode shows one summary table with:
+
+- driver;
+- sample count;
+- best lap;
+- worst lap;
+- the selected variation metric.
+
+Align numeric values to the right.
 
 ---
 
 ## 24. Driver detail
 
 Summary:
+
 - best;
 - mean;
 - median;
@@ -669,6 +708,7 @@ Summary:
 - execution gap.
 
 Sector table:
+
 - best;
 - mean;
 - median;
@@ -683,11 +723,12 @@ Lap progression chart.
 
 ---
 
-## 25. Audit
+## 25. Lap evidence
 
-Use TanStack Table.
+Do not add a dedicated audit analysis tab. Keep lap inclusion and exclusion evidence in the inline scope review and canonical report.
 
-Columns:
+Exports may include the complete lap audit with:
+
 - Driver
 - Source file
 - Run
@@ -701,8 +742,6 @@ Columns:
 - Exclusion reason
 - Fuel
 - S1 ... SN
-
-This screen is essential for trust.
 
 ---
 
@@ -743,6 +782,7 @@ Create:
 Store both exact numeric seconds and formatted values.
 
 Suggested columns:
+
 - Position
 - Driver
 - Raw Runtime Seconds
@@ -767,6 +807,7 @@ Suggested columns:
 Long format: one driver × sector per row.
 
 Columns:
+
 - Driver
 - Sector
 - N
@@ -792,6 +833,7 @@ One row per normalized lap, including source, flags and all sectors.
 ### Methodology sheet
 
 Define:
+
 - runtime scope;
 - clean %;
 - pace eligibility;
@@ -812,9 +854,11 @@ Use numeric cells for exact data and formatting only for presentation.
 Two modes:
 
 ### Summary
+
 Optimized for LLM interpretation.
 
 ### Full
+
 Adds the complete lap audit.
 
 Use deterministic ordering and exact section names.
@@ -823,27 +867,38 @@ Required structure:
 
 ```markdown
 ---
-schema_version: "1.0"
-report_type: "garage61-stint-analysis"
-generated_at: "..."
-pace_mode: "clean-non-pit"
-benchmark_default: "median"
+schema_version: '1.0'
+report_type: 'garage61-stint-analysis'
+generated_at: '...'
+pace_mode: 'clean-non-pit'
+benchmark_default: 'median'
 penalty_seconds_per_count: 1
 ---
 
 # Garage 61 Stint Analysis
 
 ## Analysis scope
+
 ## Data quality and warnings
+
 ## Leaderboard
+
 ## Driver overview
+
 ## Sector benchmark — median
+
 ## Sector benchmark — average
+
 ## Best sectors and theoretical laps
+
 ## Sector consistency
+
 ## Stint progression summary
+
 ## Driver detail
+
 ## Methodology
+
 ## Machine-readable compact data
 ```
 
@@ -856,6 +911,7 @@ In Full mode add:
 ### LLM-friendly compact data
 
 At the bottom of Summary mode, embed a JSON code block containing:
+
 - exact leaderboard seconds;
 - exact lap stats;
 - per-driver/sector best, mean, median, SD, MAD and gaps;
@@ -873,6 +929,7 @@ Reason: an LLM gets readable Markdown plus exact typed numbers without needing t
 Schema-versioned exact report.
 
 Rules:
+
 - snake_case or consistently documented property naming;
 - durations in numeric seconds;
 - `null`, never NaN/Infinity;
@@ -916,6 +973,7 @@ After reset, refresh, tab close or browser close, imported data and analysis may
 Do not automatically store source workbooks or normalized analysis in IndexedDB/localStorage.
 
 LocalStorage may be used only for harmless UI preferences such as:
+
 - theme;
 - default benchmark;
 - table density;
@@ -927,6 +985,7 @@ Exports are the intended persistence layer.
 ## 31. Export validation
 
 Before any export:
+
 - no non-finite numbers;
 - all leaderboard drivers exist in driver analysis;
 - sector layouts agree;

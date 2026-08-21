@@ -1,6 +1,6 @@
 # Third-party notices
 
-Garage 61 Stint Analyzer uses open-source packages. Their licenses apply to the
+Stint Analyzer uses open-source packages. Their licenses apply to the
 corresponding package code and remain available in `node_modules` and the
 package registry metadata.
 

@@ -10,11 +10,43 @@ import '../styles/global.css';
     <meta name="viewport" content="width=device-width" />
     <meta
       name="description"
-      content="Analyze Garage 61 stint exports locally in your browser without an account or backend."
+      content="Stint Analyzer reviews Garage 61 stint exports locally in your browser."
     />
-    <title>Garage 61 Stint Analyzer</title>
+    <title>Stint Analyzer</title>
+    <script is:inline>
+      (() => {
+        const storageKey = 'stint-analyzer-theme';
+        let preference = 'system';
+
+        try {
+          const stored = window.localStorage.getItem(storageKey);
+          if (stored === 'light' || stored === 'dark' || stored === 'system') {
+            preference = stored;
+          }
+        } catch {
+          // Storage can be unavailable in private or restricted browser contexts.
+        }
+
+        const followsDark =
+          typeof window.matchMedia === 'function' &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme =
+          preference === 'dark' || (preference === 'system' && followsDark) ? 'dark' : 'light';
+
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
   </head>
   <body>
+    <!--
+    THESIS: Make source review and lap evidence direct instead of decorative.
+    OWN-WORLD: Mineral paper, graphite ink, cobalt marks, ruled data, paper texture, and useful state icons form a working record.
+    STORY: The visitor adds Garage 61 files, reviews source facts, and moves into analysis views.
+    FIRST VIEWPORT: A direct Stint Analyzer wordmark leads to the source card, readouts, import rows, and detected-lap table; theme control stays in the header.
+    FORM: Matter-of-fact Working Record, extension of Calibration Ledger direction, seed key 7c2a91e4.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
     <AnalyzerShell client:load />
   </body>
 </html>

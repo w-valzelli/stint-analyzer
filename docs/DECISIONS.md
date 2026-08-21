@@ -79,3 +79,117 @@ Implement small shadcn-style primitives in `src/components/ui` instead of runnin
 ### Consequences
 
 The shell has the required UI foundation without adding a generator, unused components, or a second UI framework.
+
+## 2026-08-21 — Normalize durations as integer microseconds
+
+Status: Accepted
+
+### Context
+
+Garage 61 XLSX exports store durations as Excel day fractions, while statistics need stable precision.
+
+### Decision
+
+Convert day fractions and supported duration strings to integer microseconds at the parser boundary. Preserve exact numeric values until a view or export formats them.
+
+### Consequences
+
+The domain layer avoids repeated conversion and millisecond rounding. Export formatters can convert microseconds to numeric seconds later.
+
+## 2026-08-21 — Treat sector-sum mismatch as an informational warning
+
+Status: Accepted
+
+### Context
+
+Garage 61 sector totals can differ from lap time because of export and timing details. The MVP does not yet have enough real fixtures to choose a safe rejection rule.
+
+### Decision
+
+Keep rows with a positive lap time and positive values for every discovered sector. Add an informational warning when the absolute sector-sum difference exceeds 0.250 seconds. Do not reject the row for this mismatch.
+
+### Consequences
+
+Users can inspect questionable rows without losing exploratory data. Later fixtures can refine the tolerance without changing the normalized model.
+
+## 2026-08-21 — Use Stint Analyzer as the site identity
+
+Status: Accepted
+
+### Context
+
+Garage 61 is the source workbook format. It is not the name of the analysis site.
+
+### Decision
+
+Use `Stint Analyzer` in the site wordmark, metadata, accessible labels, footer, and product documents. Keep `Garage 61` only when identifying supported source exports and parsing rules.
+
+### Consequences
+
+The site separates its identity from the input format. Internal parser names may continue to use Garage 61 where they describe source compatibility.
+
+## 2026-08-21 — Keep theme preference local and minimal
+
+Status: Accepted
+
+### Context
+
+Users need a dark working surface without persisting private analysis data.
+
+### Decision
+
+Default to the system theme. Cycle one icon button through System, Light, and Dark. Store only the selected preference under `stint-analyzer-theme`.
+
+### Consequences
+
+Theme choice survives reload without storing workbooks, filenames, laps, reports, penalties, or session history.
+
+## 2026-08-21 — Keep functional material and icons
+
+Status: Accepted
+
+### Context
+
+The source card texture and analysis-panel color marks establish the visual system. Some icons explain state or action.
+
+### Decision
+
+Keep the paper texture, short analysis-panel stripes, and meaningful icons. Remove only useless text, identifiers, repeated privacy copy, and icons without a task meaning.
+
+### Consequences
+
+The interface stays matter-of-fact while preserving a recognizable working surface.
+
+## 2026-08-21 — Use driver-level multi-stint scope selection
+
+Status: Accepted
+
+### Context
+
+Users compare imported drivers. They do not need workbook row details or repeated source cards during scope review.
+
+### Decision
+
+Group the review UI by driver. Detect stints within each source and driver partition, then merge those stints into one driver card. Include every imported driver automatically. Use one shared select-like control for single and multi-stint selection. The multi-stint control includes an `All stints` option. Close controls on outside click and after a single selection. Omit candidates with zero full timed laps. Apply one global pace mode to every driver. Use the full timed-lap range for each selected stint.
+
+Keep source file IDs and row numbers in internal domain data. Do not show them in the driver scope card.
+
+### Consequences
+
+The scope model supports one driver across multiple files without crossing source-local stint boundaries. Runtime and pace counts aggregate selected stints. The UI stays focused on driver comparison and lap evidence. Audit cells show concise status colors and reveal friendly exclusion reasons on hover or click.
+
+## 2026-08-21 — Use runtime-only standings with useful lap facts
+
+Status: Accepted
+
+### Context
+
+The original Milestone 4 plan proposed manual penalty inputs and penalty-adjusted runtime. The product decision is to show facts from the workbook without adding manual controls or inferring penalties.
+
+### Decision
+
+Rank the leaderboard by selected runtime only. Calculate gaps from the runtime leader. Show clean laps as a fraction, clean percentage, best pace lap, and median pace lap. Use selected full timed non-pit laps for the fraction denominator. Use the selected pace sample for best and median pace values. Do not infer penalties or penalty seconds from `Clean`.
+
+### Consequences
+
+The leaderboard stays read-only and uses one runtime measure. Clean status can explain lap quality without changing runtime or ranking. The original penalty seconds, override, and adjusted-runtime requirements are superseded for this milestone.

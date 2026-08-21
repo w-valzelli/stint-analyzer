@@ -1,0 +1,252 @@
+import { cleanup, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { Consistency } from '../../src/features/consistency/Consistency';
+import { Drivers } from '../../src/features/drivers/Drivers';
+import { Overview } from '../../src/features/overview/Overview';
+import { pointsForReport } from '../../src/features/analysis/ProgressionChart';
+import { pointsForReport as sectorPointsForReport } from '../../src/features/analysis/SectorProgressionChart';
+import { Sectors } from '../../src/features/sectors/Sectors';
+import { useAnalysisViewStore } from '../../src/state/analysis-view';
+import { buildAnalysisReport } from '../../src/domain/analytics/report';
+import { createDefaultScopeSelections } from '../../src/domain/analytics/stints';
+import type { Lap, ParsedWorkbook } from '../../src/domain/model/normalized';
+import { makeLap } from '../fixtures/scopeLaps';
+
+function analysisReport(extraLaps: readonly Lap[] = []) {
+  const laps: Lap[] = [
+    makeLap({ id: 'alice-1', driver: 'Alice', lapNumber: 1, fuelUsed: 6.1 }),
+    makeLap({
+      id: 'alice-2',
+      driver: 'Alice',
+      lapNumber: 2,
+      lapTimeUs: 10_200_000,
+      sectorsUs: { S1: 5_100_000, S2: 5_100_000 },
+      fuelUsed: 6.3,
+    }),
+    makeLap({
+      id: 'bob-1',
+      driver: 'Bob',
+      lapNumber: 1,
+      lapTimeUs: 11_000_000,
+      sectorsUs: { S1: 5_500_000, S2: 5_500_000 },
+      fuelUsed: 7.1,
+    }),
+    makeLap({
+      id: 'bob-2',
+      driver: 'Bob',
+      lapNumber: 2,
+      lapTimeUs: 11_200_000,
+      sectorsUs: { S1: 5_600_000, S2: 5_600_000 },
+      fuelUsed: 7.3,
+    }),
+    ...extraLaps,
+  ];
+  const workbook: ParsedWorkbook = {
+    source: {
+      id: 'a'.repeat(64),
+      name: 'session.xlsx',
+      hash: 'a'.repeat(64),
+      sheetName: 'Session - Practice',
+      driverName: 'Alice, Bob',
+      trackName: 'Synthetic Ring',
+      carName: 'Prototype X',
+      driverNames: ['Alice', 'Bob'],
+      sectorNames: ['S1', 'S2'],
+      timedLapCount: laps.length,
+      fullTimedLapCount: laps.length,
+      partialLapCount: 0,
+      warningCount: 0,
+    },
+    laps,
+    warnings: [],
+  };
+
+  return buildAnalysisReport({
+    workbooks: [workbook],
+    selections: createDefaultScopeSelections(laps),
+    paceMode: 'clean-non-pit',
+    generatedAt: '2026-08-21T12:00:00.000Z',
+  });
+}
+
+describe('M5 analysis views', () => {
+  afterEach(cleanup);
+
+  beforeEach(() => {
+    useAnalysisViewStore.getState().setSectorBenchmark('median');
+    useAnalysisViewStore.getState().setConsistencyMetric('sd');
+    useAnalysisViewStore.getState().setConsistencyMode('sectors');
+    useAnalysisViewStore.getState().setSelectedDriver(null);
+  });
+
+  it('shows the full run register and multi-driver pace progression', async () => {
+    const user = userEvent.setup();
+    render(<Overview report={analysisReport()} />);
+
+    expect(screen.getByText('Leaderboard')).toBeInTheDocument();
+    expect(screen.getByText('Pace progression')).toBeInTheDocument();
+    expect(screen.getByRole('table', { name: 'Leaderboard' })).toBeInTheDocument();
+    expect(screen.getByTitle('Fastest best pace')).toBeInTheDocument();
+    expect(screen.getByTitle('Fastest median pace')).toBeInTheDocument();
+    expect(screen.queryByText('Data quality')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sector leaders')).not.toBeInTheDocument();
+
+    const drivers = screen.getByRole('button', { name: 'Drivers' });
+    await user.click(drivers);
+    await user.click(screen.getByRole('option', { name: 'Bob' }));
+
+    expect(drivers).toHaveTextContent('Alice');
+  });
+
+  it('aligns completed laps and marks dirty and pit laps in progression data', () => {
+    const report = analysisReport([
+      makeLap({ id: 'alice-3', rowNumber: 3, lapNumber: 3, clean: false, pitIn: true }),
+      makeLap({ id: 'alice-4', rowNumber: 4, lapNumber: 3, clean: false }),
+      makeLap({
+        id: 'bob-3',
+        rowNumber: 3,
+        driver: 'Bob',
+        lapNumber: 3,
+        clean: false,
+      }),
+    ]);
+    const lapThreePoints = pointsForReport(report, ['Alice', 'Bob']).filter(
+      (point) => point.lapNumber === 3,
+    );
+
+    expect(lapThreePoints).toHaveLength(2);
+    expect(lapThreePoints[0]).toMatchObject({
+      lapKey: '3:0',
+      Alice: null,
+      Bob: 10_000_000,
+      Alice__dirty: null,
+      Bob__dirty: 10_000_000,
+    });
+    expect(lapThreePoints[1]).toMatchObject({
+      lapKey: '3:1',
+      Alice: 10_000_000,
+      Bob: null,
+      Alice__dirty: 10_000_000,
+      Bob__dirty: null,
+    });
+  });
+
+  it('preserves sector progression gaps, dirty markers, duplicate laps, and filtering', () => {
+    const report = analysisReport([
+      makeLap({ id: 'alice-3', rowNumber: 3, lapNumber: 3, clean: false, pitIn: true }),
+      makeLap({
+        id: 'alice-4',
+        rowNumber: 4,
+        lapNumber: 3,
+        clean: false,
+        sectorsUs: { S1: 5_200_000, S2: 4_800_000 },
+      }),
+    ]);
+    const points = sectorPointsForReport(report, 'Alice', ['S1', 'S2']);
+    const filteredPoints = sectorPointsForReport(report, 'Alice', ['S1']);
+
+    expect(points).toHaveLength(4);
+    expect(points.filter((point) => point.lapNumber === 3)).toHaveLength(2);
+    expect(points[2]).toMatchObject({
+      lapKey: '3:0',
+      S1: null,
+      S2: null,
+      S1__dirty: null,
+      S2__dirty: null,
+    });
+    expect(points[3]).toMatchObject({
+      lapKey: '3:1',
+      S1: 150_000,
+      S2: -250_000,
+      S1__dirty: 150_000,
+      S2__dirty: -250_000,
+    });
+    expect(filteredPoints[3]).not.toHaveProperty('S2');
+  });
+
+  it('switches sector benchmarks, consistency modes, and metrics', async () => {
+    const user = userEvent.setup();
+    const report = analysisReport();
+    render(
+      <>
+        <Sectors report={report} />
+        <Consistency report={report} />
+      </>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Benchmark' }));
+    await user.click(screen.getByRole('option', { name: 'Average' }));
+    await user.click(screen.getByRole('button', { name: 'Metric' }));
+    await user.click(screen.getByRole('option', { name: 'MAD' }));
+    const sectors = screen.getByRole('button', { name: 'Sectors' });
+    await user.click(sectors);
+    await user.click(screen.getByRole('option', { name: 'S1' }));
+
+    expect(screen.getByText('Fastest Average')).toBeInTheDocument();
+    expect(sectors).toHaveTextContent('S2');
+    expect(screen.getByText('Sector progression')).toBeInTheDocument();
+    expect(screen.queryByText(/Pace mode/i)).not.toBeInTheDocument();
+    const sectorDetail = screen.getByRole('table', { name: 'Sector detail table' });
+    expect(
+      within(sectorDetail).queryByRole('columnheader', { name: 'Driver' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(/selected MAD across drivers/i)).toBeInTheDocument();
+
+    const consistencyMatrix = screen.getByRole('table', { name: 'Consistency matrix' });
+    const matrixHeaders = within(consistencyMatrix).getAllByRole('columnheader');
+    expect(matrixHeaders[0]).toHaveClass('analysis-table__label');
+    expect(
+      matrixHeaders.slice(1).every((header) => header.classList.contains('analysis-table__value')),
+    ).toBe(true);
+
+    const driverSummary = screen.getByRole('table', { name: 'Driver consistency summary' });
+    expect(within(driverSummary).getByRole('columnheader', { name: 'Mean MAD' })).toHaveClass(
+      'analysis-table__value',
+    );
+    expect(screen.queryByText(/repeatable sectors/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Mode' }));
+    await user.click(screen.getByRole('option', { name: 'Laps' }));
+
+    expect(screen.queryByRole('table', { name: 'Consistency matrix' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('table', { name: 'Driver consistency summary' }),
+    ).not.toBeInTheDocument();
+    const lapSummary = screen.getByRole('table', { name: 'Lap consistency summary' });
+    expect(within(lapSummary).getByRole('columnheader', { name: 'N' })).toHaveClass(
+      'analysis-table__value',
+    );
+    expect(within(lapSummary).getByRole('columnheader', { name: 'Best lap' })).toBeInTheDocument();
+    expect(within(lapSummary).getByRole('columnheader', { name: 'Worst lap' })).toBeInTheDocument();
+    expect(within(lapSummary).getByRole('columnheader', { name: 'MAD' })).toBeInTheDocument();
+  });
+
+  it('renders the driver scorecard and switches drivers from the shared control', async () => {
+    const user = userEvent.setup();
+    render(<Drivers report={analysisReport()} />);
+
+    expect(screen.getByRole('heading', { name: 'Field profile' })).toBeInTheDocument();
+    const aliceScorecard = screen.getByLabelText('Alice scorecard metrics');
+    expect(aliceScorecard).toBeInTheDocument();
+    expect(within(aliceScorecard).queryByText(/n=/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('img', { name: 'Alice score profile radar chart' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Pace')).toBeInTheDocument();
+    expect(screen.getByText('Potential')).toBeInTheDocument();
+    expect(screen.getByText('Cleanliness')).toBeInTheDocument();
+    expect(screen.getByText('Consistency')).toBeInTheDocument();
+    expect(screen.getByText('Efficiency')).toBeInTheDocument();
+    expect(screen.queryByText('Factual observations')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Theoretical potential' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Driver' }));
+    await user.click(screen.getByRole('option', { name: 'Bob' }));
+
+    expect(screen.getByText('Bob pace progression')).toBeInTheDocument();
+    expect(screen.getByLabelText('Bob scorecard metrics')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Bob score profile radar chart' })).toBeInTheDocument();
+  });
+});

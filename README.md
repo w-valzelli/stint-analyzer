@@ -1,10 +1,13 @@
-# Garage 61 Stint Analyzer
+# Stint Analyzer
 
-A privacy-first static Astro and React application for local Garage 61 stint analysis.
+An entirely vibe-coded static Astro and React application for local analysis of Garage 61 stint exports.
+This is a personal experiment, not a production-ready application.
 
 ## Status
 
-Milestone 0 provides the static application shell. XLSX import and analysis arrive in later milestones.
+Milestone 5 provides local import, scope review, canonical report calculations, and the main report-driven analysis UI.
+
+The app detects the Garage 61 session sheet, discovers sectors, preserves source fields, identifies duplicate file bytes, and checks track consistency across imports. Scope review hides incomplete laps from analysis while keeping inline lap evidence available. The analysis views now include an overview, runtime leaderboard, sector benchmarks and progression, consistency metrics, and driver detail. Every displayed analysis fact comes from the canonical report. Exports remain planned for Milestone 6.
 
 ## Development
 
@@ -15,8 +18,8 @@ pnpm dev
 
 The local site uses `/stint-analyzer/` as its default base path. Set `BASE_PATH=/` for root hosting.
 
-## Privacy
+## Local processing
 
 Analysis runs in the browser. The application does not upload workbooks or store analysis data remotely.
 
-No account. No upload. Analyze locally and export when done.
+All workbook data stays in your browser.

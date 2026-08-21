@@ -3,6 +3,7 @@
 ## Milestone 0 — Bootstrap
 
 ### Tasks
+
 - Initialize Astro TypeScript project.
 - Add React integration.
 - Configure Tailwind.
@@ -11,13 +12,14 @@
 - Configure pnpm.
 - Configure ESLint and Prettier.
 - Configure Vitest and Playwright.
-- Add static app shell and privacy copy.
-- Add explicit product copy: `No account. No upload. Analyze locally and export when done.`
+- Add static Stint Analyzer shell and one factual local-processing footer statement.
+- Add source-format copy that identifies Garage 61 workbook exports without using Garage 61 as the site brand.
 - Add GitHub Pages deploy workflow.
 - Add `THIRD_PARTY_NOTICES.md`.
 - Add `docs/DECISIONS.md`.
 
 ### Acceptance
+
 - `pnpm dev` works.
 - `pnpm build` emits static site.
 - build works under a non-root base path.
@@ -29,11 +31,13 @@
 ## Milestone 1 — XLSX import and normalization
 
 ### Packages
+
 - `react-dropzone`
 - `read-excel-file`
 - `zod`
 
 ### Tasks
+
 1. Build drag/drop input.
 2. Read workbook sheets.
 3. Detect `Session - Practice` or fallback by headers.
@@ -48,6 +52,7 @@
 12. Add synthetic fixture(s).
 
 ### Acceptance
+
 - multiple files parse;
 - drivers detected;
 - sectors detected;
@@ -61,19 +66,29 @@
 ## Milestone 2 — Scope, stints and eligibility
 
 ### Tasks
-- implement runtime scope;
-- implement pace scope;
-- candidate stint detection;
-- scope review screen;
-- per-driver inclusion;
-- start/end lap selection;
-- clean non-pit / all non-pit switch;
-- audit exclusion reasons.
+
+- implement runtime scope from selected stints;
+- implement one global pace scope modifier;
+- detect candidates within each source and driver partition;
+- merge candidates into one driver scope;
+- omit zero-timed stints from selection;
+- build source-card-styled driver cards;
+- add select-like multi-stint controls with `All stints`;
+- expose lap counts instead of workbook row counts;
+- expose user-facing audit reasons.
 
 ### Acceptance
+
+- every imported driver is included automatically;
+- the same driver across files has one scope card;
+- any non-empty stint subset can be selected;
+- selecting `All stints` selects every available stint;
+- selected stints use their full timed-lap ranges;
+- the global pace mode applies to every driver;
+- the pace control is disabled before import;
 - pit lap can count in runtime;
 - pit lap is excluded from pace;
-- unclean lap excluded only from default pace;
+- unclean lap is excluded only from default pace;
 - `Clean` never changes penalty count;
 - every lap has an explicit inclusion/exclusion state.
 
@@ -82,9 +97,11 @@
 ## Milestone 3 — Analytics engine
 
 ### Package
+
 - `simple-statistics`
 
 ### Pure domain functions
+
 - runtime sum;
 - best/mean/median lap;
 - population SD;
@@ -101,39 +118,46 @@
 - data-quality warnings.
 
 ### Canonical report
+
 Build `AnalysisReport` and ensure it is the only derived-data source for UI/export.
 
 ### Acceptance
+
 - no React imports in domain;
 - hand-checkable unit tests;
 - deterministic report from same input/config.
 
 ---
 
-## Milestone 4 — Penalties and leaderboard
+## Milestone 4 — Runtime leaderboard facts
+
+The approved product amendment supersedes the original penalty-adjustment proposal for this milestone. M4 remains read-only and does not add penalty inputs or adjusted runtime.
 
 ### Tasks
-- global `secondsPerPenalty`, default 1;
-- manual count per driver;
-- optional direct seconds override;
-- penalty source;
-- adjusted runtime;
-- sorting and gaps;
-- penalty editor;
-- leaderboard screen.
+
+- show clean laps as a fraction and clean percentage;
+- derive the best pace lap and median pace lap from the selected pace scope;
+- sort by selected runtime and calculate deterministic gaps;
+- add position, gap, and lap facts to the canonical leaderboard rows;
+- build the read-only leaderboard screen.
 
 ### Acceptance
-- raw, penalty and adjusted are separate;
-- `adjusted = raw + penalty`;
+
+- runtime remains the only ranking measure;
+- unclean laps remain part of runtime when they are full timed and selected;
+- best and median pace values use the selected `clean-non-pit` or `all-non-pit` pace sample;
+- clean-lap fractions use selected full timed non-pit laps as the denominator;
 - leader gap = 0;
-- no penalty inference from Clean;
-- changing penalties immediately updates position/gap.
+- changing only Clean flags does not change runtime, position, or gap;
+- ties use deterministic driver-name ordering;
+- no manual penalty input or adjusted runtime appears in M4.
 
 ---
 
 ## Milestone 5 — Main analysis UI
 
 ### Packages
+
 - `@tanstack/react-table`
 - `recharts`
 - `zustand`
@@ -142,6 +166,7 @@ Build `AnalysisReport` and ensure it is the only derived-data source for UI/expo
 ### Screens
 
 #### Overview
+
 - counts;
 - fastest best/median;
 - warning summary;
@@ -149,9 +174,11 @@ Build `AnalysisReport` and ensure it is the only derived-data source for UI/expo
 - lap progression.
 
 #### Leaderboard
+
 Full table.
 
 #### Sectors
+
 - benchmark selector: Average / Median / Best;
 - wide driver gap matrix;
 - detail table;
@@ -159,11 +186,15 @@ Full table.
 - sector progression chart.
 
 #### Consistency
+
+- Mode selector for Sectors or Laps;
 - SD/MAD/IQR/Range selector;
-- matrix;
-- driver summary.
+- sector matrix and driver summary in Sectors mode;
+- one lap summary with sample count, best, worst, and selected variation in Laps mode;
+- consistent column alignment with right-aligned numeric values.
 
 #### Drivers
+
 - driver selector;
 - summary metrics;
 - sector detail;
@@ -171,12 +202,8 @@ Full table.
 - theoretical vs actual;
 - lap progression.
 
-#### Audit
-- sortable/filterable normalized rows;
-- source basename;
-- inclusion flags and reasons.
-
 ### Acceptance
+
 - every displayed derived number exists in `AnalysisReport`;
 - benchmark switching does not secretly change lap sample;
 - tables remain usable on narrow screens.
@@ -186,22 +213,28 @@ Full table.
 ## Milestone 6 — Exports
 
 ### Package
+
 - `write-excel-file`
 
 ### Markdown
+
 Implement:
+
 - Summary;
 - Full.
 
 Include YAML metadata and compact exact JSON block in Summary.
 
 ### JSON
+
 Versioned report serialization.
 
 ### Excel
+
 Generate required sheets from `01_PRODUCT_DATA_EXPORT_SPEC.md`.
 
 ### Acceptance
+
 - all exports download;
 - data matches UI;
 - Markdown is self-contained;
@@ -214,6 +247,7 @@ Generate required sheets from `01_PRODUCT_DATA_EXPORT_SPEC.md`.
 ## Milestone 7 — Golden regression fixtures
 
 Create a synthetic Garage 61-style fixture representing:
+
 - 3 drivers;
 - 2 stints;
 - 7 sectors;
@@ -228,6 +262,7 @@ Create a synthetic Garage 61-style fixture representing:
 Keep real private session files out of the repo.
 
 Add golden expected values for:
+
 - runtime;
 - clean %;
 - penalty;
@@ -242,6 +277,7 @@ Add golden expected values for:
 ## Milestone 8 — GitHub Pages hardening
 
 ### Tasks
+
 - test under `/garage61-analyzer/`;
 - verify workers/assets;
 - verify static routes;
@@ -256,6 +292,7 @@ Add golden expected values for:
 - no production console data dumping.
 
 ### Acceptance
+
 Live Pages deployment behaves like local production preview.
 
 ---
@@ -263,6 +300,7 @@ Live Pages deployment behaves like local production preview.
 ## Milestone 9 — Release
 
 Create/update:
+
 - README;
 - screenshots;
 - methodology page;
@@ -306,33 +344,43 @@ Run current shadcn Astro-compatible initialization after React + Tailwind work.
 # Implementation details the agent should not improvise incorrectly
 
 ## Runtime
+
 Do not sum only clean laps.
 
 ## Penalties
+
 Do not map `Clean = 0` to a penalty.
 
 ## Pace sample
+
 Default is clean + non-pit + full timed.
 
 ## Standard deviation
+
 Use population SD for the selected run population.
 
 ## Outliers
+
 Flag; do not silently remove.
 
 ## Sectors
+
 Discover dynamically.
 
 ## Report
+
 Compute once, reuse everywhere.
 
 ## Routing
+
 Use in-app tabs, not arbitrary SPA deep routes.
 
 ## Privacy
+
 No network upload.
 
 ## AI
+
 Export to LLM; do not embed private hosted-model API keys.
 
 ---
@@ -349,16 +397,20 @@ Export to LLM; do not embed private hosted-model API keys.
 Status: Accepted
 
 ### Context
+
 ...
 
 ### Decision
+
 ...
 
 ### Consequences
+
 ...
 ```
 
 Record:
+
 - package substitutions;
 - parser behavior needed for real files;
 - duration representation;
@@ -370,6 +422,7 @@ Record:
 # Nice-to-have after MVP
 
 Only after all acceptance tests:
+
 - import exported analysis JSON;
 - named sector labels;
 - track-specific metadata;

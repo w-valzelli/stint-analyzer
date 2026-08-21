@@ -1,0 +1,376 @@
+import { describe, expect, it } from 'vitest';
+
+import { buildAnalysisReport } from '../../src/domain/analytics/report';
+import { createDefaultScopeSelections, detectStints } from '../../src/domain/analytics/stints';
+import type { Lap, ParsedWorkbook } from '../../src/domain/model/normalized';
+import type { ScopeSelection } from '../../src/domain/model/scope';
+import {
+  buildDriverScorecards,
+  type ScorecardDriverInput,
+} from '../../src/domain/analytics/summaries';
+import { makeLap } from '../fixtures/scopeLaps';
+
+function reportLaps(): Lap[] {
+  return [
+    makeLap({
+      id: 'alice-1',
+      rowNumber: 1,
+      driver: 'Alice',
+      lapNumber: 1,
+      lapTimeUs: 10_000_000,
+      sectorsUs: { S1: 4_000_000, S2: 6_000_000 },
+    }),
+    makeLap({
+      id: 'alice-2',
+      rowNumber: 2,
+      driver: 'Alice',
+      lapNumber: 2,
+      lapTimeUs: 11_000_000,
+      sectorsUs: { S1: 5_000_000, S2: 6_000_000 },
+      clean: false,
+      pitIn: true,
+    }),
+    makeLap({
+      id: 'bob-1',
+      rowNumber: 3,
+      driver: 'Bob',
+      lapNumber: 1,
+      lapTimeUs: 9_000_000,
+      sectorsUs: { S1: 4_000_000, S2: 5_000_000 },
+    }),
+    makeLap({
+      id: 'bob-2',
+      rowNumber: 4,
+      driver: 'Bob',
+      lapNumber: 2,
+      lapTimeUs: 9_500_000,
+      sectorsUs: { S1: 4_000_000, S2: 5_500_000 },
+    }),
+  ];
+}
+
+function parsedWorkbook(laps: readonly Lap[]): ParsedWorkbook {
+  return {
+    source: {
+      id: 'source-a',
+      name: 'session-a.xlsx',
+      hash: 'a'.repeat(64),
+      sheetName: 'Session - Practice',
+      driverName: 'Alice, Bob',
+      trackName: 'Test Track',
+      carName: 'Test Car',
+      driverNames: ['Alice', 'Bob'],
+      sectorNames: ['S1', 'S2'],
+      timedLapCount: laps.filter((lap) => lap.lapTimeUs !== null).length,
+      fullTimedLapCount: laps.filter((lap) => lap.isFullTimedLap).length,
+      partialLapCount: laps.filter((lap) => !lap.isFullTimedLap).length,
+      warningCount: 0,
+    },
+    laps: [...laps],
+    warnings: [],
+  };
+}
+
+function reportInput() {
+  const laps = reportLaps();
+  const workbooks = [parsedWorkbook(laps)];
+  const selections: ScopeSelection[] = createDefaultScopeSelections(laps);
+
+  return {
+    workbooks,
+    selections,
+    paceMode: 'clean-non-pit' as const,
+    generatedAt: '2026-08-21T12:00:00.000Z',
+  };
+}
+
+function scorecardDriver(
+  driver: string,
+  overrides: Partial<ScorecardDriverInput> = {},
+): ScorecardDriverInput {
+  return {
+    driver,
+    lapStats: { n: 4, medianUs: 100, madUs: 10 },
+    cleanPercentage: 80,
+    cleanLapCount: 8,
+    eligibleNonPitLapCount: 10,
+    fuelUsedMeanLiters: 7,
+    fuelUsedLapCount: 4,
+    executionGapUs: 1,
+    ...overrides,
+  };
+}
+
+describe('driver scorecard rankings', () => {
+  it('ranks each dimension independently and maps ranks to radar scores', () => {
+    const scorecards = buildDriverScorecards(
+      [
+        scorecardDriver('Alice', {
+          lapStats: { n: 4, medianUs: 100, madUs: 10 },
+          cleanPercentage: 80,
+          fuelUsedMeanLiters: 7,
+          executionGapUs: 2,
+        }),
+        scorecardDriver('Bob', {
+          lapStats: { n: 4, medianUs: 110, madUs: 10 },
+          cleanPercentage: 90,
+          fuelUsedMeanLiters: 6,
+          executionGapUs: 1,
+        }),
+        scorecardDriver('Cara', {
+          lapStats: { n: 4, medianUs: 120, madUs: 20 },
+          cleanPercentage: 80,
+          fuelUsedMeanLiters: 8,
+          executionGapUs: 3,
+        }),
+      ],
+      ['Alice', 'Bob', 'Cara'],
+    );
+
+    expect(scorecards.get('Alice')).toMatchObject({
+      pace: { rank: 1, fieldSize: 3, radarScore: 3 },
+      potential: { rank: 2, fieldSize: 3, radarScore: 2 },
+      efficiency: { rank: 2, fieldSize: 3, radarScore: 2 },
+      cleanliness: { rank: 2, fieldSize: 3, radarScore: 2 },
+      consistency: { rank: 1, fieldSize: 3, radarScore: 3 },
+    });
+    expect(scorecards.get('Bob')).toMatchObject({
+      pace: { rank: 2, fieldSize: 3, radarScore: 2 },
+      potential: { rank: 3, fieldSize: 3, radarScore: 1 },
+      efficiency: { rank: 1, fieldSize: 3, radarScore: 3 },
+      cleanliness: { rank: 1, fieldSize: 3, radarScore: 3 },
+      consistency: { rank: 1, fieldSize: 3, radarScore: 3 },
+    });
+    expect(scorecards.get('Cara')?.potential).toEqual({
+      rank: 1,
+      fieldSize: 3,
+      radarScore: 3,
+      sampleSize: 4,
+    });
+  });
+
+  it('keeps missing metrics unavailable and gives single-driver profiles a shape', () => {
+    const scorecards = buildDriverScorecards(
+      [
+        scorecardDriver('Alice', {
+          fuelUsedMeanLiters: null,
+          fuelUsedLapCount: 0,
+          executionGapUs: null,
+        }),
+        scorecardDriver('Bob', { fuelUsedMeanLiters: 6, fuelUsedLapCount: 2 }),
+        scorecardDriver('Cara', { lapStats: { n: 4, medianUs: 90, madUs: 8 } }),
+      ],
+      ['Alice', 'Bob'],
+    );
+
+    expect(scorecards.get('Alice')?.efficiency).toEqual({
+      rank: null,
+      fieldSize: 1,
+      radarScore: null,
+      sampleSize: 0,
+    });
+    expect(scorecards.get('Bob')?.efficiency).toEqual({
+      rank: 1,
+      fieldSize: 1,
+      radarScore: 2,
+      sampleSize: 2,
+    });
+    expect(scorecards.get('Alice')?.potential).toEqual({
+      rank: null,
+      fieldSize: 1,
+      radarScore: null,
+      sampleSize: 4,
+    });
+    expect(scorecards.get('Cara')?.pace).toMatchObject({
+      rank: null,
+      fieldSize: 2,
+      radarScore: null,
+    });
+
+    const soloScorecard = buildDriverScorecards([scorecardDriver('Solo')], ['Solo']).get('Solo');
+    expect(soloScorecard?.pace).toEqual({
+      rank: 1,
+      fieldSize: 1,
+      radarScore: 1,
+      sampleSize: 4,
+    });
+  });
+});
+
+describe('canonical analysis report', () => {
+  it('derives the report from one fixed input and keeps the important values exact', () => {
+    const report = buildAnalysisReport(reportInput());
+
+    expect(report.schemaVersion).toBe('1.0');
+    expect(report.configuration.paceMode).toBe('clean-non-pit');
+    expect(report.leaderboard.map((row) => row.driver)).toEqual(['Bob', 'Alice']);
+    expect(report.leaderboard).toMatchObject([
+      {
+        position: 1,
+        driver: 'Bob',
+        runtimeUs: 18_500_000,
+        gapUs: 0,
+        lapStats: { bestUs: 9_000_000, worstUs: 9_500_000, medianUs: 9_250_000 },
+      },
+      {
+        position: 2,
+        driver: 'Alice',
+        runtimeUs: 21_000_000,
+        gapUs: 2_500_000,
+        lapStats: { bestUs: 10_000_000, worstUs: 10_000_000, medianUs: 10_000_000 },
+      },
+    ]);
+    expect(report.drivers[0]).toMatchObject({
+      driver: 'Alice',
+      runtimeUs: 21_000_000,
+      runtimeLapCount: 2,
+      paceLapCount: 1,
+      cleanLapCount: 1,
+      eligibleNonPitLapCount: 1,
+      cleanPercentage: 100,
+      lapStats: { n: 1, bestUs: 10_000_000, medianUs: 10_000_000, sdUs: 0 },
+      theoreticalBestUs: 10_000_000,
+      executionGapUs: 0,
+    });
+    expect(report.sectors).toMatchObject([
+      {
+        sector: 'S1',
+        benchmark: { bestMeanUs: 4_000_000, bestMedianUs: 4_000_000 },
+      },
+      {
+        sector: 'S2',
+        benchmark: { bestMeanUs: 5_250_000, bestMedianUs: 5_250_000 },
+      },
+    ]);
+    expect(report.overview).toMatchObject({
+      driverCount: 2,
+      sourceFileCount: 1,
+      runtimeLapCount: 4,
+      paceLapCount: 3,
+      fastestBestUs: 9_000_000,
+      fastestMedianUs: 9_250_000,
+      sectorLeaders: [
+        { sector: 'S1', drivers: ['Alice', 'Bob'], bestMedianUs: 4_000_000 },
+        { sector: 'S2', drivers: ['Bob'], bestMedianUs: 5_250_000 },
+      ],
+    });
+    expect(report.consistency.find((summary) => summary.driver === 'Bob')).toMatchObject({
+      sd: { meanUs: 125_000, mostConsistentSector: 'S1', leastConsistentSector: 'S2' },
+      iqrOutlierCount: 0,
+    });
+    expect(report.drivers.find((driver) => driver.driver === 'Alice')?.sectors).toMatchObject([
+      { sector: 'S1', medianRank: 1 },
+      { sector: 'S2', medianRank: 2 },
+    ]);
+    expect(report.drivers.find((driver) => driver.driver === 'Bob')?.sectors).toMatchObject([
+      { sector: 'S1', medianRank: 1 },
+      { sector: 'S2', medianRank: 1 },
+    ]);
+    expect(report.stints).toHaveLength(2);
+    expect(report.stints[0]?.progression).toHaveLength(1);
+    expect(report.lapAudit.find((row) => row.id === 'alice-2')).toMatchObject({
+      runtimeEligible: true,
+      paceEligible: false,
+      runtimeExclusionReasons: [],
+      paceExclusionReasons: ['pit-in', 'clean-false'],
+    });
+    expect(report.warnings.map((warning) => warning.code)).toContain('low-sector-sample');
+    expect(report.warnings.map((warning) => warning.code)).toContain('different-pace-sample-sizes');
+  });
+
+  it('builds the same report again for the same input', () => {
+    const input = reportInput();
+
+    expect(buildAnalysisReport(input)).toEqual(buildAnalysisReport(input));
+  });
+
+  it('uses the selected pace sample for best and median pace laps', () => {
+    const input = reportInput();
+    const baseline = buildAnalysisReport(input);
+    const workbook = input.workbooks[0];
+    if (!workbook) {
+      throw new Error('The test needs one workbook.');
+    }
+
+    const changedInput = {
+      ...input,
+      workbooks: [
+        {
+          ...workbook,
+          laps: workbook.laps.map((lap) => (lap.id === 'bob-1' ? { ...lap, clean: false } : lap)),
+        },
+      ],
+    };
+    const changed = buildAnalysisReport(changedInput);
+    const allNonPit = buildAnalysisReport({ ...changedInput, paceMode: 'all-non-pit' });
+
+    expect(
+      changed.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
+        driver,
+        position,
+        runtimeUs,
+        gapUs,
+      })),
+    ).toEqual(
+      baseline.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
+        driver,
+        position,
+        runtimeUs,
+        gapUs,
+      })),
+    );
+    expect(changed.leaderboard.find((row) => row.driver === 'Bob')).toMatchObject({
+      lapStats: { bestUs: 9_500_000, medianUs: 9_500_000 },
+    });
+    expect(allNonPit.leaderboard.find((row) => row.driver === 'Bob')).toMatchObject({
+      lapStats: { bestUs: 9_000_000, medianUs: 9_250_000 },
+    });
+  });
+
+  it('omits drivers without selected full timed runtime laps from standings', () => {
+    const input = reportInput();
+    const workbook = input.workbooks[0];
+    if (!workbook) {
+      throw new Error('The test needs one workbook.');
+    }
+
+    const partialDriver = makeLap({
+      id: 'cara-partial',
+      driver: 'Cara',
+      lapTimeUs: null,
+      sectorsUs: { S1: null, S2: null },
+      isFullTimedLap: false,
+      classification: 'partial',
+      exclusionReason: 'One or more sector times are missing.',
+    });
+    const report = buildAnalysisReport({
+      ...input,
+      workbooks: [{ ...workbook, laps: [...workbook.laps, partialDriver] }],
+    });
+
+    expect(report.drivers.map((driver) => driver.driver)).toContain('Cara');
+    expect(report.leaderboard.map((row) => row.driver)).not.toContain('Cara');
+  });
+
+  it('uses the selected exploratory pace mode in the report methodology', () => {
+    const input = reportInput();
+    const workbook = input.workbooks[0];
+    if (!workbook) {
+      throw new Error('The test needs one workbook.');
+    }
+    const exploratoryLaps = workbook.laps.map((lap) =>
+      lap.id === 'alice-1' ? { ...lap, clean: false } : lap,
+    );
+
+    const report = buildAnalysisReport({
+      ...input,
+      workbooks: [{ ...workbook, laps: exploratoryLaps }],
+      paceMode: 'all-non-pit',
+    });
+
+    expect(report.configuration.paceMode).toBe('all-non-pit');
+    expect(report.methodology.pace).toContain('Clean status does not filter pace');
+    expect(report.drivers.find((driver) => driver.driver === 'Alice')?.paceLapCount).toBe(1);
+    expect(detectStints(reportLaps())).toHaveLength(2);
+  });
+});
