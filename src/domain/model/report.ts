@@ -69,11 +69,14 @@ const sectorGapFields = {
 };
 
 export const leaderboardRowSchema = z.object({
+  position: z.number().int().positive(),
   driver: z.string().min(1),
-  rawRuntimeUs: z.number().int().nonnegative(),
+  runtimeUs: z.number().int().nonnegative(),
+  gapUs: z.number().int().nonnegative(),
   runtimeLapCount: z.number().int().nonnegative(),
   paceLapCount: z.number().int().nonnegative(),
   cleanLapCount: z.number().int().nonnegative(),
+  invalidLapCount: z.number().int().nonnegative(),
   eligibleNonPitLapCount: z.number().int().nonnegative(),
   cleanPercentage: nullableFiniteNumberSchema,
   lapStats: metricStatsSchema,
@@ -99,10 +102,11 @@ export type SectorDriverAnalysis = z.infer<typeof sectorDriverAnalysisSchema>;
 
 export const driverAnalysisSchema = z.object({
   driver: z.string().min(1),
-  rawRuntimeUs: z.number().int().nonnegative(),
+  runtimeUs: z.number().int().nonnegative(),
   runtimeLapCount: z.number().int().nonnegative(),
   paceLapCount: z.number().int().nonnegative(),
   cleanLapCount: z.number().int().nonnegative(),
+  invalidLapCount: z.number().int().nonnegative(),
   eligibleNonPitLapCount: z.number().int().nonnegative(),
   cleanPercentage: nullableFiniteNumberSchema,
   lapStats: metricStatsSchema,

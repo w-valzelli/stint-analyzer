@@ -45,7 +45,8 @@ function methodologyFor(paceMode: PaceMode) {
       'Flag IQR outliers below Q1 - 1.5 × IQR or above Q3 + 1.5 × IQR. Do not remove flagged values from statistics.',
     theoreticalBest:
       'Sum each driver’s personal best eligible sector. This result is theoretical, not an actual lap.',
-    penalties: 'Manual penalties are not applied in Milestone 3.',
+    penalties:
+      'This milestone reports runtime only. Clean status remains a lap-quality fact and does not create penalties.',
   } as const;
 }
 
@@ -396,10 +397,11 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
 
     return {
       driver: analysis.driver,
-      rawRuntimeUs: analysis.runtimeUs,
+      runtimeUs: analysis.runtimeUs,
       runtimeLapCount: analysis.runtimeLaps,
       paceLapCount: analysis.paceLaps,
       cleanLapCount: analysis.cleanPercentage.cleanCount,
+      invalidLapCount: analysis.cleanPercentage.invalidLapCount,
       eligibleNonPitLapCount: analysis.cleanPercentage.eligibleNonPitCount,
       cleanPercentage: analysis.cleanPercentage.percentage,
       lapStats: toMetricStats(analysis.lapStats),
@@ -414,23 +416,27 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
     };
   });
   const driverByName = new Map(drivers.map((driver) => [driver.driver, driver]));
-  const leaderboard = [...drivers]
+  const sortedDrivers = drivers
+    .filter((driver) => driver.runtimeLapCount > 0)
     .sort(
-      (left, right) =>
-        left.rawRuntimeUs - right.rawRuntimeUs || compareText(left.driver, right.driver),
-    )
-    .map((driver) => ({
-      driver: driver.driver,
-      rawRuntimeUs: driver.rawRuntimeUs,
-      runtimeLapCount: driver.runtimeLapCount,
-      paceLapCount: driver.paceLapCount,
-      cleanLapCount: driver.cleanLapCount,
-      eligibleNonPitLapCount: driver.eligibleNonPitLapCount,
-      cleanPercentage: driver.cleanPercentage,
-      lapStats: driver.lapStats,
-      theoreticalBestUs: driver.theoreticalBestUs,
-      executionGapUs: driver.executionGapUs,
-    }));
+      (left, right) => left.runtimeUs - right.runtimeUs || compareText(left.driver, right.driver),
+    );
+  const leaderRuntimeUs = sortedDrivers[0]?.runtimeUs ?? 0;
+  const leaderboard = sortedDrivers.map((driver, index) => ({
+    position: index + 1,
+    driver: driver.driver,
+    runtimeUs: driver.runtimeUs,
+    gapUs: driver.runtimeUs - leaderRuntimeUs,
+    runtimeLapCount: driver.runtimeLapCount,
+    paceLapCount: driver.paceLapCount,
+    cleanLapCount: driver.cleanLapCount,
+    invalidLapCount: driver.invalidLapCount,
+    eligibleNonPitLapCount: driver.eligibleNonPitLapCount,
+    cleanPercentage: driver.cleanPercentage,
+    lapStats: driver.lapStats,
+    theoreticalBestUs: driver.theoreticalBestUs,
+    executionGapUs: driver.executionGapUs,
+  }));
 
   const progression = calculateStintProgression(laps, eligibility, stints, sectorEntries);
   const stintsById = new Map(stints.map((stint) => [stint.id, stint]));

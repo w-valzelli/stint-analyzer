@@ -4,6 +4,7 @@ import { durationStats, type NullableNumericStats } from './statistics';
 
 export type CleanLapPercentage = {
   cleanCount: number;
+  invalidLapCount: number;
   eligibleNonPitCount: number;
   percentage: number | null;
 };
@@ -64,9 +65,11 @@ export function cleanLapPercentage(
     (lap) => !lap.pitIn && !lap.pitOut,
   );
   const cleanCount = eligibleNonPitLaps.filter((lap) => lap.clean === true).length;
+  const invalidLapCount = eligibleNonPitLaps.filter((lap) => lap.clean === false).length;
 
   return {
     cleanCount,
+    invalidLapCount,
     eligibleNonPitCount: eligibleNonPitLaps.length,
     percentage:
       eligibleNonPitLaps.length === 0 ? null : (cleanCount / eligibleNonPitLaps.length) * 100,

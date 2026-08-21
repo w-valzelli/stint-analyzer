@@ -87,12 +87,17 @@ describe('canonical analysis report', () => {
     expect(report.schemaVersion).toBe('1.0');
     expect(report.configuration.paceMode).toBe('clean-non-pit');
     expect(report.leaderboard.map((row) => row.driver)).toEqual(['Bob', 'Alice']);
-    expect(report.leaderboard.map((row) => row.rawRuntimeUs)).toEqual([18_500_000, 21_000_000]);
+    expect(report.leaderboard).toMatchObject([
+      { position: 1, driver: 'Bob', runtimeUs: 18_500_000, gapUs: 0, invalidLapCount: 0 },
+      { position: 2, driver: 'Alice', runtimeUs: 21_000_000, gapUs: 2_500_000, invalidLapCount: 0 },
+    ]);
     expect(report.drivers[0]).toMatchObject({
       driver: 'Alice',
+      runtimeUs: 21_000_000,
       runtimeLapCount: 2,
       paceLapCount: 1,
       cleanLapCount: 1,
+      invalidLapCount: 0,
       eligibleNonPitLapCount: 1,
       cleanPercentage: 100,
       lapStats: { n: 1, bestUs: 10_000_000, medianUs: 10_000_000, sdUs: 0 },
@@ -125,6 +130,69 @@ describe('canonical analysis report', () => {
     const input = reportInput();
 
     expect(buildAnalysisReport(input)).toEqual(buildAnalysisReport(input));
+  });
+
+  it('keeps standings on runtime when Clean flags change', () => {
+    const input = reportInput();
+    const baseline = buildAnalysisReport(input);
+    const workbook = input.workbooks[0];
+    if (!workbook) {
+      throw new Error('The test needs one workbook.');
+    }
+
+    const changed = buildAnalysisReport({
+      ...input,
+      workbooks: [
+        {
+          ...workbook,
+          laps: workbook.laps.map((lap) =>
+            lap.id === 'bob-2' ? { ...lap, clean: false } : lap,
+          ),
+        },
+      ],
+    });
+
+    expect(changed.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
+      driver,
+      position,
+      runtimeUs,
+      gapUs,
+    }))).toEqual(
+      baseline.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
+        driver,
+        position,
+        runtimeUs,
+        gapUs,
+      })),
+    );
+    expect(changed.leaderboard.find((row) => row.driver === 'Bob')).toMatchObject({
+      invalidLapCount: 1,
+    });
+  });
+
+  it('omits drivers without selected full timed runtime laps from standings', () => {
+    const input = reportInput();
+    const workbook = input.workbooks[0];
+    if (!workbook) {
+      throw new Error('The test needs one workbook.');
+    }
+
+    const partialDriver = makeLap({
+      id: 'cara-partial',
+      driver: 'Cara',
+      lapTimeUs: null,
+      sectorsUs: { S1: null, S2: null },
+      isFullTimedLap: false,
+      classification: 'partial',
+      exclusionReason: 'One or more sector times are missing.',
+    });
+    const report = buildAnalysisReport({
+      ...input,
+      workbooks: [{ ...workbook, laps: [...workbook.laps, partialDriver] }],
+    });
+
+    expect(report.drivers.map((driver) => driver.driver)).toContain('Cara');
+    expect(report.leaderboard.map((row) => row.driver)).not.toContain('Cara');
   });
 
   it('uses the selected exploratory pace mode in the report methodology', () => {
