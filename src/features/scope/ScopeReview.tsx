@@ -302,11 +302,11 @@ export function ScopeReview({
 
             return (
               <article
-                className="calibration-sheet scope-review__driver"
+                className="analysis-surface scope-review__driver"
                 key={group.scopeKey}
                 aria-labelledby={headingId}
               >
-                <div className="calibration-sheet__body">
+                <div className="scope-review__driver-body">
                   <div className="scope-review__driver-header">
                     <h3 id={headingId}>{group.driver}</h3>
                     <div className="scope-review__facts" aria-label={`${group.driver} scope facts`}>

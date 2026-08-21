@@ -198,10 +198,10 @@ input[type='checkbox']:focus-visible {
 .calibration-sheet {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--calibration-ink);
+  border: 1px solid var(--calibration-rule-strong);
   border-radius: var(--calibration-radius-lg);
   background: var(--calibration-sheet);
-  box-shadow: var(--calibration-shadow);
+  box-shadow: none;
 }
 
 .calibration-sheet::before {
@@ -573,38 +573,31 @@ input[type='checkbox']:focus-visible {
   overflow: visible;
 }
 
-.scope-review__driver::before {
-  border-radius: inherit;
-}
-
-.scope-review__driver .calibration-sheet__body {
-  padding: clamp(24px, 3vw, 34px);
+.scope-review__driver-body {
+  padding: 20px;
 }
 
 .scope-review__driver-header h3 {
   margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 600;
   letter-spacing: -0.025em;
+  line-height: 1.1;
 }
 
 .scope-review__facts {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 15px;
-  margin-top: 8px;
-  color: var(--calibration-muted);
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.05em;
-  line-height: 1.4;
-  text-transform: uppercase;
+  margin-top: 7px;
+  color: var(--calibration-ink-soft);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 .scope-review__facts strong {
   color: var(--calibration-ink);
-  font-size: 0.76rem;
-  font-weight: 500;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1677,8 +1670,8 @@ input[type='checkbox']:focus-visible {
     gap: 15px;
   }
 
-  .scope-review__driver .calibration-sheet__body {
-    padding: 22px 19px;
+  .scope-review__driver-body {
+    padding: 20px;
   }
 
   .calibration-header__source {
