@@ -1,0 +1,11 @@
+.impeccable
+dist
+.astro
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+docs/01_PRODUCT_DATA_EXPORT_SPEC.md
+docs/02_ARCHITECTURE_GITHUB_PAGES.md
+docs/03_IMPLEMENTATION_PLAN.md
+docs/04_TESTING_ACCEPTANCE.md
