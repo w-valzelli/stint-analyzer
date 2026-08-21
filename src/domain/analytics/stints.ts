@@ -162,9 +162,7 @@ export function groupLapsByDriver(laps: readonly Lap[]): DriverScopeGroup[] {
 }
 
 function defaultStintIds(stints: readonly CandidateStint[]): string[] {
-  return stints
-    .filter((stint) => stint.fullTimedLapCount > 0)
-    .map((stint) => stint.id);
+  return stints.filter((stint) => stint.fullTimedLapCount > 0).map((stint) => stint.id);
 }
 
 export function createDefaultScopeSelections(laps: readonly Lap[]): ScopeSelection[] {

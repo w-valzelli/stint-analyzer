@@ -5,6 +5,7 @@ import {
   detectCandidateStints,
   groupLapsByDriver,
   groupLapsByScope,
+  reconcileScopeSelections,
 } from '../../src/domain/analytics/stints';
 import { makeLap, stintFixtureLaps } from '../fixtures/scopeLaps';
 
@@ -51,11 +52,37 @@ describe('scope grouping and stint detection', () => {
 
   it('selects every non-empty candidate by default', () => {
     const selections = createDefaultScopeSelections(stintFixtureLaps);
-    const expectedStintIds = groupLapsByDriver(stintFixtureLaps)[0]?.stints
-      .filter((stint) => stint.fullTimedLapCount > 0)
+    const expectedStintIds = groupLapsByDriver(stintFixtureLaps)[0]
+      ?.stints.filter((stint) => stint.fullTimedLapCount > 0)
       .map((stint) => stint.id);
 
     expect(selections[0]?.selectedStintIds).toEqual(expectedStintIds);
+  });
+
+  it('defaults new driver selections to all stints and preserves explicit subsets', () => {
+    const group = groupLapsByDriver(stintFixtureLaps)[0];
+    const allStintIds = group?.stints
+      .filter((stint) => stint.fullTimedLapCount > 0)
+      .map((stint) => stint.id);
+
+    expect(reconcileScopeSelections(stintFixtureLaps, [])).toEqual([
+      {
+        scopeKey: group?.scopeKey,
+        selectedStintIds: allStintIds,
+      },
+    ]);
+
+    const selectedSubset = allStintIds?.slice(0, 1) ?? [];
+    expect(
+      reconcileScopeSelections(stintFixtureLaps, [
+        { scopeKey: group?.scopeKey ?? '', selectedStintIds: selectedSubset },
+      ]),
+    ).toEqual([
+      {
+        scopeKey: group?.scopeKey,
+        selectedStintIds: selectedSubset,
+      },
+    ]);
   });
 
   it('does not select a driver when every candidate has zero timed laps', () => {
