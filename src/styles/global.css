@@ -21,6 +21,7 @@
   --calibration-vermilion: #d84b2f;
   --calibration-ochre: #c7982e;
   --calibration-moss: #2f756a;
+  --calibration-purple: #6f4aa1;
   --calibration-sheet-texture: rgb(46 90 168 / 6%);
   --calibration-radius-sm: 6px;
   --calibration-radius-md: 8px;
@@ -45,6 +46,7 @@
   --calibration-vermilion: #ee816d;
   --calibration-ochre: #dfbb61;
   --calibration-moss: #79b8a7;
+  --calibration-purple: #b89ae8;
   --calibration-sheet-texture: rgb(120 167 232 / 8%);
   --calibration-shadow: 0 18px 42px -26px rgb(0 0 0 / 48%);
 }
@@ -651,6 +653,10 @@ input[type='checkbox']:focus-visible {
   font-family: var(--font-sans);
   font-size: 0.75rem;
   text-align: left;
+  transition:
+    border-color 160ms ease-out,
+    background-color 160ms ease-out,
+    color 160ms ease-out;
 }
 
 .scope-select__trigger:hover {
@@ -1133,19 +1139,22 @@ input[type='checkbox']:focus-visible {
   min-width: 160px;
 }
 
-.analysis-control select,
+.analysis-control .scope-select {
+  width: 100%;
+}
+
+.analysis-control .scope-select__trigger,
 .analysis-filter input {
   min-height: 38px;
   padding: 7px 10px;
   border: 1px solid var(--calibration-rule-strong);
   border-radius: var(--calibration-radius-sm);
-  background: var(--calibration-sheet);
   color: var(--calibration-ink);
   font-family: var(--font-sans);
   font-size: 0.76rem;
 }
 
-.analysis-control select:hover,
+.analysis-control .scope-select__trigger:hover,
 .analysis-filter input:hover {
   border-color: var(--calibration-ink);
 }

@@ -3,6 +3,7 @@ import { useEffect, type ReactNode } from 'react';
 import type { AnalysisReport, MetricStats } from '../../domain/model/report';
 import { formatDurationUs } from '../../lib/durations';
 import { useAnalysisViewStore } from '../../state/analysis-view';
+import { CustomSelect, type CustomSelectOption } from '../../components/ui/select';
 
 type MetricItem = {
   label: string;
@@ -40,7 +41,7 @@ export function AnalysisSurface({ children, className = '' }: AnalysisSurfacePro
 type SelectControlProps = {
   label: string;
   value: string;
-  options: readonly { value: string; label: string }[];
+  options: readonly CustomSelectOption[];
   onChange: (value: string) => void;
 };
 
@@ -48,13 +49,12 @@ export function SelectControl({ label, value, options, onChange }: SelectControl
   return (
     <label className="analysis-control">
       <span>{label}</span>
-      <select value={value} onChange={(event) => onChange(event.target.value)}>
-        {options.map((option) => (
-          <option value={option.value} key={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
+      <CustomSelect
+        label={label}
+        value={value}
+        options={options}
+        onChange={(next) => onChange(next as string)}
+      />
     </label>
   );
 }
@@ -115,17 +115,13 @@ export function DriverControl({ report }: { report: AnalysisReport }) {
   return (
     <label className="analysis-control">
       <span>Driver</span>
-      <select
+      <CustomSelect
+        label="Driver"
         value={selectedDriver ?? ''}
-        onChange={(event) => setSelectedDriver(event.target.value || null)}
+        options={drivers.map((driver) => ({ value: driver, label: driver }))}
+        onChange={(next) => setSelectedDriver(next as string)}
         disabled={drivers.length === 0}
-      >
-        {drivers.map((driver) => (
-          <option value={driver} key={driver}>
-            {driver}
-          </option>
-        ))}
-      </select>
+      />
     </label>
   );
 }
