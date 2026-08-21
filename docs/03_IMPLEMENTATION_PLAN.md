@@ -187,9 +187,11 @@ Full table.
 
 #### Consistency
 
+- Mode selector for Sectors or Laps;
 - SD/MAD/IQR/Range selector;
-- matrix;
-- driver summary.
+- sector matrix and driver summary in Sectors mode;
+- one lap summary with sample count, best, worst, and selected variation in Laps mode;
+- consistent column alignment with right-aligned numeric values.
 
 #### Drivers
 

@@ -343,6 +343,7 @@ For every driver × sector:
 type SectorStats = {
   n: number;
   bestUs: number | null;
+  worstUs: number | null;
   meanUs: number | null;
   medianUs: number | null;
   sdUs: number | null;
@@ -672,26 +673,25 @@ Optional supporting chart:
 
 ## 23. Consistency screen
 
-Metric selector:
+Controls:
 
-- SD
-- MAD
-- IQR
-- Range
+- Mode: Sectors | Laps
+- Metric: SD | MAD | IQR | Range
 
-Matrix:
+Sectors mode shows:
 
-- sector rows;
-- driver columns.
+- a matrix with sector rows and driver columns;
+- a driver summary with mean variation, most/least consistent sector, and IQR outliers.
 
-Also show:
+Laps mode shows one summary table with:
 
-- most/least consistent sector;
-- mean SD;
-- mean MAD;
-- outlier count.
+- driver;
+- sample count;
+- best lap;
+- worst lap;
+- the selected variation metric.
 
-Lower is better.
+Align numeric values to the right.
 
 ---
 
