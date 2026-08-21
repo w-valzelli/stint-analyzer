@@ -1,164 +1,70 @@
 # AGENTS.md — Stint Analyzer
 
-## Mission
+## Start here
 
-Build a production-quality, privacy-first static web application that analyzes one or more Garage 61 `.xlsx` session/stint exports entirely in the browser.
+Read [README.md](README.md) before changing the repository. It is the shared
+reference for the current product scope, architecture, codebase structure,
+package responsibilities, commands, testing, and deployment.
 
-The application must deploy to **GitHub Pages** using **Astro + React**, require **no backend**, and export analysis to:
+Keep this file focused on instructions for AI agents. Do not recreate a
+`docs/` folder, `START_HERE.md`, or implementation-history documents unless a
+future request explicitly requires them.
 
-1. `.xlsx` — human-friendly multi-sheet workbook;
-2. `.md` — deterministic, LLM-friendly analysis report;
-3. `.json` — exact machine-readable report.
+## Working rules
 
-Raw telemetry CSV analysis is **out of scope for MVP**.
+- Inspect the relevant code, tests, configuration, and README before editing.
+- Choose the smallest coherent change that satisfies the request.
+- Preserve existing work and repository conventions; avoid unrelated cleanup
+  and speculative abstractions.
+- Use `pnpm` and keep `pnpm-lock.yaml` in sync when dependencies change.
+- Keep the project buildable after each change.
+- Do not expose, persist, or log secrets, workbook contents, or user analysis
+  data.
+- Update README.md when durable codebase facts change. Keep agent-only rules in
+  this file instead of duplicating the README.
 
-## Read before coding
+## Product boundaries
 
-Read in this order:
+- The app is a static Astro site with a React analyzer and no backend.
+- Workbook files are read locally in the browser and must never be uploaded or
+  sent to a hosted AI service.
+- The product is accountless and ephemeral. Do not add login, profiles, team
+  workspaces, cloud saves, shared history, cross-device sync, or analysis
+  persistence.
+- Raw telemetry CSV analysis is out of scope.
 
-1. `docs/01_PRODUCT_DATA_EXPORT_SPEC.md`
-2. `docs/02_ARCHITECTURE_GITHUB_PAGES.md`
-3. `docs/03_IMPLEMENTATION_PLAN.md`
-4. `docs/04_TESTING_ACCEPTANCE.md`
+## Analysis invariants
 
-If there is a conflict, this file wins.
-
-## Autonomous execution rules
-
-- Do not stop for minor product or implementation questions.
-- Prefer a sensible default and record non-trivial choices in `docs/DECISIONS.md`.
-- Keep the repository buildable after every milestone.
-- Use `pnpm`.
-- Use current stable package releases at implementation time and commit `pnpm-lock.yaml`.
-- Do not add a server, database, API route, authentication system, user accounts, cloud storage, serverless function, hosted AI call, or shared persistence for MVP.
-- Uploaded workbooks must never be sent over the network.
-- The product is intentionally ephemeral: the user drops files in, gets the analysis, exports what they want, and can then close or refresh the page. Analysis state does not need to survive refresh.
-- Do not add login, signup, profiles, team workspaces, cloud saves, cross-device history, or account-related UI.
-- Do not infer penalties or black flags from Garage 61's `Clean` field.
 - Runtime and pace eligibility are separate concepts.
-- Pit laps can count toward run runtime but are excluded from default pace statistics.
-- Do not implement median, standard deviation, MAD, IQR, table sorting/filtering, XLSX parsing, XLSX writing, or drag/drop from scratch when the selected packages already provide them.
-- Domain calculations must be framework-independent pure TypeScript.
-- UI, XLSX export, Markdown export and JSON export must all consume the same canonical analysis report.
-- Do not build telemetry abstractions in MVP.
+- Runtime sums selected full timed laps, including pit laps when they are in
+  the selected scope. `Clean` does not affect runtime.
+- Default pace uses full timed, clean, non-pit laps. The exploratory all-non-pit
+  mode may include unclean non-pit laps.
+- Clean percentage uses full timed non-pit laps as its denominator and always
+  exposes numerator, denominator, and percentage.
+- `Clean = 0` is not a penalty. Do not infer penalties or black flags from it;
+  the current product has no penalty-adjusted leaderboard.
+- Every lap must retain an auditable inclusion/exclusion result.
+- Domain calculations remain framework-independent pure TypeScript.
+- The UI and all export formats consume the same canonical `AnalysisReport`.
+- Preserve dynamic sector discovery and actionable validation for malformed or
+  unrelated workbooks.
 
-## UI information discipline
+## UI and documentation discipline
 
-- Treat the data as the primary content of every analysis surface.
-- Do not expose backend methodology, implementation terminology, or repeated context by default.
-- Do not repeat a tab label as an in-panel heading.
-- Do not repeat imported source or driver counts already visible in scope review.
-- Add explanatory copy only when the displayed data would otherwise be ambiguous or unsafe.
-- Prefer table-first analysis views. Use progressive disclosure for methodology and audit detail.
-- Make table surfaces span the full analysis container. Remove container padding and top borders from table surfaces.
-- Put padding on inner advisory content only, such as a data-not-ready state.
-- Format motorsport durations as `m:ss.ddd`. Format runtimes above one hour as `h:mm:ss.ddd`.
-- Do not add ceremony to impress the user. Keep analysis surfaces direct and pragmatic.
+- Treat imported data and analysis results as the primary content.
+- Prefer table-first analysis and progressive disclosure for methodology or
+  audit detail.
+- Do not repeat tab labels as panel headings or repeat context already visible
+  in the surrounding scope review.
+- Keep table surfaces full width and put explanatory padding on inner advisory
+  content.
+- Format motorsport durations as `m:ss.ddd`, or `h:mm:ss.ddd` above one hour.
+- Keep interfaces direct and pragmatic; do not add decorative ceremony.
 
-## Required stack
+## Verification
 
-- Astro static output
-- React
-- TypeScript strict mode
-- Tailwind CSS
-- GitHub Actions -> GitHub Pages
-- `react-dropzone`
-- `read-excel-file`
-- `write-excel-file`
-- `zod`
-- `simple-statistics`
-- `@tanstack/react-table`
-- `recharts`
-- `zustand`
-- `lucide-react`
-- Vitest + Testing Library
-- Playwright
-
-Selected shadcn/ui components are encouraged; do not add a second large UI framework.
-
-## Suggested structure
-
-```text
-/
-├── AGENTS.md
-├── README.md
-├── astro.config.mjs
-├── package.json
-├── pnpm-lock.yaml
-├── public/
-├── src/
-│   ├── components/
-│   ├── features/
-│   │   ├── import/
-│   │   ├── overview/
-│   │   ├── leaderboard/
-│   │   ├── sectors/
-│   │   ├── consistency/
-│   │   ├── drivers/
-│   │   ├── audit/
-│   │   └── export/
-│   ├── domain/
-│   │   ├── model/
-│   │   ├── parsing/
-│   │   ├── analytics/
-│   │   ├── penalties/
-│   │   └── export/
-│   ├── state/
-│   ├── pages/
-│   └── styles/
-├── tests/
-│   ├── fixtures/
-│   ├── unit/
-│   └── e2e/
-├── docs/
-└── .github/workflows/
-```
-
-## Product invariants
-
-1. Files stay local.
-2. The app is accountless and ephemeral by design: upload -> analyze -> export -> discard.
-3. No analysis persistence is required by default; refresh may clear all imported data and results.
-4. `Clean = 0` is not a penalty.
-5. Runtime uses selected timed run laps, not only clean laps.
-6. Default pace statistics use clean, non-pit, full timed laps.
-7. Pit-in/pit-out laps are excluded from pace but can remain in runtime.
-8. Every statistic displays or exports its sample count.
-9. Every lap can be audited for inclusion/exclusion.
-10. Exports include methodology and assumptions.
-11. Same normalized data and same derived report feed every view/export.
-12. Malformed files produce actionable validation messages.
-
-## Quality gate
-
-Before completing any milestone:
-
-```bash
-pnpm lint
-pnpm check
-pnpm test
-pnpm build
-```
-
-For user-visible workflow changes:
-
-```bash
-pnpm e2e
-```
-
-Also test the built application under a repository base path such as `/garage61-analyzer/`.
-
-## MVP completion
-
-A user must be able to:
-
-1. open the static site;
-2. drag in multiple Garage 61 `.xlsx` exports;
-3. review detected drivers/stints/laps;
-4. choose the runtime/pace scope;
-5. view the runtime-only leaderboard with runtime gaps, clean-lap fractions, clean percentage, best pace lap, and median pace lap;
-6. view overview, leaderboard, sectors, consistency, driver detail and lap audit;
-7. export `.xlsx`, `.md` and `.json`;
-8. use the app successfully from GitHub Pages;
-9. do all of the above without source files leaving the browser;
-10. complete the full workflow without creating an account or storing analysis remotely.
+Use the relevant commands documented in README.md. For normal application
+changes, run linting, type checking, unit tests, and a production build. Run
+Playwright for user-visible workflow changes and verify the configured GitHub
+Pages base path when routing or asset behavior changes.

@@ -20,7 +20,7 @@ Stint Analyzer provides browser-local analysis of Garage 61 source workbooks. It
 
 ## Operating Context
 
-A user drops local Garage 61 workbooks into the site, reviews detected drivers, stints, laps, and scope, then inspects overview, leaderboard, sector, consistency, and driver views. The user reviews lap evidence inline during scope review and in exports. The user can enter real penalty counts or seconds before exporting the results. The user can keep, share, upload, or discard the exported files as needed.
+A user drops local Garage 61 workbooks into the site, reviews detected drivers, stints, laps, and scope, then inspects overview, leaderboard, sector, consistency, and driver views. The user reviews lap evidence inline during scope review and in exports. The user can keep, share, upload, or discard the exported files as needed.
 
 ## Capabilities and Constraints
 
@@ -28,7 +28,7 @@ A user drops local Garage 61 workbooks into the site, reviews detected drivers, 
 - The application supports multiple files and discovers sector columns dynamically.
 - The application separates runtime eligibility from pace eligibility.
 - Runtime can include selected timed pit laps. Default pace statistics use full, clean, non-pit laps.
-- Garage 61 `Clean` values do not create penalties. The user enters real penalty counts or seconds manually.
+- Garage 61 `Clean` values do not create penalties. The current leaderboard is runtime-only and does not apply penalty adjustments.
 - The application exposes lap inclusion and exclusion reasons for audit.
 - All views and exports consume the same canonical analysis report.
 - The application exports `.xlsx`, Markdown, and JSON reports with methodology and assumptions.
@@ -44,7 +44,7 @@ The product name is **Stint Analyzer**. Garage 61 identifies the supported workb
 
 ## Evidence on Hand
 
-The repository contains the product, data, architecture, implementation, and testing specifications in `docs/01_PRODUCT_DATA_EXPORT_SPEC.md`, `docs/02_ARCHITECTURE_GITHUB_PAGES.md`, `docs/03_IMPLEMENTATION_PLAN.md`, and `docs/04_TESTING_ACCEPTANCE.md`. The current Astro and React shell in `src/` provides the Stint Analyzer name, local workbook flow, analysis sections, and planned import flow. The repository contains no customer testimonials, private source workbooks, or customer performance claims. Future work must not fabricate them.
+`README.md` is the shared current reference for the product scope, architecture, codebase structure, commands, dependencies, testing, and deployment. The current Astro and React shell in `src/` provides the Stint Analyzer name, local workbook flow, and analysis sections. The repository contains no customer testimonials, private source workbooks, or customer performance claims. Future work must not fabricate them.
 
 ## Product Principles
 
