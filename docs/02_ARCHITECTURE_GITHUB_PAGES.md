@@ -165,7 +165,6 @@ Do not manually implement these statistics.
 Use for:
 - leaderboard;
 - sector detail;
-- audit;
 - sorting;
 - filtering;
 - visibility.

@@ -200,12 +200,6 @@ Full table.
 - theoretical vs actual;
 - lap progression.
 
-#### Audit
-
-- sortable/filterable normalized rows;
-- source basename;
-- inclusion flags and reasons.
-
 ### Acceptance
 
 - every displayed derived number exists in `AnalysisReport`;

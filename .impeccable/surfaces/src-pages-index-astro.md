@@ -1,8 +1,8 @@
 ---
 version: 1
-slug: "src-pages-index-astro"
-primary_target: "src/pages/index.astro"
-related_targets: ["src/components/AnalyzerShell.tsx","src/styles/global.css"]
+slug: 'src-pages-index-astro'
+primary_target: 'src/pages/index.astro'
+related_targets: ['src/components/AnalyzerShell.tsx', 'src/styles/global.css']
 ---
 
 # Analyzer surface brief

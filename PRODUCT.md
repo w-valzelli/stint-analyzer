@@ -20,7 +20,7 @@ Stint Analyzer provides browser-local analysis of Garage 61 source workbooks. It
 
 ## Operating Context
 
-A user drops local Garage 61 workbooks into the site, reviews detected drivers, stints, laps, and scope, then inspects overview, leaderboard, sector, consistency, driver, and audit views. The user can enter real penalty counts or seconds before exporting the results. The user can keep, share, upload, or discard the exported files as needed.
+A user drops local Garage 61 workbooks into the site, reviews detected drivers, stints, laps, and scope, then inspects overview, leaderboard, sector, consistency, and driver views. The user reviews lap evidence inline during scope review and in exports. The user can enter real penalty counts or seconds before exporting the results. The user can keep, share, upload, or discard the exported files as needed.
 
 ## Capabilities and Constraints
 

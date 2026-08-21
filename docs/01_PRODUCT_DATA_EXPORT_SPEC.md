@@ -535,7 +535,7 @@ Upload
   ↓
 Review driver scope
   ↓
-Overview | Leaderboard | Sectors | Consistency | Drivers | Audit
+Overview | Sectors | Consistency | Drivers
   ↓
 Export
 ```
@@ -642,7 +642,6 @@ Columns:
 Controls:
 
 - Benchmark: Average | Median | Best
-- Pace mode
 - Driver selection
 
 Primary matrix:
@@ -655,7 +654,7 @@ Driver cells are signed gaps.
 
 Sector detail table:
 
-- Driver
+- Sector
 - N
 - Best
 - Mean
@@ -724,11 +723,11 @@ Lap progression chart.
 
 ---
 
-## 25. Audit
+## 25. Lap evidence
 
-Use TanStack Table.
+Do not add a dedicated audit analysis tab. Keep lap inclusion and exclusion evidence in the inline scope review and canonical report.
 
-Columns:
+Exports may include the complete lap audit with:
 
 - Driver
 - Source file
@@ -743,8 +742,6 @@ Columns:
 - Exclusion reason
 - Fuel
 - S1 ... SN
-
-This screen is essential for trust.
 
 ---
 
