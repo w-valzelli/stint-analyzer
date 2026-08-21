@@ -2,6 +2,7 @@ import { Download, GitFork } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { deriveLapEligibility } from '../domain/analytics/eligibility';
+import { buildAnalysisReport } from '../domain/analytics/report';
 import {
   detectStints,
   groupLapsByDriver,
@@ -9,6 +10,7 @@ import {
 } from '../domain/analytics/stints';
 import type { PaceMode, ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
+import { Leaderboard } from '../features/leaderboard/Leaderboard';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
 import { Button, buttonVariants } from './ui/button';
@@ -63,6 +65,18 @@ export function AnalyzerShell() {
       );
     },
     [],
+  );
+  const report = useMemo(
+    () =>
+      hasWorkbooks
+        ? buildAnalysisReport({
+            workbooks: importState.workbooks,
+            selections: scopeSelections,
+            paceMode,
+            generatedAt: new Date().toISOString(),
+          })
+        : null,
+    [hasWorkbooks, importState.workbooks, paceMode, scopeSelections],
   );
 
   return (
@@ -160,23 +174,29 @@ export function AnalyzerShell() {
           </TabsList>
 
           <TabsContent value={activeTab}>
-            <div className="calibration-panel">
-              <h3>
-                {hasWorkbooks
-                  ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
-                  : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
-              </h3>
-              <p>
-                {hasWorkbooks
-                  ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
-                  : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
-              </p>
-              <div className="calibration-panel__rule" aria-hidden="true">
-                <span />
-                <span />
-                <span />
+            {activeTab === 'leaderboard' && report ? (
+              <div className="calibration-panel">
+                <Leaderboard report={report} />
               </div>
-            </div>
+            ) : (
+              <div className="calibration-panel">
+                <h3>
+                  {hasWorkbooks
+                    ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
+                    : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
+                </h3>
+                <p>
+                  {hasWorkbooks
+                    ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
+                    : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
+                </p>
+                <div className="calibration-panel__rule" aria-hidden="true">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </section>
