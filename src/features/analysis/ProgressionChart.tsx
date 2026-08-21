@@ -75,7 +75,6 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
                   background: 'var(--calibration-sheet)',
                   color: 'var(--calibration-ink)',
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '12px',
                 }}
               />
               <Line

@@ -81,7 +81,6 @@ export function SectorProgressionChart({ report, driver }: SectorProgressionChar
                   background: 'var(--calibration-sheet)',
                   color: 'var(--calibration-ink)',
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '12px',
                 }}
               />
               <Legend
