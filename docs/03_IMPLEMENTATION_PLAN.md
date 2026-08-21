@@ -135,17 +135,18 @@ The approved product amendment supersedes the original penalty-adjustment propos
 
 ### Tasks
 
-- count selected full timed non-pit laps with `Clean = 0` as invalid laps;
-- keep invalid-lap facts separate from runtime and clean percentage;
+- show clean laps as a fraction and clean percentage;
+- derive the best clean lap and median clean lap from the selected runtime scope;
 - sort by selected runtime and calculate deterministic gaps;
-- add position and gap to the canonical leaderboard rows;
+- add position, gap, and lap facts to the canonical leaderboard rows;
 - build the read-only leaderboard screen.
 
 ### Acceptance
 
 - runtime remains the only ranking measure;
 - unclean laps remain part of runtime when they are full timed and selected;
-- invalid-lap count is a factual `Clean` measure, not a penalty;
+- best and median clean values use only selected full timed non-pit laps with `Clean = 1`;
+- clean-lap fractions use selected full timed non-pit laps as the denominator;
 - leader gap = 0;
 - changing only Clean flags does not change runtime, position, or gap;
 - ties use deterministic driver-name ordering;

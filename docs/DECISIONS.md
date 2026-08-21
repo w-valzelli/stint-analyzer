@@ -178,7 +178,7 @@ Keep source file IDs and row numbers in internal domain data. Do not show them i
 
 The scope model supports one driver across multiple files without crossing source-local stint boundaries. Runtime and pace counts aggregate selected stints. The UI stays focused on driver comparison and lap evidence. Audit cells show concise status colors and reveal friendly exclusion reasons on hover or click.
 
-## 2026-08-21 — Use runtime-only standings with factual invalid-lap counts
+## 2026-08-21 — Use runtime-only standings with useful lap facts
 
 Status: Accepted
 
@@ -188,8 +188,8 @@ The original Milestone 4 plan proposed manual penalty inputs and penalty-adjuste
 
 ### Decision
 
-Rank the leaderboard by selected runtime only. Calculate gaps from the runtime leader. Count selected full timed non-pit laps with `Clean = 0` as invalid laps for factual display. Keep invalid-lap counts separate from clean percentage and runtime eligibility. Do not call invalid laps penalties, and do not infer penalty seconds from `Clean`.
+Rank the leaderboard by selected runtime only. Calculate gaps from the runtime leader. Show clean laps as a fraction, clean percentage, best clean lap, and median clean lap. Use selected full timed non-pit laps for the fraction denominator. Use only `Clean = 1` laps for best and median clean values. Do not infer penalties or penalty seconds from `Clean`.
 
 ### Consequences
 
-The leaderboard stays read-only and uses one runtime measure. A clean flag can explain lap quality without changing runtime or ranking. The original penalty seconds, override, and adjusted-runtime requirements are superseded for this milestone.
+The leaderboard stays read-only and uses one runtime measure. Clean status can explain lap quality without changing runtime or ranking. The original penalty seconds, override, and adjusted-runtime requirements are superseded for this milestone.

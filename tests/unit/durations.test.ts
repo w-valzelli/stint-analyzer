@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { formatDurationUs, formatGapUs } from '../../src/lib/durations';
 import {
   MICROSECONDS_PER_SECOND,
   parseDurationToMicroseconds,
@@ -23,5 +24,19 @@ describe('parseDurationToMicroseconds', () => {
 
   it('keeps the unit explicit', () => {
     expect(MICROSECONDS_PER_SECOND).toBe(1_000_000);
+  });
+});
+
+describe('formatDurationUs', () => {
+  it('formats lap times and runtime in motorsport notation', () => {
+    expect(formatDurationUs(83_456_000)).toBe('1:23.456');
+    expect(formatDurationUs(754_567_000)).toBe('12:34.567');
+    expect(formatDurationUs(3_754_567_000)).toBe('1:02:34.567');
+  });
+
+  it('formats missing durations and runtime gaps', () => {
+    expect(formatDurationUs(null)).toBe('—');
+    expect(formatGapUs(0)).toBe('—');
+    expect(formatGapUs(3_000_000)).toBe('+0:03.000');
   });
 });

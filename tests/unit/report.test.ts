@@ -88,8 +88,22 @@ describe('canonical analysis report', () => {
     expect(report.configuration.paceMode).toBe('clean-non-pit');
     expect(report.leaderboard.map((row) => row.driver)).toEqual(['Bob', 'Alice']);
     expect(report.leaderboard).toMatchObject([
-      { position: 1, driver: 'Bob', runtimeUs: 18_500_000, gapUs: 0, invalidLapCount: 0 },
-      { position: 2, driver: 'Alice', runtimeUs: 21_000_000, gapUs: 2_500_000, invalidLapCount: 0 },
+      {
+        position: 1,
+        driver: 'Bob',
+        runtimeUs: 18_500_000,
+        gapUs: 0,
+        bestCleanLapUs: 9_000_000,
+        medianCleanLapUs: 9_250_000,
+      },
+      {
+        position: 2,
+        driver: 'Alice',
+        runtimeUs: 21_000_000,
+        gapUs: 2_500_000,
+        bestCleanLapUs: 10_000_000,
+        medianCleanLapUs: 10_000_000,
+      },
     ]);
     expect(report.drivers[0]).toMatchObject({
       driver: 'Alice',
@@ -97,9 +111,10 @@ describe('canonical analysis report', () => {
       runtimeLapCount: 2,
       paceLapCount: 1,
       cleanLapCount: 1,
-      invalidLapCount: 0,
       eligibleNonPitLapCount: 1,
       cleanPercentage: 100,
+      bestCleanLapUs: 10_000_000,
+      medianCleanLapUs: 10_000_000,
       lapStats: { n: 1, bestUs: 10_000_000, medianUs: 10_000_000, sdUs: 0 },
       theoreticalBestUs: 10_000_000,
       executionGapUs: 0,
@@ -132,7 +147,7 @@ describe('canonical analysis report', () => {
     expect(buildAnalysisReport(input)).toEqual(buildAnalysisReport(input));
   });
 
-  it('keeps standings on runtime when Clean flags change', () => {
+  it('keeps standings on runtime and separates best and median clean laps', () => {
     const input = reportInput();
     const baseline = buildAnalysisReport(input);
     const workbook = input.workbooks[0];
@@ -145,7 +160,7 @@ describe('canonical analysis report', () => {
       workbooks: [
         {
           ...workbook,
-          laps: workbook.laps.map((lap) => (lap.id === 'bob-2' ? { ...lap, clean: false } : lap)),
+          laps: workbook.laps.map((lap) => (lap.id === 'bob-1' ? { ...lap, clean: false } : lap)),
         },
       ],
     });
@@ -166,7 +181,8 @@ describe('canonical analysis report', () => {
       })),
     );
     expect(changed.leaderboard.find((row) => row.driver === 'Bob')).toMatchObject({
-      invalidLapCount: 1,
+      bestCleanLapUs: 9_500_000,
+      medianCleanLapUs: 9_500_000,
     });
   });
 

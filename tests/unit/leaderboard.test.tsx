@@ -54,24 +54,20 @@ function leaderboardReport() {
 }
 
 describe('Leaderboard', () => {
-  it('shows runtime order, gaps, and factual lap-quality counts', () => {
+  it('shows only the runtime comparison table', () => {
     render(<Leaderboard report={leaderboardReport()} />);
 
-    expect(screen.getByRole('heading', { name: 'Runtime standings.' })).toBeInTheDocument();
-    expect(
-      screen.getByText('Rank by selected runtime. Clean status does not change runtime.'),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Invalid laps count full timed non-pit laps/)).toBeInTheDocument();
+    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Invalid laps/)).not.toBeInTheDocument();
 
-    const table = screen.getByRole('table', { name: 'Runtime standings for the selected scope' });
+    const table = screen.getByRole('table', { name: 'Leaderboard' });
     const rows = screen.getAllByRole('row');
     expect(rows).toHaveLength(3);
     expect(rows[1]).toHaveTextContent(
-      /1\s*Alice\s*10\.000 s\s*—\s*0\s*1 \/ 1\s*100\.0%\s*10\.000 s\s*10\.000 s/,
+      /1\s*Alice\s*0:10\.000\s*—\s*1 \/ 1\s*100\.0%\s*0:10\.000\s*0:10\.000/,
     );
-    expect(rows[2]).toHaveTextContent(
-      /2\s*Bob\s*13\.000 s\s*\+3\.000 s\s*1\s*0 \/ 1\s*0\.0%\s*—\s*—/,
-    );
+    expect(rows[2]).toHaveTextContent(/2\s*Bob\s*0:13\.000\s*\+0:03\.000\s*0 \/ 1\s*0\.0%\s*—\s*—/);
+    expect(screen.queryByText('Best overall')).not.toBeInTheDocument();
     expect(table).not.toHaveTextContent('penalty');
   });
 });

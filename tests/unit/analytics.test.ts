@@ -100,7 +100,6 @@ describe('lap analytics', () => {
     expect(sumRuntimeUs(laps, eligibility)).toBe(76_000_000);
     expect(cleanLapPercentage(laps, eligibility)).toEqual({
       cleanCount: 4,
-      invalidLapCount: 1,
       eligibleNonPitCount: 5,
       percentage: 80,
     });

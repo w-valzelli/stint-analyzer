@@ -52,11 +52,11 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   await expect(scope.getByText(/pit-in|pit-out/)).not.toBeVisible();
 
   await page.getByRole('tab', { name: 'Leaderboard' }).click();
-  await expect(page.getByRole('heading', { name: 'Runtime standings.' })).toBeVisible();
-  await expect(
-    page.getByRole('table', { name: 'Runtime standings for the selected scope' }),
-  ).toContainText('Alice');
-  await expect(page.getByText(/Invalid laps count full timed non-pit laps/)).toBeVisible();
+  const leaderboard = page.getByRole('table', { name: 'Leaderboard' });
+  await expect(leaderboard).toBeVisible();
+  await expect(leaderboard).toContainText('Alice');
+  await expect(leaderboard).toContainText('0:22.100');
+  await expect(page.getByRole('heading', { name: 'Runtime standings.' })).not.toBeVisible();
 
   await page.getByRole('button', { name: `Remove ${path.basename(fixture)}` }).click();
   await expect(

@@ -4,7 +4,6 @@ import { durationStats, type NullableNumericStats } from './statistics';
 
 export type CleanLapPercentage = {
   cleanCount: number;
-  invalidLapCount: number;
   eligibleNonPitCount: number;
   percentage: number | null;
 };
@@ -14,6 +13,8 @@ export type DriverLapAnalysis = {
   runtimeLaps: number;
   paceLaps: number;
   runtimeUs: number;
+  bestCleanLapUs: number | null;
+  medianCleanLapUs: number | null;
   lapStats: NullableNumericStats;
   cleanPercentage: CleanLapPercentage;
 };
@@ -65,11 +66,9 @@ export function cleanLapPercentage(
     (lap) => !lap.pitIn && !lap.pitOut,
   );
   const cleanCount = eligibleNonPitLaps.filter((lap) => lap.clean === true).length;
-  const invalidLapCount = eligibleNonPitLaps.filter((lap) => lap.clean === false).length;
 
   return {
     cleanCount,
-    invalidLapCount,
     eligibleNonPitCount: eligibleNonPitLaps.length,
     percentage:
       eligibleNonPitLaps.length === 0 ? null : (cleanCount / eligibleNonPitLaps.length) * 100,
@@ -100,12 +99,20 @@ export function driverLapAnalyses(
     const driverEligibility = eligibility.filter((item) => item.driver === driver);
     const runtime = runtimeEligibleLaps(driverLaps, driverEligibility);
     const pace = paceEligibleLaps(driverLaps, driverEligibility);
+    const runtimeNonPitClean = runtime.filter(
+      (lap) => !lap.pitIn && !lap.pitOut && lap.clean === true,
+    );
+    const cleanStats = durationStats(
+      runtimeNonPitClean.flatMap((lap) => (lap.lapTimeUs === null ? [] : [lap.lapTimeUs])),
+    );
 
     return {
       driver,
       runtimeLaps: runtime.length,
       paceLaps: pace.length,
       runtimeUs: runtime.reduce((total, lap) => total + (lap.lapTimeUs ?? 0), 0),
+      bestCleanLapUs: cleanStats.best,
+      medianCleanLapUs: cleanStats.median,
       lapStats: lapTimeStats(driverLaps, driverEligibility),
       cleanPercentage: cleanLapPercentage(driverLaps, driverEligibility),
     };

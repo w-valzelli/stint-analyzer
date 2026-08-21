@@ -175,25 +175,27 @@ export function AnalyzerShell() {
 
           <TabsContent value={activeTab}>
             {activeTab === 'leaderboard' && report ? (
-              <div className="calibration-panel">
+              <div className="calibration-panel calibration-panel--table">
                 <Leaderboard report={report} />
               </div>
             ) : (
               <div className="calibration-panel">
-                <h3>
-                  {hasWorkbooks
-                    ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
-                    : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
-                </h3>
-                <p>
-                  {hasWorkbooks
-                    ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
-                    : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
-                </p>
-                <div className="calibration-panel__rule" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
+                <div className="calibration-panel__advisory">
+                  <h3>
+                    {hasWorkbooks
+                      ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the imported source data.`
+                      : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for source files.`}
+                  </h3>
+                  <p>
+                    {hasWorkbooks
+                      ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
+                      : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
+                  </p>
+                  <div className="calibration-panel__rule" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
                 </div>
               </div>
             )}
