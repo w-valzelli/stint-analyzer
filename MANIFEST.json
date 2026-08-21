@@ -1,0 +1,14 @@
+{
+  "name": "garage61-analysis-codex-plan",
+  "created": "2026-08-21",
+  "purpose": "Autonomous Codex/agent handoff for a static Astro + React Garage 61 stint analyzer",
+  "files": [
+    "AGENTS.md",
+    "START_HERE.md",
+    "docs/01_PRODUCT_DATA_EXPORT_SPEC.md",
+    "docs/02_ARCHITECTURE_GITHUB_PAGES.md",
+    "docs/03_IMPLEMENTATION_PLAN.md",
+    "docs/04_TESTING_ACCEPTANCE.md"
+  ],
+  "directive": "Accountless, backend-free, ephemeral: drop files -> analyze locally -> export -> discard"
+}
