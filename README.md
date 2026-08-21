@@ -4,7 +4,9 @@ A privacy-first static Astro and React application for local Garage 61 stint ana
 
 ## Status
 
-Milestone 0 provides the static application shell. XLSX import and analysis arrive in later milestones.
+Milestone 1 provides local multi-file `.xlsx` import and Garage 61 lap normalization.
+
+The app detects the Garage 61 session sheet, discovers sectors, preserves source fields, classifies full and partial rows, and identifies duplicate file bytes. Scope selection, analytics, penalties, and exports arrive in later milestones.
 
 ## Development
 

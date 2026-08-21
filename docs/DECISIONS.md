@@ -79,3 +79,35 @@ Implement small shadcn-style primitives in `src/components/ui` instead of runnin
 ### Consequences
 
 The shell has the required UI foundation without adding a generator, unused components, or a second UI framework.
+
+## 2026-08-21 — Normalize durations as integer microseconds
+
+Status: Accepted
+
+### Context
+
+Garage 61 XLSX exports store durations as Excel day fractions, while statistics need stable precision.
+
+### Decision
+
+Convert day fractions and supported duration strings to integer microseconds at the parser boundary. Preserve exact numeric values until a view or export formats them.
+
+### Consequences
+
+The domain layer avoids repeated conversion and millisecond rounding. Export formatters can convert microseconds to numeric seconds later.
+
+## 2026-08-21 — Treat sector-sum mismatch as an informational warning
+
+Status: Accepted
+
+### Context
+
+Garage 61 sector totals can differ from lap time because of export and timing details. The MVP does not yet have enough real fixtures to choose a safe rejection rule.
+
+### Decision
+
+Keep rows with a positive lap time and positive values for every discovered sector. Add an informational warning when the absolute sector-sum difference exceeds 0.250 seconds. Do not reject the row for this mismatch.
+
+### Consequences
+
+Users can inspect questionable rows without losing exploratory data. Later fixtures can refine the tolerance without changing the normalized model.
