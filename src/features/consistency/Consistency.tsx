@@ -80,7 +80,11 @@ export function Consistency({ report }: ConsistencyProps) {
                   <th scope="row">{sector.sector}</th>
                   {drivers.map((driver) => {
                     const entry = sector.drivers.find((item) => item.driver === driver);
-                    return <td key={driver}>{entry ? formatDurationUs(metricValue(entry, metric)) : '—'}</td>;
+                    return (
+                      <td key={driver}>
+                        {entry ? formatDurationUs(metricValue(entry, metric)) : '—'}
+                      </td>
+                    );
                   })}
                 </tr>
               ))}
@@ -115,19 +119,30 @@ export function Consistency({ report }: ConsistencyProps) {
                     sector: sector.sector,
                     entry: sector.drivers.find((item) => item.driver === driverName),
                   }))
-                  .filter((item): item is { sector: string; entry: NonNullable<typeof item.entry> } => Boolean(item.entry));
+                  .filter(
+                    (item): item is { sector: string; entry: NonNullable<typeof item.entry> } =>
+                      Boolean(item.entry),
+                  );
                 const ranked = entries
                   .map(({ sector, entry }) => ({ sector, value: metricValue(entry, metric) }))
                   .filter((item): item is { sector: string; value: number } => item.value !== null)
-                  .sort((left, right) => left.value - right.value || left.sector.localeCompare(right.sector));
+                  .sort(
+                    (left, right) =>
+                      left.value - right.value || left.sector.localeCompare(right.sector),
+                  );
                 const driver = report.drivers.find((item) => item.driver === driverName);
                 const within100 = mean(
-                  report.sectors
-                    .map((sector) => sector.drivers.find((item) => item.driver === driverName)?.pctWithin100msOfMedian ?? null),
+                  report.sectors.map(
+                    (sector) =>
+                      sector.drivers.find((item) => item.driver === driverName)
+                        ?.pctWithin100msOfMedian ?? null,
+                  ),
                 );
                 const outliers = report.sectors.reduce(
                   (total, sector) =>
-                    total + (sector.drivers.find((item) => item.driver === driverName)?.outlierCountIqr ?? 0),
+                    total +
+                    (sector.drivers.find((item) => item.driver === driverName)?.outlierCountIqr ??
+                      0),
                   0,
                 );
 
@@ -135,14 +150,23 @@ export function Consistency({ report }: ConsistencyProps) {
                   <tr key={driverName}>
                     <th scope="row">{driverName}</th>
                     <td>{formatDurationUs(mean(ranked.map((item) => item.value)))}</td>
-                    <td>{ranked[0] ? `${ranked[0].sector} · ${formatDurationUs(ranked[0].value)}` : '—'}</td>
+                    <td>
+                      {ranked[0]
+                        ? `${ranked[0].sector} · ${formatDurationUs(ranked[0].value)}`
+                        : '—'}
+                    </td>
                     <td>
                       {ranked.at(-1)
                         ? `${ranked.at(-1)?.sector} · ${formatDurationUs(ranked.at(-1)?.value ?? null)}`
                         : '—'}
                     </td>
                     <td>{formatPercentage(within100)}</td>
-                    <td>{driver?.sectors.reduce((total, sector) => total + sector.outlierCountIqr, 0) ?? outliers}</td>
+                    <td>
+                      {driver?.sectors.reduce(
+                        (total, sector) => total + sector.outlierCountIqr,
+                        0,
+                      ) ?? outliers}
+                    </td>
                   </tr>
                 );
               })}

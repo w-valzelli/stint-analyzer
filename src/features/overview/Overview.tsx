@@ -28,7 +28,11 @@ export function Overview({ report }: OverviewProps) {
           { label: 'Drivers', value: String(report.leaderboard.length) },
           { label: 'Source files', value: String(report.sources.length) },
           { label: 'Runtime laps', value: String(runtimeLapCount) },
-          { label: 'Pace laps', value: String(paceLapCount), detail: report.configuration.paceMode },
+          {
+            label: 'Pace laps',
+            value: String(paceLapCount),
+            detail: report.configuration.paceMode,
+          },
           { label: 'Fastest best', value: formatDurationUs(bestLapUs) },
           { label: 'Fastest median', value: formatDurationUs(medianLapUs) },
           { label: 'Warnings', value: String(warningCount) },
@@ -75,7 +79,11 @@ export function Overview({ report }: OverviewProps) {
           <div className="analysis-surface__header">
             <div>
               <h3>Data quality</h3>
-              <p>{warningCount === 0 ? 'No warnings were raised for this report.' : `${warningCount} warning${warningCount === 1 ? '' : 's'} need review.`}</p>
+              <p>
+                {warningCount === 0
+                  ? 'No warnings were raised for this report.'
+                  : `${warningCount} warning${warningCount === 1 ? '' : 's'} need review.`}
+              </p>
             </div>
           </div>
           {warningCount === 0 ? (

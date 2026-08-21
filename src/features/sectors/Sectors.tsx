@@ -100,7 +100,11 @@ export function Sectors({ report }: SectorsProps) {
                   <td>{formatDurationUs(benchmarkValue(sector, benchmark))}</td>
                   {drivers.map((driver) => {
                     const entry = sector.drivers.find((item) => item.driver === driver);
-                    return <td key={driver}>{formatSignedDurationUs(entry ? driverGap(entry, benchmark) : null)}</td>;
+                    return (
+                      <td key={driver}>
+                        {formatSignedDurationUs(entry ? driverGap(entry, benchmark) : null)}
+                      </td>
+                    );
                   })}
                 </tr>
               ))}
