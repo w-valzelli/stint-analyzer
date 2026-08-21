@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  importWorkbookFiles,
-  trackMismatchMessage,
-} from '../../src/domain/parsing/imports';
+import { importWorkbookFiles, trackMismatchMessage } from '../../src/domain/parsing/imports';
 
 function workbook(trackName: string | null) {
   return {

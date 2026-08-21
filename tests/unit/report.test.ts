@@ -145,19 +145,19 @@ describe('canonical analysis report', () => {
       workbooks: [
         {
           ...workbook,
-          laps: workbook.laps.map((lap) =>
-            lap.id === 'bob-2' ? { ...lap, clean: false } : lap,
-          ),
+          laps: workbook.laps.map((lap) => (lap.id === 'bob-2' ? { ...lap, clean: false } : lap)),
         },
       ],
     });
 
-    expect(changed.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
-      driver,
-      position,
-      runtimeUs,
-      gapUs,
-    }))).toEqual(
+    expect(
+      changed.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
+        driver,
+        position,
+        runtimeUs,
+        gapUs,
+      })),
+    ).toEqual(
       baseline.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
         driver,
         position,

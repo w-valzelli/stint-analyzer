@@ -7,11 +7,13 @@ const importWorkbookFilesMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../../src/domain/parsing/imports', () => ({
   importWorkbookFiles: importWorkbookFilesMock,
-  trackMismatchMessage: (candidate: typeof parsedWorkbook, existing: typeof parsedWorkbook[]) => {
+  trackMismatchMessage: (candidate: typeof parsedWorkbook, existing: (typeof parsedWorkbook)[]) => {
     const candidateTrack = candidate.source.trackName?.trim();
     const differentTrack = existing
       .map((workbook) => workbook.source.trackName?.trim())
-      .find((track) => track && candidateTrack && track.toLowerCase() !== candidateTrack.toLowerCase());
+      .find(
+        (track) => track && candidateTrack && track.toLowerCase() !== candidateTrack.toLowerCase(),
+      );
     return differentTrack
       ? `All imported lap data should use the same track. This file reports “${candidateTrack}”, but existing files report “${differentTrack}”.`
       : null;
@@ -50,10 +52,7 @@ type ProgressEvent = {
 
 type ProgressCallback = (event: ProgressEvent) => void;
 
-function mockImport(
-  warnings: ParserWarning[] = [],
-  trackNames: string[] = ['Synthetic Ring'],
-) {
+function mockImport(warnings: ParserWarning[] = [], trackNames: string[] = ['Synthetic Ring']) {
   importWorkbookFilesMock.mockImplementation(
     async (
       files: File[],
