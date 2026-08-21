@@ -31,6 +31,7 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   await expect(allStints).toHaveAttribute('aria-selected', 'true');
   await expect(stints).toHaveText('All stints');
   await expect(scope.getByText(/runtime laps/).first()).toBeVisible();
+  await expect(scope.getByText('2 completed')).toBeVisible();
   await stints.click();
 
   const paceMode = scope.getByLabel('Pace mode');
@@ -49,6 +50,13 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   await page.mouse.click(10, 10);
   await expect(page.getByRole('dialog').first()).not.toBeVisible();
   await expect(scope.getByText(/pit-in|pit-out/)).not.toBeVisible();
+
+  await page.getByRole('tab', { name: 'Leaderboard' }).click();
+  await expect(page.getByRole('heading', { name: 'Runtime standings.' })).toBeVisible();
+  await expect(
+    page.getByRole('table', { name: 'Runtime standings for the selected scope' }),
+  ).toContainText('Alice');
+  await expect(page.getByText(/Invalid laps count full timed non-pit laps/)).toBeVisible();
 
   await page.getByRole('button', { name: `Remove ${path.basename(fixture)}` }).click();
   await expect(
