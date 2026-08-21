@@ -10,8 +10,10 @@ import {
 } from '../domain/analytics/stints';
 import type { PaceMode, ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
+import { Consistency } from '../features/consistency/Consistency';
 import { Overview } from '../features/overview/Overview';
 import { Leaderboard } from '../features/leaderboard/Leaderboard';
+import { Sectors } from '../features/sectors/Sectors';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
 import { Button, buttonVariants } from './ui/button';
@@ -181,6 +183,10 @@ export function AnalyzerShell() {
               <div className="calibration-panel calibration-panel--table">
                 <Leaderboard report={report} />
               </div>
+            ) : report && activeTab === 'sectors' ? (
+              <Sectors report={report} />
+            ) : report && activeTab === 'consistency' ? (
+              <Consistency report={report} />
             ) : (
               <div className="calibration-panel">
                 <div className="calibration-panel__advisory">
