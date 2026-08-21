@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import type { TooltipContentProps } from 'recharts';
 
 import type { AnalysisReport, MetricStats } from '../../domain/model/report';
 import { formatDurationUs } from '../../lib/durations';
@@ -36,6 +37,46 @@ type AnalysisSurfaceProps = {
 
 export function AnalysisSurface({ children, className = '' }: AnalysisSurfaceProps) {
   return <section className={`analysis-surface ${className}`}>{children}</section>;
+}
+
+export function useChartTooltipPortal(): HTMLElement | null {
+  const [portal, setPortal] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortal(document.body);
+  }, []);
+
+  return portal;
+}
+
+type AnalysisChartTooltipProps = TooltipContentProps & {
+  formatLabel: (label: unknown) => string;
+  formatValue: (value: unknown, name: unknown) => string;
+};
+
+export function AnalysisChartTooltip({
+  active,
+  label,
+  payload,
+  formatLabel,
+  formatValue,
+}: AnalysisChartTooltipProps) {
+  const entries =
+    payload?.filter((entry) => entry.value !== null && entry.value !== undefined) ?? [];
+  if (!active || entries.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="analysis-chart-tooltip">
+      <strong>{formatLabel(label)}</strong>
+      {entries.map((entry) => (
+        <span key={String(entry.dataKey ?? entry.name)}>
+          {formatValue(entry.value, entry.name)}
+        </span>
+      ))}
+    </div>
+  );
 }
 
 type SelectControlProps = {

@@ -123,12 +123,14 @@ describe('ScopeReview', () => {
     expect(trigger).toHaveTextContent('All stints');
 
     fireEvent.click(trigger);
-    fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
+    const listbox = screen.getByRole('listbox');
+    expect(listbox.parentElement).toBe(document.body);
+    fireEvent.click(screen.getByRole('option', { name: /All stints/ }));
     expect(facts).toHaveTextContent('0 runtime');
     expect(facts).toHaveTextContent('0 pace');
 
     fireEvent.click(trigger);
-    fireEvent.click(driver.getByRole('option', { name: /All stints/ }));
+    fireEvent.click(screen.getByRole('option', { name: /All stints/ }));
     expect(facts).toHaveTextContent('6 runtime');
     expect(facts).toHaveTextContent('3 pace');
   });

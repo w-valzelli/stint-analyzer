@@ -13,7 +13,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { CustomSelect } from '../../components/ui/select';
 import type { AnalysisReport, LapAuditRow } from '../../domain/model/report';
-import { AnalysisSurface, formatSignedDurationUs } from './AnalysisPrimitives';
+import {
+  AnalysisChartTooltip,
+  AnalysisSurface,
+  formatSignedDurationUs,
+  useChartTooltipPortal,
+} from './AnalysisPrimitives';
 
 type SectorProgressionChartProps = {
   report: AnalysisReport;
@@ -147,6 +152,7 @@ function progressionDot(sector: string, color: string) {
 }
 
 export function SectorProgressionChart({ report, driver }: SectorProgressionChartProps) {
+  const tooltipPortal = useChartTooltipPortal();
   const sectorNames = useMemo(
     () => report.sectors.map((sector) => sector.sector),
     [report.sectors],
@@ -208,7 +214,11 @@ export function SectorProgressionChart({ report, driver }: SectorProgressionChar
               <CartesianGrid stroke="var(--calibration-rule)" vertical={false} />
               <XAxis
                 dataKey="lapKey"
-                tick={{ fill: 'var(--calibration-muted)', fontSize: 10 }}
+                tick={{
+                  fill: 'var(--calibration-ink-soft)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
+                }}
                 tickLine={false}
                 axisLine={{ stroke: 'var(--calibration-rule-strong)' }}
                 minTickGap={24}
@@ -216,25 +226,27 @@ export function SectorProgressionChart({ report, driver }: SectorProgressionChar
               />
               <YAxis
                 domain={yDomain}
-                tick={{ fill: 'var(--calibration-muted)', fontSize: 10 }}
+                tick={{
+                  fill: 'var(--calibration-ink-soft)',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: 10,
+                }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value: number) => formatSignedDurationUs(value)}
                 width={66}
               />
               <Tooltip
-                labelFormatter={(label) => `Lap ${String(label).split(':')[0] ?? label}`}
-                formatter={(value, name) => [
-                  formatSignedDurationUs(Number(value)),
-                  `${name} delta`,
-                ]}
-                contentStyle={{
-                  border: '1px solid var(--calibration-rule-strong)',
-                  borderRadius: '6px',
-                  background: 'var(--calibration-sheet)',
-                  color: 'var(--calibration-ink)',
-                  fontFamily: 'var(--font-sans)',
-                }}
+                portal={tooltipPortal}
+                content={(props) => (
+                  <AnalysisChartTooltip
+                    {...props}
+                    formatLabel={(label) => `Lap ${String(label).split(':')[0] ?? label}`}
+                    formatValue={(value, name) =>
+                      `${String(name)} delta · ${formatSignedDurationUs(Number(value))}`
+                    }
+                  />
+                )}
               />
               <Legend
                 wrapperStyle={{

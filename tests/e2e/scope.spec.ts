@@ -26,7 +26,7 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   await expect(scope.getByLabel('Pace mode')).toBeEnabled();
 
   await stints.click();
-  const allStints = scope.getByRole('option', { name: /All stints/ });
+  const allStints = page.getByRole('option', { name: /All stints/ });
   await expect(allStints).toBeVisible();
   await expect(allStints).toHaveAttribute('aria-selected', 'true');
   await expect(stints).toHaveText('All stints');
@@ -36,7 +36,7 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
 
   const paceMode = scope.getByLabel('Pace mode');
   await paceMode.click();
-  await scope.getByRole('option', { name: 'All non-pit' }).click();
+  await page.getByRole('option', { name: 'All non-pit' }).click();
   await expect(paceMode).toHaveText('All non-pit');
 
   const audit = scope.getByText(/Lap audit \(\d+ laps\)/).first();
