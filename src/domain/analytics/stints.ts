@@ -73,8 +73,7 @@ function startsNewStint(previous: Lap | undefined, current: Lap): boolean {
     return false;
   }
 
-  const runChanged =
-    previous.run !== null && current.run !== null && previous.run !== current.run;
+  const runChanged = previous.run !== null && current.run !== null && previous.run !== current.run;
   const lapNumberReset =
     previous.lapNumber !== null &&
     current.lapNumber !== null &&
@@ -85,7 +84,11 @@ function startsNewStint(previous: Lap | undefined, current: Lap): boolean {
   return runChanged || current.pitOut || previous.pitIn || lapNumberReset;
 }
 
-function buildCandidateStint(scopeKey: string, index: number, laps: readonly Lap[]): CandidateStint {
+function buildCandidateStint(
+  scopeKey: string,
+  index: number,
+  laps: readonly Lap[],
+): CandidateStint {
   const firstFullTimedLap = laps.find((lap) => lap.isFullTimedLap);
   const lastFullTimedLap = [...laps].reverse().find((lap) => lap.isFullTimedLap);
   const outLap = laps.find((lap) => lap.pitOut);
@@ -145,6 +148,51 @@ export function createDefaultScopeSelections(laps: readonly Lap[]): ScopeSelecti
       startLapId: stint?.firstFullTimedLapId ?? null,
       endLapId: stint?.lastFullTimedLapId ?? null,
       paceMode: 'clean-non-pit',
+    };
+  });
+}
+
+function validFullLapId(
+  group: ScopeGroup,
+  stint: CandidateStint | null,
+  lapId: string | null,
+): boolean {
+  return (
+    lapId !== null &&
+    stint !== null &&
+    stint.lapIds.includes(lapId) &&
+    group.laps.some((lap) => lap.id === lapId && lap.isFullTimedLap)
+  );
+}
+
+export function reconcileScopeSelections(
+  laps: readonly Lap[],
+  previousSelections: readonly ScopeSelection[],
+): ScopeSelection[] {
+  const previousByKey = new Map(
+    previousSelections.map((selection) => [selection.scopeKey, selection]),
+  );
+
+  return groupLapsByScope(laps).map((group) => {
+    const stints = detectCandidateStints(group);
+    const fallback = createDefaultScopeSelections(group.laps)[0];
+    const previous = previousByKey.get(group.scopeKey);
+    const selectedStint = stints.find((stint) => stint.id === previous?.selectedStintId);
+    const stint = selectedStint ?? defaultStint(stints);
+    const startLapId = validFullLapId(group, stint, previous?.startLapId ?? null)
+      ? (previous?.startLapId ?? null)
+      : (stint?.firstFullTimedLapId ?? null);
+    const endLapId = validFullLapId(group, stint, previous?.endLapId ?? null)
+      ? (previous?.endLapId ?? null)
+      : (stint?.lastFullTimedLapId ?? null);
+
+    return {
+      scopeKey: group.scopeKey,
+      included: previous?.included ?? fallback?.included ?? true,
+      selectedStintId: stint?.id ?? null,
+      startLapId,
+      endLapId,
+      paceMode: previous?.paceMode ?? fallback?.paceMode ?? 'clean-non-pit',
     };
   });
 }

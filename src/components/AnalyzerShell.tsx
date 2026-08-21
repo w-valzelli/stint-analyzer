@@ -1,7 +1,15 @@
 import { Download, GitFork, ShieldCheck } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { deriveLapEligibility } from '../domain/analytics/eligibility';
+import {
+  detectStints,
+  groupLapsByScope,
+  reconcileScopeSelections,
+} from '../domain/analytics/stints';
+import type { ScopeSelection } from '../domain/model/scope';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
+import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
 import { Button, buttonVariants } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -24,15 +32,42 @@ const emptyImportState: ImportRegisterState = {
 export function AnalyzerShell() {
   const [activeTab, setActiveTab] = useState('overview');
   const [importState, setImportState] = useState<ImportRegisterState>(emptyImportState);
+  const [scopeSelections, setScopeSelections] = useState<ScopeSelection[]>([]);
   const handleImportStateChange = useCallback((nextState: ImportRegisterState) => {
     setImportState(nextState);
   }, []);
 
-  const laps = importState.workbooks.flatMap((workbook) => workbook.laps);
-  const driverNames = [...new Set(laps.map((lap) => lap.driver))].sort((left, right) =>
-    left.localeCompare(right),
+  const laps = useMemo(
+    () => importState.workbooks.flatMap((workbook) => workbook.laps),
+    [importState.workbooks],
+  );
+  const scopeGroups = useMemo(() => groupLapsByScope(laps), [laps]);
+  const candidateStints = useMemo(() => detectStints(laps), [laps]);
+  const eligibility = useMemo(
+    () => deriveLapEligibility(laps, scopeSelections, candidateStints),
+    [candidateStints, laps, scopeSelections],
+  );
+  const driverNames = useMemo(
+    () =>
+      [...new Set(laps.map((lap) => lap.driver))].sort((left, right) => left.localeCompare(right)),
+    [laps],
   );
   const hasWorkbooks = importState.workbooks.length > 0;
+
+  useEffect(() => {
+    setScopeSelections((current) => reconcileScopeSelections(laps, current));
+  }, [laps]);
+
+  const handleScopeSelectionChange = useCallback(
+    (scopeKey: string, update: Partial<Omit<ScopeSelection, 'scopeKey'>>) => {
+      setScopeSelections((current) =>
+        current.map((selection) =>
+          selection.scopeKey === scopeKey ? { ...selection, ...update } : selection,
+        ),
+      );
+    },
+    [],
+  );
 
   return (
     <main className="calibration-app">
@@ -160,6 +195,14 @@ export function AnalyzerShell() {
         </div>
       </section>
 
+      <ScopeReview
+        groups={scopeGroups}
+        stints={candidateStints}
+        selections={scopeSelections}
+        eligibility={eligibility}
+        onSelectionChange={handleScopeSelectionChange}
+      />
+
       <section className="calibration-index" aria-labelledby="index-title">
         <div className="calibration-index__heading">
           <div>
@@ -189,7 +232,7 @@ export function AnalyzerShell() {
               </h3>
               <p>
                 {hasWorkbooks
-                  ? 'The source rows are ready. Scope and report calculations arrive in the next analysis steps.'
+                  ? 'The selected scope is ready. Report calculations arrive in the next analysis steps.'
                   : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
               </p>
               <div className="calibration-panel__rule" aria-hidden="true">

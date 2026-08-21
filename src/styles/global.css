@@ -558,6 +558,198 @@ select:focus-visible {
   font-size: 0.76rem;
 }
 
+.scope-review {
+  padding: 38px 0 72px;
+  border-top: 1px solid var(--calibration-rule-strong);
+}
+
+.scope-review__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.scope-review h2 {
+  margin: 0;
+  font-size: clamp(1.45rem, 2.6vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.scope-review__heading p {
+  max-width: 58ch;
+  margin: 12px 0 0;
+  color: var(--calibration-ink-soft);
+  line-height: 1.55;
+}
+
+.scope-review__summary,
+.scope-review__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.scope-review__groups {
+  display: grid;
+  gap: 16px;
+  margin-top: 29px;
+}
+
+.scope-review__group {
+  padding: 22px;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-lg);
+  background: var(--calibration-sheet);
+}
+
+.scope-review__group-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.scope-review__group h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.scope-review__group-header p {
+  margin: 5px 0 0;
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
+  overflow-wrap: anywhere;
+}
+
+.scope-review__include {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  color: var(--calibration-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scope-review__include input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--calibration-cobalt);
+}
+
+.scope-review__controls {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.4fr) repeat(3, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.scope-review__controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.scope-review__controls select {
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-sm);
+  background: var(--calibration-paper);
+  color: var(--calibration-ink);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+}
+
+.scope-review__facts {
+  margin-top: 16px;
+}
+
+.scope-review__warning {
+  color: var(--calibration-ochre);
+}
+
+.scope-review__audit {
+  margin-top: 18px;
+  border-top: 1px solid var(--calibration-rule);
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scope-review__audit summary {
+  width: fit-content;
+  padding-top: 12px;
+  cursor: pointer;
+}
+
+.scope-review__audit-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+  border-top: 1px solid var(--calibration-rule);
+  border-bottom: 1px solid var(--calibration-rule);
+}
+
+.scope-review__audit table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.scope-review__audit th,
+.scope-review__audit td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--calibration-rule);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: normal;
+  line-height: 1.4;
+  text-transform: none;
+  vertical-align: top;
+}
+
+.scope-review__audit thead th {
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.scope-review__audit tbody th {
+  color: var(--calibration-ink);
+  font-weight: 600;
+}
+
+.scope-review__empty {
+  margin: 29px 0 0;
+  padding: 22px;
+  border: 1px dashed var(--calibration-rule-strong);
+  color: var(--calibration-muted);
+}
+
 .calibration-index {
   padding-top: 42px;
 }
@@ -914,15 +1106,30 @@ select:focus-visible {
   }
 
   .calibration-ledger,
-  .calibration-index {
+  .calibration-index,
+  .scope-review {
     padding-bottom: 55px;
   }
 
   .calibration-ledger__heading,
-  .calibration-index__heading {
+  .calibration-index__heading,
+  .scope-review__heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 15px;
+  }
+
+  .scope-review__group {
+    padding: 17px;
+  }
+
+  .scope-review__group-header {
+    flex-direction: column;
+    gap: 13px;
+  }
+
+  .scope-review__controls {
+    grid-template-columns: 1fr 1fr;
   }
 
   .calibration-table th,
