@@ -22,8 +22,9 @@ type ProgressionChartProps = {
 };
 
 type ProgressionPoint = {
+  lapKey: string;
   lapNumber: number;
-  [driver: string]: number | null;
+  [driver: string]: number | string | null;
 };
 
 const ALL_DRIVERS_OPTION = '__all_drivers__';
@@ -60,7 +61,7 @@ export function pointsForReport(
   drivers: readonly string[],
 ): ProgressionPoint[] {
   const selectedDrivers = new Set(drivers);
-  const rowsByDriver = new Map<string, Map<number, LapAuditRow>>();
+  const rowsByDriver = new Map<string, Map<number, LapAuditRow[]>>();
 
   report.lapAudit
     .filter(
@@ -72,23 +73,32 @@ export function pointsForReport(
     )
     .sort(compareAuditRows)
     .forEach((row) => {
-      const rowsByLap = rowsByDriver.get(row.driver) ?? new Map<number, LapAuditRow>();
+      const rowsByLap = rowsByDriver.get(row.driver) ?? new Map<number, LapAuditRow[]>();
       const lapNumber = row.lapNumber as number;
-      const existing = rowsByLap.get(lapNumber);
-      if (!existing || compareAuditRows(row, existing) < 0) {
-        rowsByLap.set(lapNumber, row);
-      }
+      const rows = rowsByLap.get(lapNumber) ?? [];
+      rows.push(row);
+      rowsByLap.set(lapNumber, rows);
       rowsByDriver.set(row.driver, rowsByLap);
     });
 
-  const lapNumbers = [
-    ...new Set([...rowsByDriver.values()].flatMap((rows) => [...rows.keys()])),
-  ].sort((left, right) => left - right);
+  const lapPoints = new Map<string, { lapNumber: number; occurrence: number }>();
+  for (const rowsByLap of rowsByDriver.values()) {
+    for (const [lapNumber, rows] of rowsByLap) {
+      rows.forEach((_row, occurrence) => {
+        const lapKey = `${lapNumber}:${occurrence}`;
+        lapPoints.set(lapKey, { lapNumber, occurrence });
+      });
+    }
+  }
 
-  return lapNumbers.map((lapNumber) => {
-    const point: ProgressionPoint = { lapNumber };
+  const orderedLapPoints = [...lapPoints.entries()].sort(
+    ([, left], [, right]) => left.lapNumber - right.lapNumber || left.occurrence - right.occurrence,
+  );
+
+  return orderedLapPoints.map(([lapKey, { lapNumber, occurrence }]) => {
+    const point: ProgressionPoint = { lapKey, lapNumber };
     for (const driver of drivers) {
-      const row = rowsByDriver.get(driver)?.get(lapNumber);
+      const row = rowsByDriver.get(driver)?.get(lapNumber)?.[occurrence];
       const isPitLap = row?.pitIn === true || row?.pitOut === true;
       point[driver] = isPitLap ? null : (row?.lapTimeUs ?? null);
       point[dirtyKeyFor(driver)] = row?.clean === false && !isPitLap ? row.lapTimeUs : null;
@@ -178,7 +188,7 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
               disabled={driverNames.length === 0}
               onChange={(next) => {
                 const values = Array.isArray(next) ? next : [next];
-                setSelectedDrivers(values.length > 0 ? values : driverNames.slice(0, 1));
+                setSelectedDrivers((current) => (values.length > 0 ? values : current));
               }}
             />
           </div>
@@ -192,12 +202,12 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
             <LineChart data={data} margin={{ top: 10, right: 18, bottom: 4, left: 8 }}>
               <CartesianGrid stroke="var(--calibration-rule)" vertical={false} />
               <XAxis
-                dataKey="lapNumber"
+                dataKey="lapKey"
                 tick={{ fill: 'var(--calibration-muted)', fontSize: 10 }}
                 tickLine={false}
                 axisLine={{ stroke: 'var(--calibration-rule-strong)' }}
                 minTickGap={24}
-                allowDecimals={false}
+                tickFormatter={(value: string) => value.split(':')[0] ?? value}
               />
               <YAxis
                 domain={yDomain}
@@ -208,7 +218,7 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
                 width={58}
               />
               <Tooltip
-                labelFormatter={(label) => `Lap ${label}`}
+                labelFormatter={(label) => `Lap ${String(label).split(':')[0] ?? label}`}
                 formatter={(value, name) => [formatDurationUs(Number(value)), name]}
                 contentStyle={{
                   border: '1px solid var(--calibration-rule-strong)',

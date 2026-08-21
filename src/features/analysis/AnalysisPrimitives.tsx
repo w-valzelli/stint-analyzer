@@ -47,7 +47,7 @@ type SelectControlProps = {
 
 export function SelectControl({ label, value, options, onChange }: SelectControlProps) {
   return (
-    <label className="analysis-control">
+    <div className="analysis-control">
       <span>{label}</span>
       <CustomSelect
         label={label}
@@ -55,7 +55,7 @@ export function SelectControl({ label, value, options, onChange }: SelectControl
         options={options}
         onChange={(next) => onChange(next as string)}
       />
-    </label>
+    </div>
   );
 }
 
@@ -113,7 +113,7 @@ export function DriverControl({ report }: { report: AnalysisReport }) {
     .map((driver) => driver.driver);
 
   return (
-    <label className="analysis-control">
+    <div className="analysis-control">
       <span>Driver</span>
       <CustomSelect
         label="Driver"
@@ -122,6 +122,6 @@ export function DriverControl({ report }: { report: AnalysisReport }) {
         onChange={(next) => setSelectedDriver(next as string)}
         disabled={drivers.length === 0}
       />
-    </label>
+    </div>
   );
 }

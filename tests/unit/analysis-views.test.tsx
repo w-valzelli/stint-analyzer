@@ -99,6 +99,7 @@ describe('M5 analysis views', () => {
   it('aligns completed laps and marks dirty and pit laps in progression data', () => {
     const report = analysisReport([
       makeLap({ id: 'alice-3', rowNumber: 3, lapNumber: 3, clean: false, pitIn: true }),
+      makeLap({ id: 'alice-4', rowNumber: 4, lapNumber: 3, clean: false }),
       makeLap({
         id: 'bob-3',
         rowNumber: 3,
@@ -107,15 +108,24 @@ describe('M5 analysis views', () => {
         clean: false,
       }),
     ]);
-    const lapThree = pointsForReport(report, ['Alice', 'Bob']).find(
+    const lapThreePoints = pointsForReport(report, ['Alice', 'Bob']).filter(
       (point) => point.lapNumber === 3,
     );
 
-    expect(lapThree).toMatchObject({
+    expect(lapThreePoints).toHaveLength(2);
+    expect(lapThreePoints[0]).toMatchObject({
+      lapKey: '3:0',
       Alice: null,
       Bob: 10_000_000,
       Alice__dirty: null,
       Bob__dirty: 10_000_000,
+    });
+    expect(lapThreePoints[1]).toMatchObject({
+      lapKey: '3:1',
+      Alice: 10_000_000,
+      Bob: null,
+      Alice__dirty: 10_000_000,
+      Bob__dirty: null,
     });
   });
 
