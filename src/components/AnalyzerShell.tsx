@@ -1,4 +1,4 @@
-import { Download, GitFork } from 'lucide-react';
+import { GitFork } from 'lucide-react';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { deriveLapEligibility } from '../domain/analytics/eligibility';
@@ -9,10 +9,11 @@ import {
   reconcileScopeSelections,
 } from '../domain/analytics/stints';
 import type { PaceMode, ScopeSelection } from '../domain/model/scope';
+import { ExportMenu } from '../features/export/ExportMenu';
 import { ImportRegister, type ImportRegisterState } from '../features/import/ImportRegister';
 import { ScopeReview } from '../features/scope/ScopeReview';
 import { ThemeControl } from './ThemeControl';
-import { Button, buttonVariants } from './ui/button';
+import { buttonVariants } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const tabs = [
@@ -172,10 +173,7 @@ export function AnalyzerShell() {
           <div>
             <h2 id="index-title">Analysis views.</h2>
           </div>
-          <Button treatment="outline" tone="neutral" size="sm" disabled>
-            <Download aria-hidden="true" size={14} />
-            Export report
-          </Button>
+          <ExportMenu report={report} />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
