@@ -7,7 +7,7 @@ import {
   SelectControl,
   useActiveDriver,
 } from '../analysis/AnalysisPrimitives';
-import { ProgressionChart } from '../analysis/ProgressionChart';
+import { SectorProgressionChart } from '../analysis/SectorProgressionChart';
 import { useAnalysisViewStore, type SectorBenchmark } from '../../state/analysis-view';
 
 type SectorsProps = {
@@ -158,7 +158,7 @@ export function Sectors({ report }: SectorsProps) {
         </div>
       </AnalysisSurface>
 
-      <ProgressionChart report={report} driver={selectedDriver} />
+      <SectorProgressionChart report={report} driver={selectedDriver} />
     </div>
   );
 }

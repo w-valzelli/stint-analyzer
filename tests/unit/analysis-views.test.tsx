@@ -98,6 +98,7 @@ describe('M5 analysis views', () => {
     await user.selectOptions(screen.getByLabelText('Metric'), 'mad');
 
     expect(screen.getByText('Fastest Average')).toBeInTheDocument();
+    expect(screen.getByText('Sector progression')).toBeInTheDocument();
     expect(screen.getByText(/selected MAD across drivers/i)).toBeInTheDocument();
   });
 
