@@ -67,7 +67,8 @@ describe('Leaderboard', () => {
       /1\s*Alice\s*0:10\.000\s*—\s*1 \/ 1\s*100\.0%\s*0:10\.000\s*0:10\.000/,
     );
     expect(rows[2]).toHaveTextContent(/2\s*Bob\s*0:13\.000\s*\+0:03\.000\s*0 \/ 1\s*0\.0%\s*—\s*—/);
-    expect(screen.queryByText('Best overall')).not.toBeInTheDocument();
+    expect(screen.getByText('Best pace')).toBeInTheDocument();
+    expect(screen.getByText('Median pace')).toBeInTheDocument();
     expect(table).not.toHaveTextContent('penalty');
   });
 });

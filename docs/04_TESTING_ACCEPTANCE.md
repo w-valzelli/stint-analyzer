@@ -81,8 +81,8 @@ Test:
 
 - runtime sum;
 - clean-lap fraction and clean percentage;
-- best clean lap;
-- median clean lap;
+- best pace lap;
+- median pace lap;
 - runtime order;
 - leader gap 0;
 - other runtime gaps;
@@ -90,7 +90,7 @@ Test:
 - Clean-flag invariance for runtime, position, and gap.
 
 Required regression:
-two identical datasets differing only in `Clean` flags must have identical runtime, position, and gap values. Best clean and median clean lap values can differ.
+two identical datasets differing only in `Clean` flags must have identical runtime, position, and gap values. Best pace and median pace values can differ with the selected pace mode.
 
 ---
 
@@ -180,9 +180,9 @@ Test:
 ### Runtime facts
 
 1. import;
-2. verify the leaderboard shows runtime, position, gap, clean-lap fraction, clean percentage, best clean, and median clean;
+2. verify the leaderboard shows runtime, position, gap, clean-lap fraction, clean percentage, best pace, and median pace;
 3. change only Clean flags in a fixture;
-4. verify runtime, order, and gaps remain unchanged while best clean and median clean can change.
+4. verify runtime, order, and gaps remain unchanged while best pace and median pace follow the selected pace mode.
 
 ### Bad file
 

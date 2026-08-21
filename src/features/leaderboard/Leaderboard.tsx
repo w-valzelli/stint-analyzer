@@ -14,7 +14,7 @@ export function Leaderboard({ report }: LeaderboardProps) {
 
   if (rows.length === 0) {
     return (
-      <div className="leaderboard leaderboard--empty">
+      <div className="leaderboard leaderboard--empty calibration-panel__advisory">
         <p>No completed runtime laps are available.</p>
       </div>
     );
@@ -32,8 +32,8 @@ export function Leaderboard({ report }: LeaderboardProps) {
               <th scope="col">Gap</th>
               <th scope="col">Clean laps</th>
               <th scope="col">Clean %</th>
-              <th scope="col">Best clean</th>
-              <th scope="col">Median clean</th>
+              <th scope="col">Best pace</th>
+              <th scope="col">Median pace</th>
             </tr>
           </thead>
           <tbody>
@@ -45,8 +45,8 @@ export function Leaderboard({ report }: LeaderboardProps) {
                 <td>{formatGapUs(row.gapUs)}</td>
                 <td>{`${row.cleanLapCount} / ${row.eligibleNonPitLapCount}`}</td>
                 <td>{formatPercentage(row.cleanPercentage)}</td>
-                <td>{formatDurationUs(row.bestCleanLapUs)}</td>
-                <td>{formatDurationUs(row.medianCleanLapUs)}</td>
+                <td>{formatDurationUs(row.lapStats.bestUs)}</td>
+                <td>{formatDurationUs(row.lapStats.medianUs)}</td>
               </tr>
             ))}
           </tbody>

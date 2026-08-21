@@ -156,7 +156,7 @@ A user must be able to:
 2. drag in multiple Garage 61 `.xlsx` exports;
 3. review detected drivers/stints/laps;
 4. choose the runtime/pace scope;
-5. view the runtime-only leaderboard with runtime gaps, clean-lap fractions, clean percentage, best clean lap, and median clean lap;
+5. view the runtime-only leaderboard with runtime gaps, clean-lap fractions, clean percentage, best pace lap, and median pace lap;
 6. view overview, leaderboard, sectors, consistency, driver detail and lap audit;
 7. export `.xlsx`, `.md` and `.json`;
 8. use the app successfully from GitHub Pages;

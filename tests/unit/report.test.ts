@@ -93,16 +93,14 @@ describe('canonical analysis report', () => {
         driver: 'Bob',
         runtimeUs: 18_500_000,
         gapUs: 0,
-        bestCleanLapUs: 9_000_000,
-        medianCleanLapUs: 9_250_000,
+        lapStats: { bestUs: 9_000_000, medianUs: 9_250_000 },
       },
       {
         position: 2,
         driver: 'Alice',
         runtimeUs: 21_000_000,
         gapUs: 2_500_000,
-        bestCleanLapUs: 10_000_000,
-        medianCleanLapUs: 10_000_000,
+        lapStats: { bestUs: 10_000_000, medianUs: 10_000_000 },
       },
     ]);
     expect(report.drivers[0]).toMatchObject({
@@ -113,8 +111,6 @@ describe('canonical analysis report', () => {
       cleanLapCount: 1,
       eligibleNonPitLapCount: 1,
       cleanPercentage: 100,
-      bestCleanLapUs: 10_000_000,
-      medianCleanLapUs: 10_000_000,
       lapStats: { n: 1, bestUs: 10_000_000, medianUs: 10_000_000, sdUs: 0 },
       theoreticalBestUs: 10_000_000,
       executionGapUs: 0,
@@ -147,7 +143,7 @@ describe('canonical analysis report', () => {
     expect(buildAnalysisReport(input)).toEqual(buildAnalysisReport(input));
   });
 
-  it('keeps standings on runtime and separates best and median clean laps', () => {
+  it('uses the selected pace sample for best and median pace laps', () => {
     const input = reportInput();
     const baseline = buildAnalysisReport(input);
     const workbook = input.workbooks[0];
@@ -155,7 +151,7 @@ describe('canonical analysis report', () => {
       throw new Error('The test needs one workbook.');
     }
 
-    const changed = buildAnalysisReport({
+    const changedInput = {
       ...input,
       workbooks: [
         {
@@ -163,7 +159,9 @@ describe('canonical analysis report', () => {
           laps: workbook.laps.map((lap) => (lap.id === 'bob-1' ? { ...lap, clean: false } : lap)),
         },
       ],
-    });
+    };
+    const changed = buildAnalysisReport(changedInput);
+    const allNonPit = buildAnalysisReport({ ...changedInput, paceMode: 'all-non-pit' });
 
     expect(
       changed.leaderboard.map(({ driver, position, runtimeUs, gapUs }) => ({
@@ -181,8 +179,10 @@ describe('canonical analysis report', () => {
       })),
     );
     expect(changed.leaderboard.find((row) => row.driver === 'Bob')).toMatchObject({
-      bestCleanLapUs: 9_500_000,
-      medianCleanLapUs: 9_500_000,
+      lapStats: { bestUs: 9_500_000, medianUs: 9_500_000 },
+    });
+    expect(allNonPit.leaderboard.find((row) => row.driver === 'Bob')).toMatchObject({
+      lapStats: { bestUs: 9_000_000, medianUs: 9_250_000 },
     });
   });
 

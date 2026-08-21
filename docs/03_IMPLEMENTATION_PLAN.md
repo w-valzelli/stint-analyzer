@@ -136,7 +136,7 @@ The approved product amendment supersedes the original penalty-adjustment propos
 ### Tasks
 
 - show clean laps as a fraction and clean percentage;
-- derive the best clean lap and median clean lap from the selected runtime scope;
+- derive the best pace lap and median pace lap from the selected pace scope;
 - sort by selected runtime and calculate deterministic gaps;
 - add position, gap, and lap facts to the canonical leaderboard rows;
 - build the read-only leaderboard screen.
@@ -145,7 +145,7 @@ The approved product amendment supersedes the original penalty-adjustment propos
 
 - runtime remains the only ranking measure;
 - unclean laps remain part of runtime when they are full timed and selected;
-- best and median clean values use only selected full timed non-pit laps with `Clean = 1`;
+- best and median pace values use the selected `clean-non-pit` or `all-non-pit` pace sample;
 - clean-lap fractions use selected full timed non-pit laps as the denominator;
 - leader gap = 0;
 - changing only Clean flags does not change runtime, position, or gap;

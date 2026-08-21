@@ -188,7 +188,7 @@ The original Milestone 4 plan proposed manual penalty inputs and penalty-adjuste
 
 ### Decision
 
-Rank the leaderboard by selected runtime only. Calculate gaps from the runtime leader. Show clean laps as a fraction, clean percentage, best clean lap, and median clean lap. Use selected full timed non-pit laps for the fraction denominator. Use only `Clean = 1` laps for best and median clean values. Do not infer penalties or penalty seconds from `Clean`.
+Rank the leaderboard by selected runtime only. Calculate gaps from the runtime leader. Show clean laps as a fraction, clean percentage, best pace lap, and median pace lap. Use selected full timed non-pit laps for the fraction denominator. Use the selected pace sample for best and median pace values. Do not infer penalties or penalty seconds from `Clean`.
 
 ### Consequences
 

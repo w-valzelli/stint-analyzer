@@ -55,6 +55,8 @@ test('reviews driver scope, multi-stint selection, and lap audit reasons', async
   const leaderboard = page.getByRole('table', { name: 'Leaderboard' });
   await expect(leaderboard).toBeVisible();
   await expect(leaderboard).toContainText('Alice');
+  await expect(leaderboard).toContainText('Best pace');
+  await expect(leaderboard).toContainText('Median pace');
   await expect(leaderboard).toContainText('0:22.100');
   await expect(page.getByRole('heading', { name: 'Runtime standings.' })).not.toBeVisible();
 
