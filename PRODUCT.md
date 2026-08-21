@@ -12,11 +12,11 @@ The primary users are drivers and coaches preparing for motorsport events. They 
 
 ## Product Purpose
 
-Garage 61 Stint Analyzer analyzes one or more Garage 61 session or stint `.xlsx` exports in the browser. It helps users compare selected runs, review data quality, inspect lap inclusion, and export a structured report. Success means that a user can complete this workflow without an account, backend, or file upload.
+Stint Analyzer analyzes one or more Garage 61 session or stint `.xlsx` exports in the browser. It helps users compare selected runs, review data quality, inspect lap inclusion, and export a structured report. Success means that a user can complete this workflow without an account, backend, or file upload.
 
 ## Positioning
 
-The product provides private, browser-local Garage 61 analysis. It keeps source workbooks and analysis in memory, then produces deterministic `.xlsx`, Markdown, and JSON exports from one canonical report.
+Stint Analyzer provides browser-local analysis of Garage 61 source workbooks. It keeps source workbooks and analysis in memory, then produces deterministic `.xlsx`, Markdown, and JSON exports from one canonical report.
 
 ## Operating Context
 
@@ -40,11 +40,11 @@ A user drops local Garage 61 workbooks into the site, reviews detected drivers, 
 
 ## Brand Commitments
 
-The product name is **Garage 61 Stint Analyzer**. The product uses direct privacy language, including: “Local analysis — files stay in your browser.” and “No account. No upload. Analyze locally and export when done.” Future work must preserve the accountless, local-only promise.
+The product name is **Stint Analyzer**. Garage 61 identifies the supported workbook export format, not the site brand. The interface uses one factual footer statement: “All workbook data stays in your browser.” Future work must preserve the accountless, local-only behavior without making privacy the primary visual message.
 
 ## Evidence on Hand
 
-The repository contains the product, data, architecture, implementation, and testing specifications in `docs/01_PRODUCT_DATA_EXPORT_SPEC.md`, `docs/02_ARCHITECTURE_GITHUB_PAGES.md`, `docs/03_IMPLEMENTATION_PLAN.md`, and `docs/04_TESTING_ACCEPTANCE.md`. The current Astro and React shell in `src/` provides the product name, privacy copy, analysis sections, and planned local workbook flow. The repository contains no customer testimonials, private source workbooks, or customer performance claims. Future work must not fabricate them.
+The repository contains the product, data, architecture, implementation, and testing specifications in `docs/01_PRODUCT_DATA_EXPORT_SPEC.md`, `docs/02_ARCHITECTURE_GITHUB_PAGES.md`, `docs/03_IMPLEMENTATION_PLAN.md`, and `docs/04_TESTING_ACCEPTANCE.md`. The current Astro and React shell in `src/` provides the Stint Analyzer name, local workbook flow, analysis sections, and planned import flow. The repository contains no customer testimonials, private source workbooks, or customer performance claims. Future work must not fabricate them.
 
 ## Product Principles
 

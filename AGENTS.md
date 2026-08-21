@@ -1,4 +1,4 @@
-# AGENTS.md — Garage 61 Stint Analyzer
+# AGENTS.md — Stint Analyzer
 
 ## Mission
 

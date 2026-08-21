@@ -1,10 +1,11 @@
 ---
-name: Garage 61 Stint Analyzer
-description: A calibration-ledger interface for private and auditable Garage 61 stint comparison.
+name: Stint Analyzer
+description: A direct working record for comparing drivers, stints, and lap evidence from local Garage 61 exports.
 colors:
   paper: '#f4f1e8'
   paper-deep: '#e8e5dc'
   sheet: '#fbfaf5'
+  sheet-texture: 'rgb(46 90 168 / 6%)'
   ink: '#182126'
   ink-soft: '#4d5a5e'
   muted: '#6f7a7c'
@@ -14,6 +15,19 @@ colors:
   vermilion: '#d84b2f'
   ochre: '#c7982e'
   moss: '#2f756a'
+  dark-paper: '#171b1d'
+  dark-paper-deep: '#222a2c'
+  dark-sheet: '#283133'
+  dark-sheet-texture: 'rgb(120 167 232 / 8%)'
+  dark-ink: '#edf2ed'
+  dark-ink-soft: '#c2ceca'
+  dark-muted: '#92a19e'
+  dark-rule: '#455153'
+  dark-rule-strong: '#6c7a77'
+  dark-cobalt: '#78a7e8'
+  dark-vermilion: '#ee816d'
+  dark-ochre: '#dfbb61'
+  dark-moss: '#79b8a7'
 typography:
   display:
     fontFamily: 'Recursive Variable, ui-sans-serif, system-ui, sans-serif'
@@ -50,181 +64,138 @@ spacing:
   lg: '24px'
   xl: '32px'
   section: '72px'
-components:
-  button-primary:
-    backgroundColor: '{colors.ink}'
-    textColor: '{colors.sheet}'
-    rounded: '{rounded.sm}'
-    padding: '0 17px'
-    height: '42px'
-  button-outline:
-    backgroundColor: 'transparent'
-    textColor: '{colors.ink}'
-    rounded: '{rounded.sm}'
-    padding: '0 13px'
-    height: '36px'
-  comparison-sheet:
-    backgroundColor: '{colors.sheet}'
-    textColor: '{colors.ink}'
-    rounded: '{rounded.lg}'
-    padding: '0'
 ---
 
-# Design System: Garage 61 Stint Analyzer
+# Design System: Stint Analyzer
 
 ## Overview
 
-**Creative North Star: "The Calibration Ledger"**
+**Creative North Star: "The Working Record"**
 
-The interface treats a Garage 61 analysis as a measured instrument. It uses mineral paper, graphite ink, registration marks, and ruled evidence surfaces. The visual language feels like a careful post-session debrief, not a generic dashboard or motorsport display.
+Stint Analyzer is a direct tool for source review and lap comparison. The interface uses paper-like surfaces, ruled data, compact labels, and a small set of useful state colors. It does not use decorative product codes, privacy badges, motorsport graphics, or promotional privacy copy as visual content.
 
-The system keeps the first comparison broad and legible. It uses a strong sans-serif hierarchy for decisions and a mono register for labels, counts, times, and state. Cobalt marks the active comparison path. Vermilion marks change, attention, and required source state. Moss confirms local readiness without becoming a decorative accent.
+Garage 61 names the supported workbook format. Stint Analyzer names the site.
 
-**Key Characteristics:**
+### Visual character
 
-- Calibration-sheet surfaces with functional measurement lines.
-- Strong black and cobalt headline contrast.
-- Mono labels for data, scope, and state.
-- Flat layers with one soft ambient shadow.
-- Tables and ruled rows instead of nested dashboard cards.
+- Plain, prominent `Stint Analyzer` wordmark.
+- Mineral paper ground with graphite text in Light mode.
+- Dark graphite and slate surfaces in Dark mode.
+- Cobalt for active paths and measurement marks.
+- Vermilion for attention and source problems.
+- Ochre for warnings and secondary marks.
+- Moss for ready and audit-confirmed states.
+- Useful icons for actions and states, not decoration.
+- Flat layers with one soft shadow on the active source card.
 
-## Colors
+## Color roles
 
-The palette uses cool mineral paper as the working surface, graphite as the instrument ink, and a small set of measured signals.
+The light palette stays stable. Dark mode reverses the surface hierarchy without using pure black or neon accents.
 
-### Primary
+### Light roles
 
-- **Cobalt Registration** (#2e5aa8): Use for the active comparison path, measurement marks, and selected navigation states.
+- **Mineral Paper** `#f4f1e8`: application ground.
+- **Deep Paper** `#e8e5dc`: quiet panels and secondary surfaces.
+- **Clean Sheet** `#fbfaf5`: active source card and high-focus controls.
+- **Graphite Ink** `#182126`: headings, primary actions, and strong rules.
+- **Soft Ink** `#4d5a5e`: body text and explanations.
+- **Muted Register** `#6f7a7c`: metadata and disabled information.
+- **Measurement Rule** `#c9cbc2`: quiet dividers and table rows.
+- **Strong Rule** `#939d9e`: section boundaries and sheet edges.
 
-### Secondary
+### Dark roles
 
-- **Vermilion Change Signal** (#d84b2f): Use for source requirements, active rules, and changes that need attention.
+- **Graphite Ground** `#171b1d`: application ground.
+- **Slate Panel** `#222a2c`: quiet panels and secondary surfaces.
+- **Slate Sheet** `#283133`: active source card and high-focus controls.
+- **Light Ink** `#edf2ed`: headings, primary actions, and strong rules.
+- **Soft Light Ink** `#c2ceca`: body text and explanations.
+- **Muted Light Register** `#92a19e`: metadata and disabled information.
+- **Dark Measurement Rule** `#455153`: quiet dividers and table rows.
+- **Dark Strong Rule** `#6c7a77`: section boundaries and sheet edges.
 
-### Tertiary
+### Signal roles
 
-- **Ochre Calibration Mark** (#c7982e): Use sparingly for secondary measurement marks and supporting state.
-- **Moss Local Ready** (#2f756a): Use for local-only readiness and audit confirmation.
+Use signal colors only when they carry state or evidence. Do not use them as decorative fills.
 
-### Neutral
+- **Cobalt** `#2e5aa8` / Dark `#78a7e8`: active tabs, focus, import boundaries, and measurement marks.
+- **Vermilion** `#d84b2f` / Dark `#ee816d`: source errors and required attention.
+- **Ochre** `#c7982e` / Dark `#dfbb61`: parser warnings and secondary marks.
+- **Moss** `#2f756a` / Dark `#79b8a7`: ready and audit-confirmed states.
 
-- **Mineral Paper** (#f4f1e8): Use as the primary application ground.
-- **Deep Paper** (#e8e5dc): Use for quiet panels and lower-priority surfaces.
-- **Clean Sheet** (#fbfaf5): Use for the primary comparison sheet and high-focus controls.
-- **Graphite Ink** (#182126): Use for headings, primary controls, and structural rules.
-- **Soft Ink** (#4d5a5e): Use for body copy and supporting explanations.
-- **Muted Register** (#6f7a7c): Use for labels, secondary metadata, and disabled information.
-- **Measurement Rule** (#c9cbc2): Use for quiet dividers and table rows.
-- **Strong Rule** (#939d9e): Use for section boundaries and sheet edges.
+### Material accents
 
-### Named Rules
-
-**The Signal Scarcity Rule.** Cobalt, vermilion, ochre, and moss mark state or evidence. They do not fill decorative regions without a task reason.
-
-**The Paper Before Chrome Rule.** Let the mineral surface and ruled structure carry hierarchy before adding another container.
+The source card uses a low-contrast paper and registration texture. The texture stays inside the card, stays behind content, and changes to a dark token in Dark mode. The analysis panel uses three short horizontal color marks as a compact visual signature. These accents do not carry unique meaning by color alone.
 
 ## Typography
 
-**Display Font:** Recursive Variable (with `ui-sans-serif`, `system-ui`, and `sans-serif` fallbacks)
-**Body Font:** Recursive Variable (with `ui-sans-serif`, `system-ui`, and `sans-serif` fallbacks)
-**Label/Mono Font:** Fragment Mono (with `ui-monospace` and `SFMono-Regular` fallbacks)
+Use Recursive Variable for headings, body text, buttons, and the wordmark. Use Fragment Mono only for measurements, counts, file status, data labels, and scope metadata.
 
-**Character:** Recursive Variable provides a variable, workmanlike voice for post-session decisions. Fragment Mono acts as the measurement register for labels, counts, times, and scope metadata.
+- **Wordmark:** Recursive Variable, `1.08rem`, `700`, uppercase with `0.11em` tracking.
+- **Wordmark secondary:** Fragment Mono, `0.72rem`, `500`, uppercase with `0.15em` tracking.
+- **Display:** Recursive Variable, `clamp(3.2rem, 7vw, 6.6rem)`, `600`, `0.92` line height.
+- **Headline:** Recursive Variable, `clamp(1.45rem, 2.6vw, 2.25rem)`, `600`, `1.05` line height.
+- **Body:** Recursive Variable, `1rem`, `400`, `1.6` line height.
+- **Label:** Fragment Mono, `0.63rem`, `500`, uppercase with `0.08em` tracking.
 
-### Hierarchy
-
-- **Display** (600, `clamp(3.2rem, 7vw, 6.6rem)`, 0.92 line-height): The opening product thesis. Keep it to a few words and let the scale establish the first reading path.
-- **Headline** (600, `clamp(1.45rem, 2.6vw, 2.25rem)`, 1.05 line-height): Section titles, sheet state, and empty-state decisions.
-- **Title** (600, `1.3rem` to `1.85rem`, 1.05 line-height): Panel titles and focused supporting states.
-- **Body** (400, `1rem`, 1.6 line-height): Explanations and product copy. Keep long copy near 65ch.
-- **Label** (500, `0.63rem`, 0.08em tracking, uppercase): Data headers, status, scope, and navigation metadata.
-
-### Named Rules
-
-**The Decision Then Register Rule.** Use the sans hierarchy for the decision. Use mono only when the content is a measurement, label, state, or identifier.
-
-**The Compressed Headline Rule.** Headings use tight tracking, but body copy keeps readable line spacing and width.
+Do not use mono as a general technical costume. Do not put eyebrow text above headings.
 
 ## Layout
 
-The application uses a centered working width of `min(100% - 48px, 1360px)` on wide screens and `min(100% - 28px, 1360px)` on narrow screens. The header uses a three-part rail: product mark, privacy state, and export action. The opening surface uses a two-column comparison composition. The copy side establishes the decision; the comparison sheet carries the immediate state and import path.
+Use a centered width of `min(100% - 48px, 1360px)` on wide screens and `min(100% - 28px, 1360px)` on narrow screens. Keep the header simple: wordmark on the left and the theme icon button on the right.
 
-The opening grid stacks below `1000px`. Mobile layouts keep the product mark and export action in the first row, move privacy state below them, then stack the thesis, workflow, sheet, ledger, and analysis index. Tables keep their minimum width and scroll horizontally rather than compressing measurement columns into unreadable text.
+The opening composition keeps the direct thesis beside the source card. The source card contains the source heading, direct status, import control, and imported file rows. The detected source table follows. The analysis views section contains the tabs and Export report action.
 
-Use 4px as the base spacing unit. Use larger separation before a new section than inside a sheet. Keep a visible rule before major analysis regions. Do not use equal card grids as the primary page structure.
-
-## Elevation & Depth
-
-The system uses layered, mostly flat surfaces. The mineral paper ground, clean sheet, deep paper panel, and ruled boundaries create depth before shadows. The comparison sheet uses one soft ambient shadow (`0 18px 42px -26px rgb(24 33 38 / 35%)`) to separate the active working sheet from the desk. Do not stack borders and shadows on every region.
-
-### Shadow Vocabulary
-
-- **Ledger ambient** (`0 18px 42px -26px rgb(24 33 38 / 35%)`): Use only for the active comparison sheet or an equivalent primary working surface.
-
-### Named Rules
-
-**The Flat-By-Default Rule.** Use tonal layering and rules at rest. Use the ambient shadow only where a working sheet must separate from the ground.
-
-## Shapes
-
-Use gently curved working surfaces with `6px`, `8px`, or `12px` radii. Use the smallest radius for controls and badges, the middle radius for drop zones, and the largest radius for sheets and quiet panels. Use 1px rules for registration and 2px rules only for the top or bottom edge of a primary table. Avoid pill shapes except for small status markers.
+Use 4px as the base spacing unit. Put more space before a new section than inside a working surface. Tables keep their minimum width and scroll horizontally on narrow screens.
 
 ## Components
 
-### Buttons
+### Header
 
-Buttons feel tactile and exact. Primary actions use graphite ink on a clean sheet, while outline actions use a transparent mineral surface and a firm ink boundary.
+The header contains the Stint Analyzer wordmark, an icon-only GitHub source link, and the icon theme control. Do not add a lock, status dot, G61 mark, SA mark, export action, or reset action to the header.
 
-- **Shape:** `6px` radius for standard and small buttons; `8px` for large buttons.
-- **Primary:** Graphite background, clean-sheet text, `42px` height, and `17px` horizontal padding.
-- **Hover / Focus:** Primary buttons shift to cobalt on hover. All buttons use a visible cobalt focus outline with a `4px` offset.
-- **Secondary / Ghost:** Outline buttons keep a transparent background and dark rule. Ghost buttons gain the deep paper surface on hover.
+### Theme control
 
-### Cards / Containers
+Use one compact square icon button. It cycles `System → Light → Dark → System`. Use Monitor for System, Sun for Light, and Moon for Dark. The accessible label states the current mode and the next mode. The default preference is System. Store only the preference in `localStorage` under `stint-analyzer-theme`.
 
-Cards are secondary primitives, not the page's primary composition.
+### Source card
 
-- **Corner Style:** `12px` for a working sheet or panel.
-- **Background:** Clean sheet for active work; deep paper for quiet states.
-- **Shadow Strategy:** Use Ledger ambient only on an active working sheet.
-- **Border:** Use a strong rule or ink rule. Do not add a colored side stripe.
-- **Internal Padding:** Use `24px` as a normal panel rhythm and increase to `32px` or `48px` for a primary sheet.
+The source card is the active working surface. Keep its paper texture, dashed import boundary, and one soft ambient shadow. Label it `Source files`. Show driver name, track, and car as separate rows inside a collapsed `File information` disclosure. Do not show a source identifier such as `G61 / 001`.
 
-### Inputs / Fields
+### Imported file rows
 
-The current shell uses a dashed drop zone as the import affordance. Keep it direct and rectangular.
+Each row uses the full available width. The header contains an informative status icon when needed, the filename, and a small Remove action. Ready rows omit the status icon and status label. File information and parser warnings use separate native disclosures that are closed by default. Duplicate, error, and rejection messages remain visible because they explain recovery. Disable Remove while the file is hashing or parsing.
 
-- **Style:** Cobalt dashed boundary, clean-sheet or lightly tinted background, `8px` radius.
-- **Focus:** Use a cobalt outline and preserve the dashed boundary.
-- **Error / Disabled:** Use vermilion for source errors. Reduce opacity for unavailable actions without hiding the reason.
+### Analysis views
 
-### Navigation
+Keep the ruled tab strip and active vermilion underline. Put Export report beside the `Analysis views` heading. Use Download for Export and ShieldCheck for audit evidence. Keep the three short color marks at the bottom of the empty analysis panel.
 
-The analysis index uses a ruled horizontal tab strip. Tabs use uppercase mono labels, quiet muted text, and a clean-sheet active state. The active state receives a vermilion 2px underline. On narrow screens, the strip scrolls horizontally without wrapping the labels into multiple lines.
+### Privacy statement
 
-### Comparison Sheet
+Use one factual footer statement: `All workbook data stays in your browser.` Do not repeat privacy claims in the header, hero, import control, or file rows.
 
-The comparison sheet is the signature component. It uses a clean-sheet surface, a ruled top register, a small source identifier, a large current state, tabular readouts, and a bordered import zone. Functional measurement lines may appear inside this component because it represents a calibration surface.
+## Accessibility and states
 
-### Privacy Status
+Every action has a visible focus outline. Icon-only actions use an accessible label and a title. File status uses icon, text, and color. Warning disclosures use native details behavior. Tables remain semantic. Disabled actions remain readable and explain their unavailable state through nearby content.
 
-The privacy status uses a moss readiness dot, a lock icon, and a mono `LOCAL / EPHEMERAL` label. Keep it visible in the header. The status must never imply remote storage or background synchronization.
+Respect `prefers-reduced-motion`. Theme changes use short color transitions only. Do not animate the page into view.
 
-## Do's and Don'ts
+## Do and do not
 
 ### Do
 
-- **Do** use mineral paper and ruled surfaces to organize analysis.
-- **Do** reserve cobalt, vermilion, ochre, and moss for measurable state.
-- **Do** use tables and evidence rows when the user needs to compare values.
-- **Do** use Fragment Mono for numeric and scope content.
-- **Do** keep privacy, runtime, pace, and audit language visible.
-- **Do** keep the interface readable when the data becomes dense.
+- Use direct labels that explain the next task.
+- Keep the paper texture and compact color marks as material signatures.
+- Use icons when they explain an action, state, or evidence type.
+- Keep Garage 61 as a source-format reference, not the site name.
+- Preserve runtime, pace, penalty, warning, and audit language.
 
-### Don't
+### Do not
 
-- **Don't** add carbon-fiber textures, racing stripes, neon speed lines, or decorative motorsport graphics.
-- **Don't** turn the page into a generic light SaaS dashboard with equal cards.
-- **Don't** use full-page grid backgrounds. Keep measurement lines inside real sheets or data surfaces.
-- **Don't** use gradient text, hard offset shadows, or decorative glass effects.
-- **Don't** place eyebrow labels above headings. Let headings carry the hierarchy.
-- **Don't** use color as the only state signal.
+- Do not show meaningless IDs, fake source codes, or decorative workflow numbering.
+- Do not use `G61` or `SA` as a site mark.
+- Do not use a privacy badge as header chrome.
+- Do not use repeated privacy marketing copy.
+- Do not add gradients, neon, racing stripes, carbon textures, or full-page grids.
+- Do not use decorative icons that do not explain a state or action.
+- Do not use color as the only state signal.

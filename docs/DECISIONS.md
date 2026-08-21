@@ -111,3 +111,51 @@ Keep rows with a positive lap time and positive values for every discovered sect
 ### Consequences
 
 Users can inspect questionable rows without losing exploratory data. Later fixtures can refine the tolerance without changing the normalized model.
+
+## 2026-08-21 — Use Stint Analyzer as the site identity
+
+Status: Accepted
+
+### Context
+
+Garage 61 is the source workbook format. It is not the name of the analysis site.
+
+### Decision
+
+Use `Stint Analyzer` in the site wordmark, metadata, accessible labels, footer, and product documents. Keep `Garage 61` only when identifying supported source exports and parsing rules.
+
+### Consequences
+
+The site separates its identity from the input format. Internal parser names may continue to use Garage 61 where they describe source compatibility.
+
+## 2026-08-21 — Keep theme preference local and minimal
+
+Status: Accepted
+
+### Context
+
+Users need a dark working surface without persisting private analysis data.
+
+### Decision
+
+Default to the system theme. Cycle one icon button through System, Light, and Dark. Store only the selected preference under `stint-analyzer-theme`.
+
+### Consequences
+
+Theme choice survives reload without storing workbooks, filenames, laps, reports, penalties, or session history.
+
+## 2026-08-21 — Keep functional material and icons
+
+Status: Accepted
+
+### Context
+
+The source card texture and analysis-panel color marks establish the visual system. Some icons explain state or action.
+
+### Decision
+
+Keep the paper texture, short analysis-panel stripes, and meaningful icons. Remove only useless text, identifiers, repeated privacy copy, and icons without a task meaning.
+
+### Consequences
+
+The interface stays matter-of-fact while preserving a recognizable working surface.

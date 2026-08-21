@@ -1,4 +1,4 @@
-# Garage 61 Stint Analyzer — Codex handoff
+# Stint Analyzer — Codex handoff
 
 This directory is intended to be dropped into a new repository and handed to an autonomous coding agent.
 

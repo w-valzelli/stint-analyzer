@@ -1,6 +1,6 @@
-# Garage 61 Stint Analyzer
+# Stint Analyzer
 
-A privacy-first static Astro and React application for local Garage 61 stint analysis.
+A static Astro and React application for local analysis of Garage 61 stint exports.
 
 ## Status
 
@@ -17,8 +17,8 @@ pnpm dev
 
 The local site uses `/stint-analyzer/` as its default base path. Set `BASE_PATH=/` for root hosting.
 
-## Privacy
+## Local processing
 
 Analysis runs in the browser. The application does not upload workbooks or store analysis data remotely.
 
-No account. No upload. Analyze locally and export when done.
+All workbook data stays in your browser.
