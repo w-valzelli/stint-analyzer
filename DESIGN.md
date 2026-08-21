@@ -15,6 +15,7 @@ colors:
   vermilion: '#d84b2f'
   ochre: '#c7982e'
   moss: '#2f756a'
+  purple: '#6f4aa1'
   dark-paper: '#171b1d'
   dark-paper-deep: '#222a2c'
   dark-sheet: '#283133'
@@ -28,6 +29,7 @@ colors:
   dark-vermilion: '#ee816d'
   dark-ochre: '#dfbb61'
   dark-moss: '#79b8a7'
+  dark-purple: '#b89ae8'
 typography:
   display:
     fontFamily: 'Recursive Variable, ui-sans-serif, system-ui, sans-serif'
@@ -122,6 +124,7 @@ Use signal colors only when they carry state or evidence. Do not use them as dec
 - **Vermilion** `#d84b2f` / Dark `#ee816d`: source errors and required attention.
 - **Ochre** `#c7982e` / Dark `#dfbb61`: parser warnings and secondary marks.
 - **Moss** `#2f756a` / Dark `#79b8a7`: ready and audit-confirmed states.
+- **Motorsport Purple** `#6f4aa1` / Dark `#b89ae8`: fastest best and median pace values.
 
 ### Material accents
 
