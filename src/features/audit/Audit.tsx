@@ -54,7 +54,7 @@ function sortIcon(sorted: false | 'asc' | 'desc') {
 export function Audit({ report }: AuditProps) {
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
-  const sectorNames = report.sources[0]?.sectorNames ?? [];
+  const sectorNames = report.sectors.map((sector) => sector.sector);
   const columns = useMemo<ColumnDef<typeof auditFeatures, LapAuditRow>[]>(
     () => [
       { accessorKey: 'driver', header: 'Driver' },
