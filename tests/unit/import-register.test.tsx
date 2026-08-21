@@ -7,6 +7,15 @@ const importWorkbookFilesMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../../src/domain/parsing/imports', () => ({
   importWorkbookFiles: importWorkbookFilesMock,
+  trackMismatchMessage: (candidate: typeof parsedWorkbook, existing: typeof parsedWorkbook[]) => {
+    const candidateTrack = candidate.source.trackName?.trim();
+    const differentTrack = existing
+      .map((workbook) => workbook.source.trackName?.trim())
+      .find((track) => track && candidateTrack && track.toLowerCase() !== candidateTrack.toLowerCase());
+    return differentTrack
+      ? `All imported lap data should use the same track. This file reports “${candidateTrack}”, but existing files report “${differentTrack}”.`
+      : null;
+  },
 }));
 
 import { ImportRegister } from '../../src/features/import/ImportRegister';
@@ -41,7 +50,10 @@ type ProgressEvent = {
 
 type ProgressCallback = (event: ProgressEvent) => void;
 
-function mockImport(warnings: ParserWarning[] = []) {
+function mockImport(
+  warnings: ParserWarning[] = [],
+  trackNames: string[] = ['Synthetic Ring'],
+) {
   importWorkbookFilesMock.mockImplementation(
     async (
       files: File[],
@@ -64,6 +76,7 @@ function mockImport(warnings: ParserWarning[] = []) {
               id: sourceId,
               hash: sourceId,
               name: file.name,
+              trackName: trackNames[index] ?? trackNames[0] ?? null,
               warningCount: warnings.length,
             },
           },
@@ -113,6 +126,7 @@ describe('ImportRegister', () => {
     await waitFor(() =>
       expect(screen.getAllByRole('button', { name: /Remove .*\.xlsx/ })).toHaveLength(2),
     );
+    await waitFor(() => expect(onStateChange.mock.lastCall?.[0].workbooks).toHaveLength(2));
     expect(screen.getAllByText('File information')).toHaveLength(2);
     expect(screen.getAllByText('Driver name')).toHaveLength(2);
     expect(screen.getAllByText('Alice')).toHaveLength(2);
@@ -139,6 +153,22 @@ describe('ImportRegister', () => {
     );
   });
 
+  it('rejects a file with a different track name and keeps the matching file', async () => {
+    const onStateChange = vi.fn();
+    mockImport([], ['Synthetic Ring', 'Other Ring']);
+    render(<ImportRegister onStateChange={onStateChange} />);
+
+    dropFiles([createWorkbook('matching.xlsx'), createWorkbook('different-track.xlsx')]);
+
+    expect(
+      await screen.findByText(/All imported lap data should use the same track/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Needs attention')).toBeInTheDocument();
+    await waitFor(() => expect(onStateChange.mock.lastCall?.[0].workbooks).toHaveLength(1));
+    expect(screen.getByText('matching.xlsx')).toBeInTheDocument();
+    expect(screen.getByText('different-track.xlsx')).toBeInTheDocument();
+  });
+
   it('removes one ready file and preserves the other file', async () => {
     const onStateChange = vi.fn();
     render(<ImportRegister onStateChange={onStateChange} />);
@@ -147,6 +177,7 @@ describe('ImportRegister', () => {
     await waitFor(() =>
       expect(screen.getAllByRole('button', { name: /Remove .*\.xlsx/ })).toHaveLength(2),
     );
+    await waitFor(() => expect(onStateChange.mock.lastCall?.[0].workbooks).toHaveLength(2));
     fireEvent.click(screen.getByRole('button', { name: 'Remove first.xlsx' }));
 
     await waitFor(() => expect(screen.queryByText('first.xlsx')).not.toBeInTheDocument());

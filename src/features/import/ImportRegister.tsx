@@ -3,7 +3,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
 
 import type { ParsedWorkbook, ParserWarning } from '../../domain/model/normalized';
-import { importWorkbookFiles, type ImportProgressEvent } from '../../domain/parsing/imports';
+import {
+  importWorkbookFiles,
+  trackMismatchMessage,
+  type ImportProgressEvent,
+} from '../../domain/parsing/imports';
 import { Button } from '../../components/ui/button';
 
 export type ImportRecordStatus =
@@ -104,6 +108,7 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const batchId = useRef(0);
+  const pendingParsedByIndex = useRef(new Map<number, ParsedWorkbook>());
 
   useEffect(() => {
     setIsHydrated(true);
@@ -154,10 +159,7 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
 
       const parsed = event.parsed;
       if (event.status === 'ready' && parsed) {
-        setWorkbooks((current) => [
-          ...current.filter((workbook) => workbook.source.id !== parsed.source.id),
-          parsed,
-        ]);
+        pendingParsedByIndex.current.set(event.index, parsed);
       }
     },
     [updateRecord],
@@ -167,6 +169,7 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
     async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       const currentBatchId = batchId.current + 1;
       batchId.current = currentBatchId;
+      pendingParsedByIndex.current = new Map();
       const acceptedRecords: ImportRecord[] = acceptedFiles.map((file, index) => ({
         key: `${currentBatchId}:${index}`,
         name: file.name,
@@ -198,12 +201,45 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
 
       setIsProcessing(true);
       try {
-        await importWorkbookFiles(
+        const batch = await importWorkbookFiles(
           acceptedFiles,
           new Set(workbooks.map((workbook) => workbook.source.hash)),
           4,
           (event) => handleProgress(currentBatchId, event),
         );
+        if (currentBatchId !== batchId.current) {
+          return;
+        }
+
+        const parsedByIndex = new Map(pendingParsedByIndex.current);
+        if (parsedByIndex.size === 0) {
+          batch.parsed.forEach((parsed, index) => parsedByIndex.set(index, parsed));
+        }
+
+        const acceptedWorkbooks: ParsedWorkbook[] = [];
+        for (const [index, parsed] of [...parsedByIndex.entries()].sort(
+          ([left], [right]) => left - right,
+        )) {
+          const mismatch = trackMismatchMessage(parsed, [...workbooks, ...acceptedWorkbooks]);
+          if (mismatch) {
+            updateRecord(`${currentBatchId}:${index}`, {
+              status: 'error',
+              message: mismatch,
+            });
+            continue;
+          }
+          acceptedWorkbooks.push(parsed);
+        }
+
+        if (acceptedWorkbooks.length > 0) {
+          setWorkbooks((current) => [
+            ...current.filter(
+              (workbook) =>
+                !acceptedWorkbooks.some((accepted) => accepted.source.id === workbook.source.id),
+            ),
+            ...acceptedWorkbooks,
+          ]);
+        }
       } catch (error) {
         if (currentBatchId === batchId.current) {
           const message =

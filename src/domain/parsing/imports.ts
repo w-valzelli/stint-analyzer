@@ -30,6 +30,31 @@ export type WorkbookImportBatch = {
   failures: ImportFailure[];
 };
 
+function normalizedTrackName(value: string): string {
+  return value.trim().toLocaleLowerCase();
+}
+
+export function trackMismatchMessage(
+  candidate: ParsedWorkbook,
+  existing: readonly ParsedWorkbook[],
+): string | null {
+  const candidateTrack = candidate.source.trackName?.trim();
+  if (!candidateTrack) {
+    return null;
+  }
+
+  const differentTrack = existing
+    .map((workbook) => workbook.source.trackName?.trim())
+    .filter((track): track is string => Boolean(track))
+    .find((track) => normalizedTrackName(track) !== normalizedTrackName(candidateTrack));
+
+  if (!differentTrack) {
+    return null;
+  }
+
+  return `All imported lap data should use the same track. This file reports “${candidateTrack}”, but existing files report “${differentTrack}”.`;
+}
+
 export async function importWorkbookFiles<T extends HashableFile>(
   files: readonly T[],
   existingHashes: ReadonlySet<string> = new Set(),
