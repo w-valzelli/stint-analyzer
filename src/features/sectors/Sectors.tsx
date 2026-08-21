@@ -46,10 +46,6 @@ function driverGap(
       : driver.gapToBestMedianUs;
 }
 
-function paceModeLabel(report: AnalysisReport): string {
-  return report.configuration.paceMode === 'clean-non-pit' ? 'Clean non-pit' : 'All non-pit';
-}
-
 export function Sectors({ report }: SectorsProps) {
   const benchmark = useAnalysisViewStore((state) => state.sectorBenchmark);
   const setBenchmark = useAnalysisViewStore((state) => state.setSectorBenchmark);
@@ -72,9 +68,6 @@ export function Sectors({ report }: SectorsProps) {
           onChange={(value) => setBenchmark(value as SectorBenchmark)}
         />
         <DriverControl report={report} />
-        <p className="analysis-control-note">
-          Pace mode <strong>{paceModeLabel(report)}</strong>
-        </p>
       </div>
 
       <AnalysisSurface className="analysis-surface--table">
@@ -129,7 +122,6 @@ export function Sectors({ report }: SectorsProps) {
           <table aria-label="Sector detail table">
             <thead>
               <tr>
-                <th scope="col">Driver</th>
                 <th scope="col">Sector</th>
                 <th scope="col">N</th>
                 <th scope="col">Best</th>
@@ -144,8 +136,7 @@ export function Sectors({ report }: SectorsProps) {
             <tbody>
               {selectedSectorEntries.map(({ sector, driver }) => (
                 <tr key={`${driver.driver}-${sector}`}>
-                  <th scope="row">{driver.driver}</th>
-                  <td>{sector}</td>
+                  <th scope="row">{sector}</th>
                   <td>{driver.n}</td>
                   <td>{formatDurationUs(driver.bestUs)}</td>
                   <td>{formatDurationUs(driver.meanUs)}</td>

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -145,6 +145,11 @@ describe('M5 analysis views', () => {
 
     expect(screen.getByText('Fastest Average')).toBeInTheDocument();
     expect(screen.getByText('Sector progression')).toBeInTheDocument();
+    expect(screen.queryByText(/Pace mode/i)).not.toBeInTheDocument();
+    const sectorDetail = screen.getByRole('table', { name: 'Sector detail table' });
+    expect(
+      within(sectorDetail).queryByRole('columnheader', { name: 'Driver' }),
+    ).not.toBeInTheDocument();
     expect(screen.getByText(/selected MAD across drivers/i)).toBeInTheDocument();
   });
 
