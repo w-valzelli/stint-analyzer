@@ -22,6 +22,7 @@ import {
   sectorNamesForLaps,
 } from './sectors';
 import { detectStints } from './stints';
+import { buildConsistencySummaries, buildOverviewSummary, medianRankForDriver } from './summaries';
 import type { NullableNumericStats } from './statistics';
 
 export type BuildAnalysisReportInput = {
@@ -377,8 +378,10 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
   const sectorEntries = calculateSectorStats(laps, eligibility);
   const sectorBenchmarks = calculateSectorBenchmarks(sectorEntries);
   const sectorGaps = calculateSectorGaps(sectorEntries, sectorBenchmarks);
-  const sectors = sectorNamesForLaps(laps);
-  const theoreticalBests = calculateTheoreticalBests(sectorEntries, lapAnalyses, sectors);
+  const sectorNames = sectorNamesForLaps(laps);
+  const sectorAnalyses = buildSectorAnalyses(sectorGaps, sectorBenchmarks, sectorNames);
+  const sectorsByName = new Map(sectorAnalyses.map((sector) => [sector.sector, sector]));
+  const theoreticalBests = calculateTheoreticalBests(sectorEntries, lapAnalyses, sectorNames);
   const theoreticalByDriver = new Map(
     theoreticalBests.map((analysis) => [analysis.driver, analysis]),
   );
@@ -389,6 +392,7 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
       .sort((left, right) => compareText(left.sector, right.sector))
       .map((entry) => ({
         sector: entry.sector,
+        medianRank: medianRankForDriver(sectorsByName.get(entry.sector), analysis.driver),
         ...toMetricStats(entry.stats),
         gapToBestSingleUs: entry.gapToBestSingleUs,
         gapToBestMeanUs: entry.gapToBestMeanUs,
@@ -482,6 +486,18 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
     };
   });
 
+  const sources = workbooks
+    .map((workbook) => workbook.source)
+    .sort((left, right) => compareText(left.name, right.name) || compareText(left.id, right.id));
+  const warnings = analysisWarnings({ workbooks, laps, eligibility, lapAnalyses, sectorGaps });
+  const overview = buildOverviewSummary({
+    leaderboard,
+    sources,
+    sectors: sectorAnalyses,
+    warnings,
+  });
+  const consistency = buildConsistencySummaries(sectorAnalyses, drivers);
+
   const report = {
     schemaVersion: '1.0' as const,
     generatedAt: input.generatedAt,
@@ -496,13 +512,13 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
         .sort((left, right) => compareText(left.scopeKey, right.scopeKey)),
     },
     methodology: methodologyFor(input.paceMode),
-    sources: workbooks
-      .map((workbook) => workbook.source)
-      .sort((left, right) => compareText(left.name, right.name) || compareText(left.id, right.id)),
-    warnings: analysisWarnings({ workbooks, laps, eligibility, lapAnalyses, sectorGaps }),
+    sources,
+    warnings,
+    overview,
+    consistency,
     leaderboard,
     drivers: [...driverByName.values()],
-    sectors: buildSectorAnalyses(sectorGaps, sectorBenchmarks, sectors),
+    sectors: sectorAnalyses,
     stints: stintAnalyses,
     lapAudit: buildLapAudit(laps, eligibility),
   };

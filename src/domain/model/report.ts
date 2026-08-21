@@ -84,13 +84,35 @@ export const leaderboardRowSchema = z.object({
 });
 export type LeaderboardRow = z.infer<typeof leaderboardRowSchema>;
 
+export const sectorLeaderSchema = z.object({
+  sector: z.string().min(1),
+  drivers: z.array(z.string().min(1)),
+  bestMedianUs: nullableFiniteNumberSchema,
+});
+export type SectorLeader = z.infer<typeof sectorLeaderSchema>;
+
+export const overviewSummarySchema = z.object({
+  driverCount: z.number().int().nonnegative(),
+  sourceFileCount: z.number().int().nonnegative(),
+  runtimeLapCount: z.number().int().nonnegative(),
+  paceLapCount: z.number().int().nonnegative(),
+  fastestBestUs: nullableFiniteNumberSchema,
+  fastestMedianUs: nullableFiniteNumberSchema,
+  warningCount: z.number().int().nonnegative(),
+  sectorLeaders: z.array(sectorLeaderSchema),
+});
+export type OverviewSummary = z.infer<typeof overviewSummarySchema>;
+
 const sectorMetricFields = {
   ...metricFields,
   ...sectorGapFields,
 };
 
 export const driverSectorAnalysisSchema = z
-  .object({ sector: z.string().min(1) })
+  .object({
+    sector: z.string().min(1),
+    medianRank: z.number().int().positive().nullable(),
+  })
   .extend(sectorMetricFields);
 export type DriverSectorAnalysis = z.infer<typeof driverSectorAnalysisSchema>;
 
@@ -125,6 +147,23 @@ export const sectorAnalysisSchema = z.object({
   drivers: z.array(sectorDriverAnalysisSchema),
 });
 export type SectorAnalysis = z.infer<typeof sectorAnalysisSchema>;
+
+export const consistencyMetricSummarySchema = z.object({
+  meanUs: nullableFiniteNumberSchema,
+  mostConsistentSector: z.string().min(1).nullable(),
+  leastConsistentSector: z.string().min(1).nullable(),
+});
+export type ConsistencyMetricSummary = z.infer<typeof consistencyMetricSummarySchema>;
+
+export const consistencySummarySchema = z.object({
+  driver: z.string().min(1),
+  sd: consistencyMetricSummarySchema,
+  mad: consistencyMetricSummarySchema,
+  iqr: consistencyMetricSummarySchema,
+  range: consistencyMetricSummarySchema,
+  iqrOutlierCount: z.number().int().nonnegative(),
+});
+export type ConsistencySummary = z.infer<typeof consistencySummarySchema>;
 
 export const stintProgressionLapSchema = z.object({
   lapId: z.string().min(1),
@@ -203,6 +242,8 @@ export const analysisReportSchema = z.object({
     }),
   ),
   warnings: z.array(analysisWarningSchema),
+  overview: overviewSummarySchema,
+  consistency: z.array(consistencySummarySchema),
   leaderboard: z.array(leaderboardRowSchema),
   drivers: z.array(driverAnalysisSchema),
   sectors: z.array(sectorAnalysisSchema),

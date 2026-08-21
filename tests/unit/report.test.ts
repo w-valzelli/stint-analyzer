@@ -125,6 +125,26 @@ describe('canonical analysis report', () => {
         benchmark: { bestMeanUs: 5_250_000, bestMedianUs: 5_250_000 },
       },
     ]);
+    expect(report.overview).toMatchObject({
+      driverCount: 2,
+      sourceFileCount: 1,
+      runtimeLapCount: 4,
+      paceLapCount: 3,
+      fastestBestUs: 9_000_000,
+      fastestMedianUs: 9_250_000,
+      sectorLeaders: [
+        { sector: 'S1', drivers: ['Alice', 'Bob'], bestMedianUs: 4_000_000 },
+        { sector: 'S2', drivers: ['Bob'], bestMedianUs: 5_250_000 },
+      ],
+    });
+    expect(report.consistency.find((summary) => summary.driver === 'Bob')).toMatchObject({
+      sd: { meanUs: 125_000, mostConsistentSector: 'S1', leastConsistentSector: 'S2' },
+      iqrOutlierCount: 0,
+    });
+    expect(report.drivers.find((driver) => driver.driver === 'Alice')?.sectors).toMatchObject([
+      { sector: 'S1', medianRank: 1 },
+      { sector: 'S2', medianRank: 2 },
+    ]);
     expect(report.stints).toHaveLength(2);
     expect(report.stints[0]?.progression).toHaveLength(1);
     expect(report.lapAudit.find((row) => row.id === 'alice-2')).toMatchObject({
