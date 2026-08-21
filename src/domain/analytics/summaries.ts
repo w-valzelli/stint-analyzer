@@ -55,15 +55,15 @@ export function medianRankForDriver(
   if (!sector) {
     return null;
   }
-  const ranked = sector.drivers
-    .filter((entry) => entry.gapToBestMedianUs !== null)
-    .sort(
-      (left, right) =>
-        (left.gapToBestMedianUs as number) - (right.gapToBestMedianUs as number) ||
-        compareText(left.driver, right.driver),
-    );
-  const index = ranked.findIndex((entry) => entry.driver === driver);
-  return index === -1 ? null : index + 1;
+  const target = sector.drivers.find((entry) => entry.driver === driver);
+  const targetGap = target?.gapToBestMedianUs ?? null;
+  if (targetGap === null) {
+    return null;
+  }
+  const fasterCount = sector.drivers.filter(
+    (entry) => entry.gapToBestMedianUs !== null && entry.gapToBestMedianUs < targetGap,
+  ).length;
+  return fasterCount + 1;
 }
 
 export function buildOverviewSummary(input: {

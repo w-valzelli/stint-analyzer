@@ -145,6 +145,10 @@ describe('canonical analysis report', () => {
       { sector: 'S1', medianRank: 1 },
       { sector: 'S2', medianRank: 2 },
     ]);
+    expect(report.drivers.find((driver) => driver.driver === 'Bob')?.sectors).toMatchObject([
+      { sector: 'S1', medianRank: 1 },
+      { sector: 'S2', medianRank: 1 },
+    ]);
     expect(report.stints).toHaveLength(2);
     expect(report.stints[0]?.progression).toHaveLength(1);
     expect(report.lapAudit.find((row) => row.id === 'alice-2')).toMatchObject({
