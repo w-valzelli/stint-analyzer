@@ -1,8 +1,13 @@
-import { FileSpreadsheet, LockKeyhole, Ruler, ShieldCheck, Waypoints } from 'lucide-react';
-import { useState } from 'react';
+import { LockKeyhole, RotateCcw, Ruler, ShieldCheck, Waypoints } from 'lucide-react';
+import { useCallback, useRef, useState } from 'react';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import {
+  ImportRegister,
+  type ImportRegisterHandle,
+  type ImportRegisterState,
+} from '../features/import/ImportRegister';
 import { Button } from './ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const tabs = [
   ['overview', 'Overview'],
@@ -19,8 +24,36 @@ const workflow = [
   ['Trace', 'source laps'],
 ] as const;
 
+const emptyImportState: ImportRegisterState = {
+  records: [],
+  workbooks: [],
+  isProcessing: false,
+};
+
 export function AnalyzerShell() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [importState, setImportState] = useState<ImportRegisterState>(emptyImportState);
+  const importRegisterRef = useRef<ImportRegisterHandle>(null);
+  const handleImportStateChange = useCallback((nextState: ImportRegisterState) => {
+    setImportState(nextState);
+  }, []);
+
+  const laps = importState.workbooks.flatMap((workbook) => workbook.laps);
+  const driverNames = [...new Set(laps.map((lap) => lap.driver))].sort((left, right) =>
+    left.localeCompare(right),
+  );
+  const fullTimedLaps = laps.filter((lap) => lap.isFullTimedLap);
+  const parserWarningCount = importState.records.reduce(
+    (total, record) => total + record.warnings.length,
+    0,
+  );
+  const attentionCount = importState.records.filter(
+    (record) =>
+      record.status === 'duplicate' || record.status === 'error' || record.status === 'rejected',
+  ).length;
+  const warningCount = parserWarningCount + attentionCount;
+  const hasRecords = importState.records.length > 0;
+  const hasWorkbooks = importState.workbooks.length > 0;
 
   return (
     <main className="calibration-app">
@@ -39,9 +72,22 @@ export function AnalyzerShell() {
           <span>Local / ephemeral</span>
         </div>
 
-        <Button variant="outline" size="sm" disabled>
-          Export report
-        </Button>
+        <div className="calibration-header__actions">
+          {hasRecords && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => importRegisterRef.current?.reset()}
+              aria-label="Reset registered files"
+            >
+              <RotateCcw aria-hidden="true" size={14} />
+              Reset
+            </Button>
+          )}
+          <Button variant="outline" size="sm" disabled>
+            Export report
+          </Button>
+        </div>
       </header>
 
       <section className="calibration-intro" id="top" aria-labelledby="page-title">
@@ -70,7 +116,14 @@ export function AnalyzerShell() {
           </div>
         </div>
 
-        <div className="calibration-sheet" aria-label="Comparison sheet waiting for files">
+        <div
+          className="calibration-sheet"
+          aria-label={
+            hasWorkbooks
+              ? 'Comparison sheet with registered files'
+              : 'Comparison sheet waiting for files'
+          }
+        >
           <div className="calibration-sheet__topline">
             <span>Comparison sheet</span>
             <span>G61 / 001</span>
@@ -78,38 +131,32 @@ export function AnalyzerShell() {
           <div className="calibration-sheet__body">
             <div className="calibration-sheet__title-row">
               <div>
-                <h2>Waiting for source files</h2>
+                <h2>{hasWorkbooks ? 'Source register ready' : 'Waiting for source files'}</h2>
               </div>
               <Waypoints aria-hidden="true" size={25} strokeWidth={1.5} />
             </div>
             <p>
-              Add one or more local exports to open the measured comparison. Nothing leaves this
-              browser.
+              {hasWorkbooks
+                ? 'The app found local workbook data. Review the source rows before scope and pace analysis.'
+                : 'Add one or more local exports to open the measured comparison. Nothing leaves this browser.'}
             </p>
 
             <div className="calibration-sheet__readout" aria-label="Current analysis count">
               <div>
                 <span>Drivers</span>
-                <strong>00</strong>
+                <strong>{String(driverNames.length).padStart(2, '0')}</strong>
               </div>
               <div>
-                <span>Timed laps</span>
-                <strong>00</strong>
+                <span>Full timed laps</span>
+                <strong>{String(fullTimedLaps.length).padStart(2, '0')}</strong>
               </div>
               <div>
                 <span>Warnings</span>
-                <strong>00</strong>
+                <strong>{String(warningCount).padStart(2, '0')}</strong>
               </div>
             </div>
 
-            <div className="calibration-dropzone" aria-label="XLSX import area">
-              <FileSpreadsheet aria-hidden="true" size={27} strokeWidth={1.5} />
-              <div>
-                <strong>Drop .XLSX exports here</strong>
-                <span>Multiple files accepted in the next step.</span>
-              </div>
-              <span className="calibration-dropzone__state">READY</span>
-            </div>
+            <ImportRegister ref={importRegisterRef} onStateChange={handleImportStateChange} />
           </div>
           <div className="calibration-sheet__footer">
             <span>Clean is not a penalty</span>
@@ -121,9 +168,11 @@ export function AnalyzerShell() {
       <section className="calibration-ledger" aria-labelledby="ledger-title">
         <div className="calibration-ledger__heading">
           <div>
-            <h2 id="ledger-title">One report. Every lap accountable.</h2>
+            <h2 id="ledger-title">Detected drivers and laps.</h2>
           </div>
-          <span className="calibration-ledger__count">0 drivers / 0 laps</span>
+          <span className="calibration-ledger__count">
+            {driverNames.length} drivers / {laps.length} rows
+          </span>
         </div>
 
         <div className="calibration-ledger__table-wrap">
@@ -131,26 +180,49 @@ export function AnalyzerShell() {
             <thead>
               <tr>
                 <th scope="col">Driver</th>
-                <th scope="col">Raw runtime</th>
-                <th scope="col">Adjusted</th>
+                <th scope="col">Source files</th>
+                <th scope="col">Full timed laps</th>
                 <th scope="col">Evidence</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="calibration-table__empty">
-                <th scope="row">
-                  <span className="calibration-table__marker" aria-hidden="true" />
-                  Source files required
-                </th>
-                <td>—</td>
-                <td>—</td>
-                <td>
-                  <span className="calibration-table__trace">
-                    <ShieldCheck aria-hidden="true" size={14} />
-                    Audit trail opens here
-                  </span>
-                </td>
-              </tr>
+              {driverNames.length === 0 ? (
+                <tr className="calibration-table__empty">
+                  <th scope="row">
+                    <span className="calibration-table__marker" aria-hidden="true" />
+                    Source files required
+                  </th>
+                  <td>—</td>
+                  <td>—</td>
+                  <td>
+                    <span className="calibration-table__trace">
+                      <ShieldCheck aria-hidden="true" size={14} />
+                      Audit trail opens here
+                    </span>
+                  </td>
+                </tr>
+              ) : (
+                driverNames.map((driver) => {
+                  const driverLaps = laps.filter((lap) => lap.driver === driver);
+                  const sourceCount = new Set(driverLaps.map((lap) => lap.sourceFileId)).size;
+                  const sectorCount = new Set(
+                    driverLaps.flatMap((lap) => Object.keys(lap.sectorsUs)),
+                  ).size;
+                  return (
+                    <tr key={driver}>
+                      <th scope="row">{driver}</th>
+                      <td>{sourceCount}</td>
+                      <td>{driverLaps.filter((lap) => lap.isFullTimedLap).length}</td>
+                      <td>
+                        <span className="calibration-table__trace">
+                          <ShieldCheck aria-hidden="true" size={14} />
+                          {sectorCount} sectors registered
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -175,10 +247,15 @@ export function AnalyzerShell() {
 
           <TabsContent value={activeTab}>
             <div className="calibration-panel">
-              <h3>{tabs.find(([value]) => value === activeTab)?.[1]} waits for the register.</h3>
+              <h3>
+                {hasWorkbooks
+                  ? `${tabs.find(([value]) => value === activeTab)?.[1]} will use the registered report.`
+                  : `${tabs.find(([value]) => value === activeTab)?.[1]} waits for the register.`}
+              </h3>
               <p>
-                Import a workbook to populate this view from the same canonical report. The audit
-                trail stays visible when the numbers get detailed.
+                {hasWorkbooks
+                  ? 'Milestone 1 has registered the source rows. Scope and report calculations arrive in the next analysis steps.'
+                  : 'Import a workbook to populate this view from the same canonical report. The audit trail stays visible when the numbers get detailed.'}
               </p>
               <div className="calibration-panel__rule" aria-hidden="true">
                 <span />

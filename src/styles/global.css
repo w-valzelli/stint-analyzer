@@ -137,6 +137,13 @@ a:focus-visible {
   text-transform: uppercase;
 }
 
+.calibration-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .calibration-status-dot {
   width: 7px;
   height: 7px;
@@ -333,16 +340,39 @@ a:focus-visible {
   letter-spacing: -0.08em;
 }
 
+.calibration-import-register {
+  margin-top: 22px;
+}
+
 .calibration-dropzone {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: 22px;
   padding: 15px 16px;
   border: 1px dashed var(--calibration-cobalt);
   border-radius: var(--calibration-radius-md);
   background: rgb(46 90 168 / 5%);
   color: var(--calibration-cobalt);
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    opacity 160ms ease-out;
+}
+
+.calibration-dropzone--active {
+  background: rgb(46 90 168 / 11%);
+  border-color: var(--calibration-ink);
+}
+
+.calibration-dropzone--reject {
+  border-color: var(--calibration-vermilion);
+  background: rgb(216 75 47 / 6%);
+  color: var(--calibration-vermilion);
+}
+
+.calibration-dropzone--busy {
+  cursor: progress;
+  opacity: 0.72;
 }
 
 .calibration-dropzone > div {
@@ -364,6 +394,10 @@ a:focus-visible {
   font-size: 0.72rem;
 }
 
+.calibration-dropzone > .calibration-button {
+  flex: 0 0 auto;
+}
+
 .calibration-dropzone__state {
   align-self: flex-start;
   padding: 4px 6px;
@@ -373,6 +407,115 @@ a:focus-visible {
   font-family: var(--font-mono);
   font-size: 0.59rem;
   letter-spacing: 0.08em;
+}
+
+.calibration-register__list {
+  margin-top: 18px;
+  border-top: 1px solid var(--calibration-rule-strong);
+  border-bottom: 1px solid var(--calibration-rule);
+}
+
+.calibration-register__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) auto minmax(0, 1.5fr);
+  gap: 7px 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--calibration-rule);
+}
+
+.calibration-register__row:last-child {
+  border-bottom: 0;
+}
+
+.calibration-register__row--duplicate {
+  background: rgb(199 152 46 / 5%);
+}
+
+.calibration-register__row--error,
+.calibration-register__row--rejected {
+  background: rgb(216 75 47 / 5%);
+}
+
+.calibration-register__identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.calibration-register__identity strong {
+  overflow: hidden;
+  color: var(--calibration-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calibration-register__icon {
+  flex: 0 0 auto;
+}
+
+.calibration-register__icon--busy {
+  animation: calibration-spin 900ms linear infinite;
+  color: var(--calibration-cobalt);
+}
+
+.calibration-register__icon--ready {
+  color: var(--calibration-moss);
+}
+
+.calibration-register__icon--duplicate {
+  color: var(--calibration-ochre);
+}
+
+.calibration-register__icon--error {
+  color: var(--calibration-vermilion);
+}
+
+.calibration-register__status,
+.calibration-register__facts {
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.59rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.calibration-register__status {
+  white-space: nowrap;
+}
+
+.calibration-register__facts {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calibration-register__message,
+.calibration-register__warnings {
+  grid-column: 1 / -1;
+  margin: 0 0 0 23px;
+  color: var(--calibration-ink-soft);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.calibration-register__warnings {
+  padding-left: 16px;
+  color: var(--calibration-ochre);
+}
+
+.calibration-register__row--error .calibration-register__message,
+.calibration-register__row--rejected .calibration-register__message {
+  color: var(--calibration-vermilion);
+}
+
+@keyframes calibration-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .calibration-sheet__footer {
@@ -757,7 +900,7 @@ a:focus-visible {
     border-top: 1px solid var(--calibration-rule);
   }
 
-  .calibration-header > .calibration-button {
+  .calibration-header__actions {
     grid-column: 2;
     grid-row: 1;
   }
@@ -788,12 +931,29 @@ a:focus-visible {
   }
 
   .calibration-dropzone {
-    align-items: flex-start;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
   }
 
-  .calibration-dropzone__state {
-    margin-left: 41px;
+  .calibration-dropzone > div {
+    grid-column: 2;
+  }
+
+  .calibration-dropzone > .calibration-button {
+    grid-column: 2;
+    justify-self: start;
+    margin-left: 0;
+  }
+
+  .calibration-register__row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .calibration-register__facts,
+  .calibration-register__message,
+  .calibration-register__warnings {
+    grid-column: 1 / -1;
   }
 
   .calibration-ledger,
