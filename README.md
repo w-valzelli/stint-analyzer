@@ -1,6 +1,7 @@
 # Stint Analyzer
 
-A static Astro and React application for local analysis of Garage 61 stint exports.
+An entirely vibe-coded static Astro and React application for local analysis of Garage 61 stint exports.
+This is a personal experiment, not a production-ready application.
 
 ## Status
 
