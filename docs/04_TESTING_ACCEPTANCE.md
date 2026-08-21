@@ -137,12 +137,17 @@ Test:
 - rejects unsupported files;
 - parsing state;
 - warning rendering;
-- scope controls;
-- pace-mode control;
+- one driver card across multiple source files;
+- no source filename or row count in driver scope cards;
+- native multi-select stint control;
+- `All stints` option;
+- zero-timed stints omitted;
+- global pace-mode control;
+- pace control disabled before import;
+- user-facing audit reasons;
 - benchmark selector;
 - penalty editor;
 - leaderboard response;
-- driver selection;
 - empty/no-clean-lap state;
 - export dialog.
 
@@ -173,6 +178,12 @@ Expected: actionable rejection, no crash.
 
 ### No clean laps
 Runtime still available; pace stats show unavailable warning.
+
+### Driver scope
+Import files for the same driver.
+Expected: one driver card, merged stints, and no source filename in the scope card.
+Select `All stints`.
+Expected: every non-empty stint contributes to runtime and pace eligibility.
 
 ### Duplicate
 Drop same bytes twice.

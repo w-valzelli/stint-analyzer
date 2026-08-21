@@ -196,7 +196,8 @@ raw_runtime = sum(full timed lap times inside selected runtime scope)
 - `Clean` does not affect runtime.
 - Pit-in/pit-out laps remain part of runtime when they are part of the selected run.
 - Partial setup/output rows outside the run do not count.
-- The exact runtime lap scope is visible and editable.
+- The selected stint set defines the runtime scope.
+- Each selected stint uses its full timed-lap range.
 
 ### Pace eligibility
 
@@ -309,7 +310,7 @@ Represent:
 - start/end lap;
 - pace-eligible count.
 
-Allow the user to correct/select scope.
+Allow the user to select any non-empty stints. The user can select all stints.
 
 ---
 
@@ -532,7 +533,7 @@ Never independently recalculate report values inside the XLSX or Markdown export
 ```text
 Upload
   ↓
-Review detected files/scope
+Review detected drivers and scope
   ↓
 Overview | Leaderboard | Sectors | Consistency | Drivers | Audit
   ↓
@@ -565,21 +566,26 @@ File rows show:
 
 ### Scope review
 
-Table:
+Show one source-card-styled card per imported driver.
 
-- driver;
-- source;
-- candidate runtime scope;
-- detected stints;
-- timed laps;
-- clean pace laps.
+Driver cards show:
+
+- driver name;
+- lap count;
+- timed-lap count;
+- selected runtime-lap count;
+- eligible pace-lap count.
+
+Do not show source filenames or workbook row counts in driver cards. Merge stints from all files for the same driver. Keep source identity in internal audit data.
 
 Controls:
 
-- include driver;
-- runtime start/end;
-- stint selection;
-- clean-only vs all non-pit.
+- one native multi-select per driver;
+- `All stints` as the first option;
+- only stints with at least one full timed lap;
+- one global pace mode: clean non-pit or all non-pit.
+
+Use the full timed-lap range for every selected stint. Disable the global pace control before a file is imported.
 
 ### Penalty editor
 

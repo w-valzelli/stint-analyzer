@@ -159,3 +159,21 @@ Keep the paper texture, short analysis-panel stripes, and meaningful icons. Remo
 ### Consequences
 
 The interface stays matter-of-fact while preserving a recognizable working surface.
+
+## 2026-08-21 — Use driver-level multi-stint scope selection
+
+Status: Accepted
+
+### Context
+
+Users compare imported drivers. They do not need workbook row details or repeated source cards during scope review.
+
+### Decision
+
+Group the review UI by driver. Detect stints within each source and driver partition, then merge those stints into one driver card. Include every imported driver automatically. Use a native multi-select with an `All stints` option. Omit candidates with zero full timed laps. Apply one global pace mode to every driver. Use the full timed-lap range for each selected stint.
+
+Keep source file IDs and row numbers in internal domain data. Do not show them in the driver scope card.
+
+### Consequences
+
+The scope model supports one driver across multiple files without crossing source-local stint boundaries. Runtime and pace counts aggregate selected stints. The UI stays focused on driver comparison and lap evidence.

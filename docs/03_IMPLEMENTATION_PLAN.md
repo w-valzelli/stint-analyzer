@@ -67,20 +67,28 @@
 
 ### Tasks
 
-- implement runtime scope;
-- implement pace scope;
-- candidate stint detection;
-- scope review screen;
-- per-driver inclusion;
-- start/end lap selection;
-- clean non-pit / all non-pit switch;
-- audit exclusion reasons.
+- implement runtime scope from selected stints;
+- implement one global pace scope modifier;
+- detect candidates within each source and driver partition;
+- merge candidates into one driver scope;
+- omit zero-timed stints from selection;
+- build source-card-styled driver cards;
+- add native multi-select controls with `All stints`;
+- expose lap counts instead of workbook row counts;
+- expose user-facing audit reasons.
 
 ### Acceptance
 
+- every imported driver is included automatically;
+- the same driver across files has one scope card;
+- any non-empty stint subset can be selected;
+- selecting `All stints` selects every available stint;
+- selected stints use their full timed-lap ranges;
+- the global pace mode applies to every driver;
+- the pace control is disabled before import;
 - pit lap can count in runtime;
 - pit lap is excluded from pace;
-- unclean lap excluded only from default pace;
+- unclean lap is excluded only from default pace;
 - `Clean` never changes penalty count;
 - every lap has an explicit inclusion/exclusion state.
 
