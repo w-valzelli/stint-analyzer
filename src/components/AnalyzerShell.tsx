@@ -1,4 +1,4 @@
-import { Download, GitFork, ShieldCheck } from 'lucide-react';
+import { Download, GitFork } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { deriveLapEligibility } from '../domain/analytics/eligibility';
@@ -48,11 +48,6 @@ export function AnalyzerShell() {
     () => deriveLapEligibility(laps, scopeSelections, candidateStints, paceMode),
     [candidateStints, laps, paceMode, scopeSelections],
   );
-  const driverNames = useMemo(
-    () =>
-      [...new Set(laps.map((lap) => lap.driver))].sort((left, right) => left.localeCompare(right)),
-    [laps],
-  );
   const hasWorkbooks = importState.workbooks.length > 0;
 
   useEffect(() => {
@@ -80,23 +75,26 @@ export function AnalyzerShell() {
           </h2>
         </a>
 
-        <div className="calibration-header__actions">
-          <a
-            className={buttonVariants({
-              treatment: 'control',
-              tone: 'neutral',
-              size: 'sm',
-              content: 'icon',
-            })}
-            href="https://github.com/w-valzelli/stint-analyzer"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="View source on GitHub"
-            title="View source on GitHub"
-          >
-            <GitFork aria-hidden="true" size={16} strokeWidth={1.8} />
-          </a>
-          <ThemeControl />
+        <div className="calibration-header__right">
+          <span className="calibration-header__source">Garage 61 / XLSX</span>
+          <div className="calibration-header__actions">
+            <a
+              className={buttonVariants({
+                treatment: 'control',
+                tone: 'neutral',
+                size: 'sm',
+                content: 'icon',
+              })}
+              href="https://github.com/w-valzelli/stint-analyzer"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="View source on GitHub"
+              title="View source on GitHub"
+            >
+              <GitFork aria-hidden="true" size={16} strokeWidth={1.8} />
+            </a>
+            <ThemeControl />
+          </div>
         </div>
       </header>
 
@@ -107,8 +105,7 @@ export function AnalyzerShell() {
             <span>before you coach it.</span>
           </h1>
           <p className="calibration-intro__lede">
-            Add Garage 61 workbooks. Review the detected drivers and laps, then compare the runs
-            that matter.
+            Add Garage 61 workbooks. Review the imported laps, then compare the runs that matter.
           </p>
         </div>
 
@@ -122,7 +119,7 @@ export function AnalyzerShell() {
                 <h2>Source files</h2>
                 <p>
                   {hasWorkbooks
-                    ? 'Review the detected drivers and laps before selecting a scope.'
+                    ? 'Confirm the import, then choose a review scope.'
                     : 'Choose one or more Garage 61 files to begin.'}
                 </p>
               </div>
@@ -130,69 +127,6 @@ export function AnalyzerShell() {
 
             <ImportRegister onStateChange={handleImportStateChange} />
           </div>
-        </div>
-      </section>
-
-      <section className="calibration-ledger" aria-labelledby="ledger-title">
-        <div className="calibration-ledger__heading">
-          <div>
-            <h2 id="ledger-title">Detected drivers and laps.</h2>
-          </div>
-          <span className="calibration-ledger__count">
-            {driverNames.length} drivers / {laps.length} laps
-          </span>
-        </div>
-
-        <div className="calibration-ledger__table-wrap">
-          <table className="calibration-table">
-            <thead>
-              <tr>
-                <th scope="col">Driver</th>
-                <th scope="col">Source files</th>
-                <th scope="col">Full timed laps</th>
-                <th scope="col">Evidence</th>
-              </tr>
-            </thead>
-            <tbody>
-              {driverNames.length === 0 ? (
-                <tr className="calibration-table__empty">
-                  <th scope="row">
-                    <span className="calibration-table__marker" aria-hidden="true" />
-                    Source files required
-                  </th>
-                  <td>—</td>
-                  <td>—</td>
-                  <td>
-                    <span className="calibration-table__trace">
-                      <ShieldCheck aria-hidden="true" size={14} />
-                      Audit trail opens here
-                    </span>
-                  </td>
-                </tr>
-              ) : (
-                driverNames.map((driver) => {
-                  const driverLaps = laps.filter((lap) => lap.driver === driver);
-                  const sourceCount = new Set(driverLaps.map((lap) => lap.sourceFileId)).size;
-                  const sectorCount = new Set(
-                    driverLaps.flatMap((lap) => Object.keys(lap.sectorsUs)),
-                  ).size;
-                  return (
-                    <tr key={driver}>
-                      <th scope="row">{driver}</th>
-                      <td>{sourceCount}</td>
-                      <td>{driverLaps.filter((lap) => lap.isFullTimedLap).length}</td>
-                      <td>
-                        <span className="calibration-table__trace">
-                          <ShieldCheck aria-hidden="true" size={14} />
-                          {sectorCount} sectors available
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
         </div>
       </section>
 

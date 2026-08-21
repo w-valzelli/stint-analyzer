@@ -1,4 +1,5 @@
-import { useEffect, useState, type ChangeEvent } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { Lap } from '../../domain/model/normalized';
 import type {
@@ -32,12 +33,33 @@ type ScopeReviewProps = {
   onSelectionChange: (scopeKey: string, update: Partial<Omit<ScopeSelection, 'scopeKey'>>) => void;
 };
 
+type ScopeSelectOption = {
+  value: string;
+  label: string;
+  detail?: string;
+};
+
+type ScopeSelectProps = {
+  label: string;
+  triggerLabel?: string;
+  value: string | readonly string[];
+  options: readonly ScopeSelectOption[];
+  multiple?: boolean;
+  allOptionValue?: string;
+  disabled?: boolean;
+  onChange: (value: string | string[]) => void;
+};
+
 function lapLabel(lap: Lap): string {
-  return `Lap ${lap.lapNumber ?? '—'}`;
+  return `${lap.lapNumber ?? '—'}`;
 }
 
 function driverHeadingId(driver: string): string {
   return `scope-driver-${driver.replace(/[^a-z0-9]+/gi, '-')}`;
+}
+
+function controlId(label: string): string {
+  return `scope-select-${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
 }
 
 function stateLabel(state: LapEligibility['runtime']): string {
@@ -45,6 +67,82 @@ function stateLabel(state: LapEligibility['runtime']): string {
     return 'Included';
   }
   return `Excluded: ${state.reasons.map((reason) => reasonLabels[reason]).join('; ')}`;
+}
+
+type AuditStatusProps = {
+  state: LapEligibility['runtime'];
+  label: string;
+};
+
+function AuditStatus({ state, label }: AuditStatusProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  const [isClicked, setIsClicked] = useState(false);
+  const rootRef = useRef<HTMLSpanElement>(null);
+  const isOpen = isHovered || isClicked;
+  const popoverId = controlId(`${label}-reasons`);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setIsClicked(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsClicked(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  if (state.eligible) {
+    return (
+      <span className="scope-review__audit-status scope-review__audit-status--included">
+        Included
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className="scope-review__audit-status-wrap"
+      ref={rootRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <button
+        type="button"
+        className="scope-review__audit-status scope-review__audit-status--excluded"
+        aria-controls={popoverId}
+        aria-expanded={isOpen}
+        aria-label={`${label}: ${stateLabel(state)}`}
+        onClick={() => setIsClicked((clicked) => !clicked)}
+      >
+        Excluded
+      </button>
+      {isOpen && (
+        <span
+          className="scope-review__audit-popover"
+          id={popoverId}
+          role="dialog"
+          aria-label={`${label} exclusion reasons`}
+        >
+          <strong>Exclusion reasons</strong>
+          <span>{state.reasons.map((reason) => reasonLabels[reason]).join(' · ')}</span>
+        </span>
+      )}
+    </span>
+  );
 }
 
 function selectionFor(
@@ -68,39 +166,152 @@ function selectedStintIdsFor(
   );
 }
 
-function selectedValues(
-  stints: readonly CandidateStint[],
-  selectedIds: ReadonlySet<string>,
-): string[] {
-  const available = availableStints(stints);
-  const allSelected = available.length > 0 && selectedIds.size === available.length;
-  return allSelected
-    ? [ALL_STINTS_OPTION, ...available.map((stint) => stint.id)]
-    : [...selectedIds];
+function stintLabel(stint: CandidateStint, stints: readonly CandidateStint[]): string {
+  const index = stints.findIndex((candidate) => candidate.id === stint.id);
+  return `Stint ${index + 1}`;
 }
 
-function nextSelectedStintIds(
-  event: ChangeEvent<HTMLSelectElement>,
+function selectionLabel(
   stints: readonly CandidateStint[],
-  previousIds: ReadonlySet<string>,
-): string[] {
+  selectedIds: ReadonlySet<string>,
+): string {
   const available = availableStints(stints);
-  const availableIds = available.map((stint) => stint.id);
-  const values = [...event.currentTarget.selectedOptions].map((option) => option.value);
-  const hasAllOption = values.includes(ALL_STINTS_OPTION);
-  const selectedIds = values.filter((value) => value !== ALL_STINTS_OPTION);
-  const wasAllSelected = previousIds.size === available.length && available.length > 0;
+  if (available.length === 0 || selectedIds.size === 0) {
+    return available.length === 0 ? 'No timed stints' : 'No stints selected';
+  }
+  if (selectedIds.size === available.length) {
+    return 'All stints';
+  }
+  if (selectedIds.size === 1) {
+    const selected = available.find((stint) => selectedIds.has(stint.id));
+    return selected ? stintLabel(selected, available) : 'No stints selected';
+  }
+  return `${selectedIds.size} stints selected`;
+}
 
-  if (hasAllOption && !wasAllSelected) {
-    return availableIds;
-  }
-  if (hasAllOption) {
-    return selectedIds.length === availableIds.length ? availableIds : selectedIds;
-  }
-  if (wasAllSelected && selectedIds.length === availableIds.length) {
-    return [];
-  }
-  return selectedIds;
+function ScopeSelect({
+  label,
+  triggerLabel,
+  value,
+  options,
+  multiple = false,
+  allOptionValue,
+  disabled = false,
+  onChange,
+}: ScopeSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const id = controlId(label);
+  const currentValues = typeof value === 'string' ? [value] : [...value];
+  const selectedValues = new Set(currentValues);
+  const selectableValues = options
+    .filter((option) => option.value !== allOptionValue)
+    .map((option) => option.value);
+  const allSelected =
+    multiple &&
+    Boolean(allOptionValue) &&
+    selectableValues.length > 0 &&
+    selectableValues.every((optionValue) => selectedValues.has(optionValue));
+  const displayedLabel =
+    triggerLabel ?? options.find((option) => option.value === currentValues[0])?.label ?? '';
+
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
+
+  const handleOptionClick = (optionValue: string) => {
+    if (!multiple) {
+      onChange(optionValue);
+      setIsOpen(false);
+      return;
+    }
+
+    const nextSelected = new Set(selectedValues);
+    if (optionValue === allOptionValue) {
+      onChange(allSelected ? [] : selectableValues);
+      setIsOpen(false);
+      return;
+    }
+
+    if (nextSelected.has(optionValue)) {
+      nextSelected.delete(optionValue);
+    } else {
+      nextSelected.add(optionValue);
+    }
+
+    onChange(selectableValues.filter((selectableValue) => nextSelected.has(selectableValue)));
+  };
+
+  return (
+    <div className="scope-select" ref={rootRef}>
+      <button
+        type="button"
+        className="scope-select__trigger"
+        aria-controls={`${id}-menu`}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-label={label}
+        disabled={disabled}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <span>{displayedLabel}</span>
+        <ChevronDown aria-hidden="true" size={16} strokeWidth={1.8} />
+      </button>
+
+      {isOpen && (
+        <div
+          id={`${id}-menu`}
+          className="scope-select__menu"
+          role="listbox"
+          aria-label={`${label} options`}
+          aria-multiselectable={multiple || undefined}
+        >
+          {options.map((option) => {
+            const selected =
+              option.value === allOptionValue ? allSelected : selectedValues.has(option.value);
+            return (
+              <button
+                type="button"
+                className="scope-select__option"
+                key={option.value}
+                role="option"
+                aria-selected={selected}
+                onClick={() => handleOptionClick(option.value)}
+              >
+                <span className="scope-select__option-indicator" aria-hidden="true">
+                  {selected && <Check size={14} strokeWidth={2.2} />}
+                </span>
+                <span className="scope-select__option-copy">
+                  <strong>{option.label}</strong>
+                  {option.detail && <small>{option.detail}</small>}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ScopeReview({
@@ -122,27 +333,38 @@ export function ScopeReview({
   return (
     <section className="scope-review" aria-labelledby="scope-review-title">
       <div className="scope-review__heading">
-        <div>
-          <h2 id="scope-review-title">Review scope.</h2>
-          <p>Select the stints for each driver. Runtime and pace use separate eligibility rules.</p>
-        </div>
-        <div className="scope-review__heading-actions">
-          <div className="scope-review__summary" aria-label="Scope totals">
-            <span>{groups.length} drivers</span>
-            <span>{runtimeCount} runtime laps</span>
-            <span>{paceCount} pace laps</span>
+        <h2 id="scope-review-title">Review scope.</h2>
+        <p>Choose the stints that belong in the comparison. Runtime and pace use separate rules.</p>
+      </div>
+
+      <div className="scope-review__summary-row">
+        <div className="scope-review__summary" aria-label="Scope totals">
+          <div className="scope-review__summary-stat">
+            <strong>{groups.length}</strong>
+            <span>drivers</span>
           </div>
-          <label className="scope-review__pace-control scope-review__pace-control--global">
-            Pace mode
-            <select
-              value={paceMode}
-              disabled={isHydrated ? groups.length === 0 : undefined}
-              onChange={(event) => onPaceModeChange(event.target.value as PaceMode)}
-            >
-              <option value="clean-non-pit">Clean non-pit</option>
-              <option value="all-non-pit">All non-pit</option>
-            </select>
-          </label>
+          <div className="scope-review__summary-stat">
+            <strong>{runtimeCount}</strong>
+            <span>runtime laps</span>
+          </div>
+          <div className="scope-review__summary-stat">
+            <strong>{paceCount}</strong>
+            <span>pace laps</span>
+          </div>
+        </div>
+
+        <div className="scope-review__pace-control scope-review__pace-control--global">
+          <span>Pace mode</span>
+          <ScopeSelect
+            label="Pace mode"
+            value={paceMode}
+            disabled={isHydrated ? groups.length === 0 : undefined}
+            options={[
+              { value: 'clean-non-pit', label: 'Clean non-pit' },
+              { value: 'all-non-pit', label: 'All non-pit' },
+            ]}
+            onChange={(value) => onPaceModeChange(value as PaceMode)}
+          />
         </div>
       </div>
 
@@ -158,7 +380,6 @@ export function ScopeReview({
             const selectedIds = selectedStintIdsFor(group.stints, selection);
             const groupEligibility = eligibility.filter((item) => item.scopeKey === group.scopeKey);
             const cleanUnavailableCount = group.laps.filter((lap) => lap.clean === null).length;
-
             const headingId = driverHeadingId(group.driver);
 
             return (
@@ -171,50 +392,60 @@ export function ScopeReview({
                   <div className="scope-review__driver-header">
                     <h3 id={headingId}>{group.driver}</h3>
                     <div className="scope-review__facts" aria-label={`${group.driver} scope facts`}>
-                      <span>{group.laps.length} laps</span>
                       <span>
-                        {group.laps.filter((lap) => lap.isFullTimedLap).length} timed laps
+                        <strong>{group.laps.length}</strong> laps
                       </span>
                       <span>
-                        {groupEligibility.filter((item) => item.runtime.eligible).length} runtime
-                        laps
+                        <strong>{group.laps.filter((lap) => lap.isFullTimedLap).length}</strong>{' '}
+                        timed
                       </span>
                       <span>
-                        {groupEligibility.filter((item) => item.pace.eligible).length} pace laps
+                        <strong>
+                          {groupEligibility.filter((item) => item.runtime.eligible).length}
+                        </strong>{' '}
+                        runtime
+                      </span>
+                      <span>
+                        <strong>
+                          {groupEligibility.filter((item) => item.pace.eligible).length}
+                        </strong>{' '}
+                        pace
                       </span>
                     </div>
                   </div>
 
                   <div className="scope-review__controls">
-                    <label className="scope-review__stint-control">
-                      Stints
+                    <div className="scope-review__stint-control">
+                      <span>Stint selection</span>
                       {selectableStints.length === 0 ? (
                         <p className="scope-review__no-stints">No timed stints available.</p>
                       ) : (
-                        <select
+                        <ScopeSelect
+                          label={`Stints for ${group.driver}`}
+                          triggerLabel={selectionLabel(group.stints, selectedIds)}
+                          value={[...selectedIds]}
                           multiple
-                          size={Math.min(selectableStints.length + 1, 6)}
-                          value={selectedValues(group.stints, selectedIds)}
-                          onChange={(event) =>
+                          allOptionValue={ALL_STINTS_OPTION}
+                          options={[
+                            {
+                              value: ALL_STINTS_OPTION,
+                              label: 'All stints',
+                              detail: `${selectableStints.length} ${selectableStints.length === 1 ? 'stint' : 'stints'}`,
+                            },
+                            ...selectableStints.map((stint, index) => ({
+                              value: stint.id,
+                              label: `Stint ${index + 1}`,
+                              detail: `${stint.fullTimedLapCount} timed laps`,
+                            })),
+                          ]}
+                          onChange={(value) =>
                             onSelectionChange(group.scopeKey, {
-                              selectedStintIds: nextSelectedStintIds(
-                                event,
-                                group.stints,
-                                selectedIds,
-                              ),
+                              selectedStintIds: value as string[],
                             })
                           }
-                          aria-label={`Stints for ${group.driver}`}
-                        >
-                          <option value={ALL_STINTS_OPTION}>All stints</option>
-                          {selectableStints.map((stint, index) => (
-                            <option key={stint.id} value={stint.id}>
-                              Stint {index + 1} · {stint.fullTimedLapCount} timed laps
-                            </option>
-                          ))}
-                        </select>
+                        />
                       )}
-                    </label>
+                    </div>
                   </div>
 
                   {cleanUnavailableCount > 0 && (
@@ -244,8 +475,18 @@ export function ScopeReview({
                             return (
                               <tr key={lap.id}>
                                 <th scope="row">{lapLabel(lap)}</th>
-                                <td>{stateLabel(result.runtime)}</td>
-                                <td>{stateLabel(result.pace)}</td>
+                                <td>
+                                  <AuditStatus
+                                    state={result.runtime}
+                                    label={`${lapLabel(lap)} runtime`}
+                                  />
+                                </td>
+                                <td>
+                                  <AuditStatus
+                                    state={result.pace}
+                                    label={`${lapLabel(lap)} pace`}
+                                  />
+                                </td>
                               </tr>
                             );
                           })}
