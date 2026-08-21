@@ -76,7 +76,6 @@ export function AnalyzerShell() {
         </a>
 
         <div className="calibration-header__right">
-          <span className="calibration-header__source">Garage 61 / XLSX</span>
           <div className="calibration-header__actions">
             <a
               className={buttonVariants({
