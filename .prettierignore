@@ -1,4 +1,5 @@
 .impeccable
+vendor/impeccable
 dist
 .astro
 coverage

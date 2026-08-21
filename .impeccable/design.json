@@ -1,0 +1,329 @@
+{
+	"schemaVersion": 2,
+	"generatedAt": "2026-08-21T09:30:37Z",
+	"title": "Design System: Garage 61 Stint Analyzer",
+	"extensions": {
+		"colorMeta": {
+			"paper": {
+				"role": "neutral",
+				"displayName": "Mineral Paper",
+				"canonical": "#f4f1e8",
+				"tonalRamp": [
+					"#343735",
+					"#555752",
+					"#74766f",
+					"#93958d",
+					"#b2b3aa",
+					"#d0d0c7",
+					"#e7e5db",
+					"#f4f1e8"
+				]
+			},
+			"paper-deep": {
+				"role": "neutral",
+				"displayName": "Deep Paper",
+				"canonical": "#e8e5dc",
+				"tonalRamp": [
+					"#343432",
+					"#514f4b",
+					"#6e6c66",
+					"#8b8982",
+					"#a8a69f",
+					"#c4c2ba",
+					"#d9d7cf",
+					"#e8e5dc"
+				]
+			},
+			"sheet": {
+				"role": "neutral",
+				"displayName": "Clean Sheet",
+				"canonical": "#fbfaf5",
+				"tonalRamp": [
+					"#373835",
+					"#5a5b56",
+					"#7c7d76",
+					"#9ea099",
+					"#bfc0b8",
+					"#d9d9d1",
+					"#edebe3",
+					"#fbfaf5"
+				]
+			},
+			"ink": {
+				"role": "neutral",
+				"displayName": "Graphite Ink",
+				"canonical": "#182126",
+				"tonalRamp": [
+					"#182126",
+					"#283238",
+					"#3d474c",
+					"#535d62",
+					"#6c767a",
+					"#8b9497",
+					"#b2b8b8",
+					"#e2e4df"
+				]
+			},
+			"ink-soft": {
+				"role": "neutral",
+				"displayName": "Soft Ink",
+				"canonical": "#4d5a5e",
+				"tonalRamp": [
+					"#293033",
+					"#3d494d",
+					"#4d5a5e",
+					"#687477",
+					"#849093",
+					"#a1abad",
+					"#c0c6c3",
+					"#e2e4df"
+				]
+			},
+			"muted": {
+				"role": "neutral",
+				"displayName": "Muted Register",
+				"canonical": "#6f7a7c",
+				"tonalRamp": [
+					"#3d4547",
+					"#535d5f",
+					"#6f7a7c",
+					"#879294",
+					"#a2abad",
+					"#bec5c5",
+					"#d7dbd8",
+					"#ebece7"
+				]
+			},
+			"rule": {
+				"role": "neutral",
+				"displayName": "Measurement Rule",
+				"canonical": "#c9cbc2",
+				"tonalRamp": [
+					"#5f625d",
+					"#777a74",
+					"#92958d",
+					"#aaada5",
+					"#c9cbc2",
+					"#dadbd3",
+					"#e8e8e0",
+					"#f5f4ec"
+				]
+			},
+			"rule-strong": {
+				"role": "neutral",
+				"displayName": "Strong Rule",
+				"canonical": "#939d9e",
+				"tonalRamp": [
+					"#4b5152",
+					"#636b6c",
+					"#7c8586",
+					"#939d9e",
+					"#abb3b3",
+					"#c2c8c5",
+					"#d9dcd7",
+					"#f0f0e9"
+				]
+			},
+			"cobalt": {
+				"role": "primary",
+				"displayName": "Cobalt Registration",
+				"canonical": "#2e5aa8",
+				"tonalRamp": [
+					"#172c53",
+					"#1e3d72",
+					"#254b8d",
+					"#2e5aa8",
+					"#5078ba",
+					"#7696ca",
+					"#a5b9dd",
+					"#dce5f4"
+				]
+			},
+			"vermilion": {
+				"role": "secondary",
+				"displayName": "Vermilion Change Signal",
+				"canonical": "#d84b2f",
+				"tonalRamp": [
+					"#4a1a12",
+					"#762719",
+					"#a13724",
+					"#d84b2f",
+					"#e26d57",
+					"#eb9180",
+					"#f4b8aa",
+					"#fbe2dc"
+				]
+			},
+			"ochre": {
+				"role": "tertiary",
+				"displayName": "Ochre Calibration Mark",
+				"canonical": "#c7982e",
+				"tonalRamp": [
+					"#4a370c",
+					"#765817",
+					"#9c751f",
+					"#c7982e",
+					"#d2aa51",
+					"#ddc074",
+					"#ead9a9",
+					"#f8f1dd"
+				]
+			},
+			"moss": {
+				"role": "tertiary",
+				"displayName": "Moss Local Ready",
+				"canonical": "#2f756a",
+				"tonalRamp": [
+					"#12302c",
+					"#1d4b43",
+					"#276258",
+					"#2f756a",
+					"#599188",
+					"#80aca5",
+					"#afd0ca",
+					"#e0efec"
+				]
+			}
+		},
+		"typographyMeta": {
+			"display": {
+				"displayName": "Recursive Decision Display",
+				"purpose": "Large operating headlines that state the next useful decision."
+			},
+			"label": {
+				"displayName": "Fragment Measurement Register",
+				"purpose": "Scope, state, table headers, counts, and numeric identifiers."
+			}
+		},
+		"shadows": [
+			{
+				"name": "ledger-ambient",
+				"value": "0 18px 42px -26px rgb(24 33 38 / 35%)",
+				"purpose": "Separate the active comparison sheet from the mineral paper ground."
+			}
+		],
+		"motion": [
+			{
+				"name": "register-state",
+				"value": "160ms ease-out",
+				"purpose": "Give controls and active navigation a short, exact state change."
+			}
+		],
+		"breakpoints": [
+			{ "name": "wide", "value": "1000px" },
+			{ "name": "compact", "value": "680px" }
+		]
+	},
+	"components": [
+		{
+			"name": "Primary Button",
+			"kind": "button",
+			"refersTo": "button-primary",
+			"description": "A compact graphite action for a ready workflow.",
+			"html": "<button class=\"ds-btn-primary\">Run analysis</button>",
+			"css": ".ds-btn-primary { min-height: 42px; padding: 0 17px; border: 1px solid #182126; border-radius: 6px; background: #182126; color: #fbfaf5; font: 600 0.78rem/1 'Recursive Variable', sans-serif; transition: background-color 160ms ease-out, outline-color 160ms ease-out; } .ds-btn-primary:hover { background: #2e5aa8; } .ds-btn-primary:focus-visible { outline: 2px solid #2e5aa8; outline-offset: 4px; }"
+		},
+		{
+			"name": "Outline Button",
+			"kind": "button",
+			"refersTo": "button-outline",
+			"description": "A measured secondary action that stays on the paper surface.",
+			"html": "<button class=\"ds-btn-outline\">Export report</button>",
+			"css": ".ds-btn-outline { min-height: 36px; padding: 0 13px; border: 1px solid #182126; border-radius: 6px; background: transparent; color: #182126; font: 600 0.78rem/1 'Recursive Variable', sans-serif; transition: border-color 160ms ease-out, color 160ms ease-out; } .ds-btn-outline:hover { border-color: #2e5aa8; color: #2e5aa8; } .ds-btn-outline:focus-visible { outline: 2px solid #2e5aa8; outline-offset: 4px; }"
+		},
+		{
+			"name": "Ghost Button",
+			"kind": "button",
+			"refersTo": "button-ghost",
+			"description": "A quiet action for secondary controls and navigation.",
+			"html": "<button class=\"ds-btn-ghost\">Reset scope</button>",
+			"css": ".ds-btn-ghost { min-height: 36px; padding: 0 13px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #4d5a5e; font: 600 0.78rem/1 'Recursive Variable', sans-serif; transition: background-color 160ms ease-out, color 160ms ease-out; } .ds-btn-ghost:hover { background: #e8e5dc; color: #182126; } .ds-btn-ghost:focus-visible { outline: 2px solid #2e5aa8; outline-offset: 4px; }"
+		},
+		{
+			"name": "Comparison Sheet",
+			"kind": "custom",
+			"refersTo": "comparison-sheet",
+			"description": "The primary working surface for source state and comparison readiness.",
+			"html": "<section class=\"ds-sheet\"><div class=\"ds-sheet-top\"><span>Comparison sheet</span><span>G61 / 001</span></div><h2>Waiting for source files</h2><div class=\"ds-readout\"><span>Drivers <b>00</b></span><span>Timed laps <b>00</b></span><span>Warnings <b>00</b></span></div></section>",
+			"css": ".ds-sheet { overflow: hidden; border: 1px solid #182126; border-radius: 12px; background: #fbfaf5; color: #182126; box-shadow: 0 18px 42px -26px rgb(24 33 38 / 35%); } .ds-sheet-top { display: flex; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #939d9e; color: #4d5a5e; font: 500 0.63rem/1.2 'Fragment Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; } .ds-sheet h2 { margin: 28px 24px 24px; font: 600 2rem/1.05 'Recursive Variable', sans-serif; letter-spacing: -0.035em; } .ds-readout { display: flex; margin: 0 24px 24px; border-top: 1px solid #c9cbc2; border-bottom: 1px solid #c9cbc2; } .ds-readout span { flex: 1; padding: 14px 12px 14px 0; color: #6f7a7c; font: 500 0.63rem/1.2 'Fragment Mono', monospace; text-transform: uppercase; } .ds-readout span + span { padding-left: 12px; border-left: 1px solid #c9cbc2; } .ds-readout b { display: block; margin-top: 6px; color: #182126; font-size: 1.65rem; font-weight: 500; letter-spacing: -0.08em; }"
+		},
+		{
+			"name": "Import Zone",
+			"kind": "input",
+			"refersTo": "comparison-sheet",
+			"description": "A direct local-file entry point with a measured boundary.",
+			"html": "<div class=\"ds-import\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/></svg><strong>Drop .XLSX exports here</strong><span>Files stay in this browser.</span></div>",
+			"css": ".ds-import { display: flex; align-items: center; gap: 12px; padding: 15px 16px; border: 1px dashed #2e5aa8; border-radius: 8px; background: rgb(46 90 168 / 5%); color: #2e5aa8; } .ds-import svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; } .ds-import strong { color: #182126; font: 600 0.84rem/1.2 'Recursive Variable', sans-serif; } .ds-import span { color: #4d5a5e; font: 400 0.72rem/1.3 'Recursive Variable', sans-serif; }"
+		},
+		{
+			"name": "Analysis Tabs",
+			"kind": "nav",
+			"refersTo": "comparison-sheet",
+			"description": "A ruled index that keeps the analysis views in one scope.",
+			"html": "<nav class=\"ds-tabs\"><button aria-selected=\"true\">Overview</button><button aria-selected=\"false\">Audit</button></nav>",
+			"css": ".ds-tabs { display: flex; border-top: 1px solid #939d9e; border-bottom: 1px solid #939d9e; } .ds-tabs button { position: relative; min-height: 42px; padding: 0 14px; border: 0; background: transparent; color: #6f7a7c; font: 500 0.64rem/1 'Fragment Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase; } .ds-tabs button[aria-selected=\"true\"] { color: #182126; background: #fbfaf5; } .ds-tabs button[aria-selected=\"true\"]::after { position: absolute; right: 14px; bottom: -1px; left: 14px; height: 2px; background: #d84b2f; content: ''; }"
+		},
+		{
+			"name": "Privacy Status",
+			"kind": "custom",
+			"refersTo": "comparison-sheet",
+			"description": "A persistent local-only state marker in the top rail.",
+			"html": "<div class=\"ds-privacy\"><span aria-hidden=\"true\"></span><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"10\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M7 10V7a5 5 0 0 1 10 0v3\"/></svg>LOCAL / EPHEMERAL</div>",
+			"css": ".ds-privacy { display: inline-flex; align-items: center; gap: 7px; color: #4d5a5e; font: 500 0.69rem/1.2 'Fragment Mono', monospace; letter-spacing: 0.07em; text-transform: uppercase; } .ds-privacy > span { width: 7px; height: 7px; border-radius: 50%; background: #2f756a; box-shadow: 0 0 0 3px rgb(47 117 106 / 12%); } .ds-privacy svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }"
+		}
+	],
+	"narrative": {
+		"northStar": "The Calibration Ledger",
+		"overview": "The interface treats a Garage 61 analysis as a measured instrument. It uses mineral paper, graphite ink, registration marks, and ruled evidence surfaces. The visual language feels like a careful post-session debrief, not a generic dashboard or motorsport display.\n\nThe system keeps the first comparison broad and legible. It uses a strong sans-serif hierarchy for decisions and a mono register for labels, counts, times, and state. Cobalt marks the active comparison path. Vermilion marks change, attention, and required source state. Moss confirms local readiness without becoming a decorative accent.",
+		"keyCharacteristics": [
+			"Calibration-sheet surfaces with functional measurement lines.",
+			"Strong black and cobalt headline contrast.",
+			"Mono labels for data, scope, and state.",
+			"Flat layers with one soft ambient shadow.",
+			"Tables and ruled rows instead of nested dashboard cards."
+		],
+		"rules": [
+			{
+				"name": "The Signal Scarcity Rule",
+				"body": "Cobalt, vermilion, ochre, and moss mark state or evidence. They do not fill decorative regions without a task reason.",
+				"section": "colors"
+			},
+			{
+				"name": "The Paper Before Chrome Rule",
+				"body": "Let the mineral surface and ruled structure carry hierarchy before adding another container.",
+				"section": "colors"
+			},
+			{
+				"name": "The Decision Then Register Rule",
+				"body": "Use the sans hierarchy for the decision. Use mono only when the content is a measurement, label, state, or identifier.",
+				"section": "typography"
+			},
+			{
+				"name": "The Compressed Headline Rule",
+				"body": "Headings use tight tracking, but body copy keeps readable line spacing and width.",
+				"section": "typography"
+			},
+			{
+				"name": "The Flat-By-Default Rule",
+				"body": "Use tonal layering and rules at rest. Use the ambient shadow only where a working sheet must separate from the ground.",
+				"section": "elevation"
+			}
+		],
+		"dos": [
+			"Do use mineral paper and ruled surfaces to organize analysis.",
+			"Do reserve cobalt, vermilion, ochre, and moss for measurable state.",
+			"Do use tables and evidence rows when the user needs to compare values.",
+			"Do use Fragment Mono for numeric and scope content.",
+			"Do keep privacy, runtime, pace, and audit language visible.",
+			"Do keep the interface readable when the data becomes dense."
+		],
+		"donts": [
+			"Don't add carbon-fiber textures, racing stripes, neon speed lines, or decorative motorsport graphics.",
+			"Don't turn the page into a generic light SaaS dashboard with equal cards.",
+			"Don't use full-page grid backgrounds. Keep measurement lines inside real sheets or data surfaces.",
+			"Don't use gradient text, hard offset shadows, or decorative glass effects.",
+			"Don't place eyebrow labels above headings. Let headings carry the hierarchy.",
+			"Don't use color as the only state signal."
+		]
+	}
+}

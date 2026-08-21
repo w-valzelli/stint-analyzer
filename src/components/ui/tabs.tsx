@@ -39,7 +39,7 @@ export function Tabs({
 
   return (
     <TabsContext.Provider value={{ value: currentValue, onValueChange: changeValue }}>
-      <div className={cn('w-full', className)} {...props}>
+      <div className={cn('calibration-tabs', className)} {...props}>
         {children}
       </div>
     </TabsContext.Provider>
@@ -47,16 +47,7 @@ export function Tabs({
 }
 
 export function TabsList({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      role="tablist"
-      className={cn(
-        'inline-flex max-w-full flex-wrap gap-1 rounded-lg border border-slate-800 bg-slate-950/60 p-1',
-        className,
-      )}
-      {...props}
-    />
-  );
+  return <div role="tablist" className={cn('calibration-tabs__list', className)} {...props} />;
 }
 
 export interface TabsTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -72,11 +63,8 @@ export function TabsTrigger({ className, value, children, ...props }: TabsTrigge
       type="button"
       role="tab"
       aria-selected={isSelected}
-      className={cn(
-        'rounded-md px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-white',
-        isSelected && 'bg-slate-800 text-white shadow-sm',
-        className,
-      )}
+      data-state={isSelected ? 'active' : 'inactive'}
+      className={cn('calibration-tabs__trigger', className)}
       onClick={() => context.onValueChange(value)}
       {...props}
     >
@@ -97,7 +85,7 @@ export function TabsContent({ className, value, children, ...props }: TabsConten
   }
 
   return (
-    <div role="tabpanel" className={cn('mt-6', className)} {...props}>
+    <div role="tabpanel" className={cn('calibration-tabs__content', className)} {...props}>
       {children}
     </div>
   );

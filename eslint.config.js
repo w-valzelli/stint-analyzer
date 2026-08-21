@@ -8,6 +8,7 @@ export default [
   {
     ignores: [
       '.impeccable/**',
+      'vendor/impeccable/**',
       'dist/**',
       '.astro/**',
       'coverage/**',

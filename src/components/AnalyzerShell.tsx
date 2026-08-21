@@ -1,9 +1,8 @@
-import { FileSpreadsheet, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { FileSpreadsheet, LockKeyhole, Ruler, ShieldCheck, Waypoints } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Button } from './ui/button';
 
 const tabs = [
   ['overview', 'Overview'],
@@ -14,68 +13,157 @@ const tabs = [
   ['audit', 'Audit'],
 ] as const;
 
+const workflow = [
+  ['Register', 'local files'],
+  ['Compare', 'selected runs'],
+  ['Trace', 'source laps'],
+] as const;
+
 export function AnalyzerShell() {
   const [activeTab, setActiveTab] = useState('overview');
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
-      <header className="flex flex-col gap-5 border-b border-slate-800 pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.24em] text-cyan-300">
-            Garage 61 analysis
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            Garage 61 Stint Analyzer
-          </h1>
-          <p className="mt-2 flex items-center gap-2 text-sm text-slate-400">
-            <LockKeyhole aria-hidden="true" size={15} />
-            Local analysis — files stay in your browser.
-          </p>
+    <main className="calibration-app">
+      <header className="calibration-header">
+        <a className="calibration-mark" href="#top" aria-label="Garage 61 Stint Analyzer home">
+          <span className="calibration-mark__badge">G61</span>
+          <h2 className="calibration-mark__name" aria-label="Garage 61 Stint Analyzer">
+            <strong>Garage 61</strong>
+            <span>Stint Analyzer</span>
+          </h2>
+        </a>
+
+        <div className="calibration-header__status" aria-label="Analysis privacy status">
+          <span className="calibration-status-dot" aria-hidden="true" />
+          <LockKeyhole aria-hidden="true" size={14} />
+          <span>Local / ephemeral</span>
         </div>
-        <Button variant="outline" disabled>
-          Export
+
+        <Button variant="outline" size="sm" disabled>
+          Export report
         </Button>
       </header>
 
-      <section className="grid gap-8 py-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
-        <div>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-200">
-            <ShieldCheck aria-hidden="true" size={14} />
-            Private by design
+      <section className="calibration-intro" id="top" aria-labelledby="page-title">
+        <div className="calibration-intro__copy">
+          <h1 id="page-title">
+            Compare the run
+            <span>before you coach it.</span>
+          </h1>
+          <p className="calibration-intro__lede">
+            Register Garage 61 workbooks locally. See the driver gap first, then follow every result
+            back to the laps that produced it.
+          </p>
+
+          <div className="calibration-workflow" aria-label="Analysis workflow">
+            {workflow.map(([label, detail], index) => (
+              <div className="calibration-workflow__step" key={label}>
+                <span className="calibration-workflow__mark" aria-hidden="true">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <span>
+                  <strong>{label}</strong>
+                  <small>{detail}</small>
+                </span>
+              </div>
+            ))}
           </div>
-          <h2 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl">
-            Compare stints without sending your data anywhere.
-          </h2>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-400 sm:text-lg">
-            Review runtime, pace, sectors, consistency, penalties, and lap evidence from Garage 61
-            exports. The complete analysis stays in memory until you export it.
-          </p>
-          <p className="mt-5 font-mono text-sm text-cyan-200">
-            No account. No upload. Analyze locally and export when done.
-          </p>
         </div>
 
-        <Card className="border-cyan-400/20 bg-cyan-400/[0.04]">
-          <CardHeader>
-            <CardTitle>Start with local files</CardTitle>
-            <CardDescription>
-              The import workflow will accept multiple Garage 61 XLSX exports in the next milestone.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div
-              aria-label="XLSX import area"
-              className="flex min-h-44 flex-col items-center justify-center rounded-lg border border-dashed border-slate-700 bg-slate-950/60 px-6 text-center"
-            >
-              <FileSpreadsheet aria-hidden="true" className="mb-3 text-cyan-300" size={32} />
-              <p className="font-medium text-slate-200">Drop session exports here</p>
-              <p className="mt-2 text-sm text-slate-500">XLSX files stay on this device.</p>
+        <div className="calibration-sheet" aria-label="Comparison sheet waiting for files">
+          <div className="calibration-sheet__topline">
+            <span>Comparison sheet</span>
+            <span>G61 / 001</span>
+          </div>
+          <div className="calibration-sheet__body">
+            <div className="calibration-sheet__title-row">
+              <div>
+                <h2>Waiting for source files</h2>
+              </div>
+              <Waypoints aria-hidden="true" size={25} strokeWidth={1.5} />
             </div>
-          </CardContent>
-        </Card>
+            <p>
+              Add one or more local exports to open the measured comparison. Nothing leaves this
+              browser.
+            </p>
+
+            <div className="calibration-sheet__readout" aria-label="Current analysis count">
+              <div>
+                <span>Drivers</span>
+                <strong>00</strong>
+              </div>
+              <div>
+                <span>Timed laps</span>
+                <strong>00</strong>
+              </div>
+              <div>
+                <span>Warnings</span>
+                <strong>00</strong>
+              </div>
+            </div>
+
+            <div className="calibration-dropzone" aria-label="XLSX import area">
+              <FileSpreadsheet aria-hidden="true" size={27} strokeWidth={1.5} />
+              <div>
+                <strong>Drop .XLSX exports here</strong>
+                <span>Multiple files accepted in the next step.</span>
+              </div>
+              <span className="calibration-dropzone__state">READY</span>
+            </div>
+          </div>
+          <div className="calibration-sheet__footer">
+            <span>Clean is not a penalty</span>
+            <span>Runtime and pace stay separate</span>
+          </div>
+        </div>
       </section>
 
-      <section className="flex-1 border-t border-slate-800 pt-6">
+      <section className="calibration-ledger" aria-labelledby="ledger-title">
+        <div className="calibration-ledger__heading">
+          <div>
+            <h2 id="ledger-title">One report. Every lap accountable.</h2>
+          </div>
+          <span className="calibration-ledger__count">0 drivers / 0 laps</span>
+        </div>
+
+        <div className="calibration-ledger__table-wrap">
+          <table className="calibration-table">
+            <thead>
+              <tr>
+                <th scope="col">Driver</th>
+                <th scope="col">Raw runtime</th>
+                <th scope="col">Adjusted</th>
+                <th scope="col">Evidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="calibration-table__empty">
+                <th scope="row">
+                  <span className="calibration-table__marker" aria-hidden="true" />
+                  Source files required
+                </th>
+                <td>—</td>
+                <td>—</td>
+                <td>
+                  <span className="calibration-table__trace">
+                    <ShieldCheck aria-hidden="true" size={14} />
+                    Audit trail opens here
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="calibration-index" aria-labelledby="index-title">
+        <div className="calibration-index__heading">
+          <div>
+            <h2 id="index-title">Choose a view when the sheet is registered.</h2>
+          </div>
+          <Ruler aria-hidden="true" size={24} strokeWidth={1.5} />
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList aria-label="Analysis sections">
             {tabs.map(([value, label]) => (
@@ -85,50 +173,26 @@ export function AnalyzerShell() {
             ))}
           </TabsList>
 
-          <TabsContent value="overview">
-            <Card>
-              <CardHeader>
-                <CardTitle>Overview</CardTitle>
-                <CardDescription>
-                  Import a workbook to populate the canonical analysis report and its views.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-3 text-sm text-slate-400 sm:grid-cols-3">
-                  <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">Runtime</p>
-                    <p className="mt-2 text-lg font-medium text-slate-200">Waiting for files</p>
-                  </div>
-                  <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">Pace mode</p>
-                    <p className="mt-2 text-lg font-medium text-slate-200">Clean, non-pit</p>
-                  </div>
-                  <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
-                    <p className="text-xs uppercase tracking-wide text-slate-500">Storage</p>
-                    <p className="mt-2 text-lg font-medium text-slate-200">Ephemeral</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value={activeTab}>
+            <div className="calibration-panel">
+              <h3>{tabs.find(([value]) => value === activeTab)?.[1]} waits for the register.</h3>
+              <p>
+                Import a workbook to populate this view from the same canonical report. The audit
+                trail stays visible when the numbers get detailed.
+              </p>
+              <div className="calibration-panel__rule" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
           </TabsContent>
-
-          {tabs.slice(1).map(([value, label]) => (
-            <TabsContent key={value} value={value}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{label}</CardTitle>
-                  <CardDescription>
-                    This view becomes available after local workbook import and scope review.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </TabsContent>
-          ))}
         </Tabs>
       </section>
 
-      <footer className="mt-10 border-t border-slate-800 pt-5 text-xs leading-5 text-slate-500">
-        The app has no account system, backend, remote storage, or hosted AI connection.
+      <footer className="calibration-footer">
+        <span>Garage 61 Stint Analyzer</span>
+        <span>No account. No upload. Analyze locally and export when done.</span>
       </footer>
     </main>
   );
