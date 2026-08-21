@@ -159,16 +159,6 @@ Use it for:
 
 Do not manually implement these statistics.
 
-### Tables
-- `@tanstack/react-table`
-
-Use for:
-- leaderboard;
-- sector detail;
-- sorting;
-- filtering;
-- visibility.
-
 ### Charts
 - `recharts`
 
