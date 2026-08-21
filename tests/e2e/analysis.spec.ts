@@ -22,6 +22,14 @@ test('reviews the M5 analysis views from one canonical report', async ({ page })
   await expect(page.getByRole('heading', { name: 'Pace progression' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Drivers' })).toHaveText('All drivers');
   await expect(page.getByRole('tab', { name: 'Audit' })).not.toBeVisible();
+  await page
+    .getByRole('img', { name: 'Lap pace progression chart' })
+    .locator('circle')
+    .first()
+    .hover({ force: true });
+  await expect(page.locator('.analysis-chart-tooltip')).toBeVisible();
+  await expect(page.locator('.analysis-chart-tooltip')).toBeInViewport();
+  await expect(page.locator('.analysis-chart-tooltip').locator('..')).toHaveCSS('z-index', '100');
 
   await page.getByRole('tab', { name: 'Sectors' }).click();
   const sectorsView = page.locator('.analysis-view');

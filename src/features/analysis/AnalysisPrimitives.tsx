@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { TooltipContentProps } from 'recharts';
 
 import type { AnalysisReport, MetricStats } from '../../domain/model/report';
@@ -37,16 +37,6 @@ type AnalysisSurfaceProps = {
 
 export function AnalysisSurface({ children, className = '' }: AnalysisSurfaceProps) {
   return <section className={`analysis-surface ${className}`}>{children}</section>;
-}
-
-export function useChartTooltipPortal(): HTMLElement | null {
-  const [portal, setPortal] = useState<HTMLElement | null>(null);
-
-  useEffect(() => {
-    setPortal(document.body);
-  }, []);
-
-  return portal;
 }
 
 type AnalysisChartTooltipProps = TooltipContentProps & {

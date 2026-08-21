@@ -15,7 +15,6 @@ import {
   AnalysisSurface,
   formatPercentage,
   formatSignedDurationUs,
-  useChartTooltipPortal,
 } from '../analysis/AnalysisPrimitives';
 
 type ScorecardMetricKey = 'pace' | 'potential' | 'efficiency' | 'cleanliness' | 'consistency';
@@ -128,7 +127,6 @@ function ScorecardTooltip({ active, payload }: TooltipContentProps) {
 }
 
 export function DriverScorecard({ driver, driverCount }: DriverScorecardProps) {
-  const tooltipPortal = useChartTooltipPortal();
   const rows = scorecardRows(driver);
   const chartRows = ['pace', 'potential', 'efficiency', 'cleanliness', 'consistency'].flatMap(
     (key) => rows.filter((row) => row.key === key),
@@ -196,7 +194,7 @@ export function DriverScorecard({ driver, driverCount }: DriverScorecardProps) {
                   animationDuration={600}
                   animationEasing="ease-out"
                 />
-                <Tooltip content={ScorecardTooltip} portal={tooltipPortal} />
+                <Tooltip allowEscapeViewBox={{ x: true, y: true }} content={ScorecardTooltip} />
               </RadarChart>
             </ResponsiveContainer>
           ) : (

@@ -17,7 +17,6 @@ import {
   AnalysisChartTooltip,
   AnalysisSurface,
   formatSignedDurationUs,
-  useChartTooltipPortal,
 } from './AnalysisPrimitives';
 
 type SectorProgressionChartProps = {
@@ -152,7 +151,6 @@ function progressionDot(sector: string, color: string) {
 }
 
 export function SectorProgressionChart({ report, driver }: SectorProgressionChartProps) {
-  const tooltipPortal = useChartTooltipPortal();
   const sectorNames = useMemo(
     () => report.sectors.map((sector) => sector.sector),
     [report.sectors],
@@ -237,7 +235,7 @@ export function SectorProgressionChart({ report, driver }: SectorProgressionChar
                 width={66}
               />
               <Tooltip
-                portal={tooltipPortal}
+                allowEscapeViewBox={{ x: true, y: true }}
                 content={(props) => (
                   <AnalysisChartTooltip
                     {...props}

@@ -14,7 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CustomSelect } from '../../components/ui/select';
 import type { AnalysisReport, LapAuditRow } from '../../domain/model/report';
 import { formatDurationUs } from '../../lib/durations';
-import { AnalysisChartTooltip, AnalysisSurface, useChartTooltipPortal } from './AnalysisPrimitives';
+import { AnalysisChartTooltip, AnalysisSurface } from './AnalysisPrimitives';
 
 type ProgressionChartProps = {
   report: AnalysisReport;
@@ -145,7 +145,6 @@ function progressionDot(driver: string, color: string) {
 }
 
 export function ProgressionChart({ report, driver }: ProgressionChartProps) {
-  const tooltipPortal = useChartTooltipPortal();
   const driverNames = useMemo(
     () => report.leaderboard.map((row) => row.driver),
     [report.leaderboard],
@@ -228,7 +227,7 @@ export function ProgressionChart({ report, driver }: ProgressionChartProps) {
                 width={58}
               />
               <Tooltip
-                portal={tooltipPortal}
+                allowEscapeViewBox={{ x: true, y: true }}
                 content={(props) => (
                   <AnalysisChartTooltip
                     {...props}

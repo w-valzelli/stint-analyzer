@@ -1242,6 +1242,7 @@ input[type='checkbox']:focus-visible {
 
 .analysis-chart-surface {
   min-height: 0;
+  overflow: visible;
 }
 
 .analysis-chart {
@@ -1260,6 +1261,10 @@ input[type='checkbox']:focus-visible {
   grid-template-columns: minmax(0, 0.9fr) minmax(300px, 1.1fr);
   gap: 24px;
   padding: 0 20px 20px;
+}
+
+.analysis-scorecard {
+  overflow: visible;
 }
 
 .analysis-scorecard__chart {
@@ -1341,6 +1346,11 @@ input[type='checkbox']:focus-visible {
   font-family: var(--font-mono);
   font-size: 0.64rem;
   line-height: 1.35;
+}
+
+.analysis-chart .recharts-tooltip-wrapper,
+.analysis-scorecard__chart .recharts-tooltip-wrapper {
+  z-index: 100;
 }
 
 .analysis-scorecard__tooltip strong,
