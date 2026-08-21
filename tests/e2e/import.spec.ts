@@ -12,6 +12,25 @@ async function waitForImporter(page: Page) {
   await expect(page.getByRole('button', { name: 'Choose files' })).toBeEnabled();
 }
 
+test('keeps the mobile file controls inside the dropzone', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./');
+  await waitForImporter(page);
+
+  const dropzone = page.locator('.calibration-dropzone');
+  const bounds = await dropzone.boundingBox();
+  const iconBounds = await dropzone.locator('svg').boundingBox();
+  const buttonBounds = await page.getByRole('button', { name: 'Choose files' }).boundingBox();
+
+  expect(bounds).not.toBeNull();
+  expect(iconBounds).not.toBeNull();
+  expect(buttonBounds).not.toBeNull();
+  expect(iconBounds!.x).toBeGreaterThanOrEqual(bounds!.x);
+  expect(iconBounds!.x + iconBounds!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width);
+  expect(buttonBounds!.x).toBeGreaterThanOrEqual(bounds!.x);
+  expect(buttonBounds!.x + buttonBounds!.width).toBeLessThanOrEqual(bounds!.x + bounds!.width);
+});
+
 test('registers a Garage 61 workbook and shows detected source facts', async ({ page }) => {
   await page.goto('./');
   await waitForImporter(page);

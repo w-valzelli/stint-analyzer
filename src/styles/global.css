@@ -253,6 +253,7 @@ input[type='checkbox']:focus-visible {
 }
 
 .calibration-dropzone {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -265,6 +266,10 @@ input[type='checkbox']:focus-visible {
     background-color 160ms ease-out,
     border-color 160ms ease-out,
     opacity 160ms ease-out;
+}
+
+.calibration-dropzone > input[type='file'] {
+  position: absolute;
 }
 
 .calibration-dropzone--active {
