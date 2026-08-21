@@ -13,7 +13,7 @@ export function Overview({ report }: OverviewProps) {
       <AnalysisSurface className="analysis-surface--table">
         <div className="analysis-surface__header">
           <div>
-            <h3>Run register</h3>
+            <h3>Leaderboard</h3>
             <p>Runtime standings with the selected pace facts.</p>
           </div>
         </div>
