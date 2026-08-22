@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+import { sourceSummarySchema } from './normalized';
 import { paceModes } from './scope';
 
 const finiteNumberSchema = z.number().refine(Number.isFinite, 'Expected a finite number');
@@ -245,23 +245,7 @@ export const analysisReportSchema = z.object({
   generatedAt: z.string().min(1),
   configuration: analysisConfigSchema,
   methodology: methodologySchema,
-  sources: z.array(
-    z.object({
-      id: z.string().min(1),
-      name: z.string().min(1),
-      hash: z.string().regex(/^[a-f0-9]{64}$/),
-      sheetName: z.string().min(1),
-      driverName: z.string().min(1).nullable(),
-      trackName: z.string().min(1).nullable(),
-      carName: z.string().min(1).nullable(),
-      driverNames: z.array(z.string()),
-      sectorNames: z.array(z.string()),
-      timedLapCount: z.number().int().nonnegative(),
-      fullTimedLapCount: z.number().int().nonnegative(),
-      partialLapCount: z.number().int().nonnegative(),
-      warningCount: z.number().int().nonnegative(),
-    }),
-  ),
+  sources: z.array(sourceSummarySchema),
   warnings: z.array(analysisWarningSchema),
   overview: overviewSummarySchema,
   consistency: z.array(consistencySummarySchema),

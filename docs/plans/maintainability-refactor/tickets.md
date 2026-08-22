@@ -140,7 +140,7 @@ Give duration rules and `SourceSummary` validation one canonical implementation.
 - [x] One module owns duration constants, conversion, and standard format.
 - [x] UI and export code use the canonical duration module.
 - [x] Workbook parsing stays in the parsing area.
-- [ ] `analysisReportSchema` reuses `sourceSummarySchema`.
+- [x] `analysisReportSchema` reuses `sourceSummarySchema`.
 - [x] Duration output and validation behavior stay exact.
 
 ### Verification
@@ -148,10 +148,10 @@ Give duration rules and `SourceSummary` validation one canonical implementation.
 - [x] Run `pnpm exec vitest run tests/unit/durations.test.ts tests/unit/exports.test.ts`.
 - [x] Run `rg -n "function formatDurationUs|function microsecondsToSeconds|const MICROSECONDS_PER_SECOND" src`.
 - [x] Confirm that each canonical implementation occurs once.
-- [ ] Run `pnpm lint`.
-- [ ] Run `pnpm check`.
-- [ ] Run `pnpm test`.
-- [ ] Run `pnpm build`.
+- [x] Run `pnpm lint`.
+- [x] Run `pnpm check`.
+- [x] Run `pnpm test`.
+- [x] Run `pnpm build`.
 
 ### Not included
 
