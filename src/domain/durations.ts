@@ -11,21 +11,19 @@ function padMilliseconds(value: number): string {
   return String(value).padStart(3, '0');
 }
 
-export function microsecondsToSeconds(value: number | null):
-number | null {
+export function microsecondsToSeconds(value: number | null): number | null {
   return value === null ? null : value / MICROSECONDS_PER_SECOND;
 }
 
-export function formatDurationUs(valueUs: number | null):
-string {
-  if (valueUs === null){
+export function formatDurationUs(valueUs: number | null): string {
+  if (valueUs === null) {
     return '—';
   }
 
   const sign = valueUs < 0 ? '-' : '';
 
   const totalMilliseconds = Math.round(
-    Math.abs(valueUs) / (MICROSECONDS_PER_SECOND / MILLISECONDS_PER_SECOND)
+    Math.abs(valueUs) / (MICROSECONDS_PER_SECOND / MILLISECONDS_PER_SECOND),
   );
   const milliseconds = totalMilliseconds % MILLISECONDS_PER_SECOND;
 
@@ -37,7 +35,7 @@ string {
 
   const hours = Math.floor(totalMinutes / 60);
 
-  if (hours > 0){
+  if (hours > 0) {
     return `${sign}${hours}:${pad(minutes)}:${pad(seconds)}.${padMilliseconds(milliseconds)}`;
   }
 

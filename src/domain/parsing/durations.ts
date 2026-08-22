@@ -1,4 +1,4 @@
-import { MICROSECONDS_PER_SECOND } from "../durations";
+import { MICROSECONDS_PER_SECOND } from '../durations';
 
 function parseClockDuration(value: string): number | null {
   const parts = value.split(':').map((part) => Number(part.trim()));
