@@ -72,18 +72,18 @@ Add exact tests for the behavior that later tickets must preserve.
 
 ### Acceptance criteria
 
-- [ ] The export test compares the complete serialized JSON object.
-- [ ] The report test names the direction of each scorecard metric.
-- [ ] The duration tests cover all specified edge cases.
-- [ ] The tests use fixed data and give deterministic results.
-- [ ] Existing production behavior does not change.
+- [x] The export test compares the complete serialized JSON object.
+- [x] The report test names the direction of each scorecard metric.
+- [x] The duration tests cover all specified edge cases.
+- [x] The tests use fixed data and give deterministic results.
+- [x] Existing production behavior does not change.
 
 ### Verification
 
-- [ ] Run `pnpm exec vitest run tests/unit/durations.test.ts tests/unit/report.test.ts tests/unit/golden-regression.test.ts tests/unit/exports.test.ts`.
-- [ ] Confirm that all selected tests pass.
-- [ ] Run `pnpm lint`.
-- [ ] Run `pnpm check`.
+- [x] Run `pnpm exec vitest run tests/unit/durations.test.ts tests/unit/report.test.ts tests/unit/golden-regression.test.ts tests/unit/exports.test.ts`.
+- [x] Confirm that all selected tests pass.
+- [x] Run `pnpm lint`.
+- [x] Run `pnpm check`.
 
 ### Not included
 

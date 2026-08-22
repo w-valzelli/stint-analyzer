@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildAnalysisReport } from '../../src/domain/analytics/report';
+import { analysisReportSchema } from '../../src/domain/model/report';
 import { createDefaultScopeSelections, detectStints } from '../../src/domain/analytics/stints';
 import type { Lap, ParsedWorkbook } from '../../src/domain/model/normalized';
 import type { ScopeSelection } from '../../src/domain/model/scope';
@@ -200,7 +201,7 @@ describe('driver scorecard rankings', () => {
 describe('canonical analysis report', () => {
   it('derives the report from one fixed input and keeps the important values exact', () => {
     const report = buildAnalysisReport(reportInput());
-
+    expect(analysisReportSchema.parse(report)).toEqual(report);
     expect(report.schemaVersion).toBe('1.0');
     expect(report.configuration.paceMode).toBe('clean-non-pit');
     expect(report.leaderboard.map((row) => row.driver)).toEqual(['Bob', 'Alice']);

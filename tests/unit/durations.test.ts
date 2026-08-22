@@ -29,13 +29,17 @@ describe('parseDurationToMicroseconds', () => {
 
 describe('formatDurationUs', () => {
   it('formats lap times and runtime in motorsport notation', () => {
+    expect(formatDurationUs(null)).toBe('—');
+    expect(formatDurationUs(0)).toBe('0:00.000');
+    expect(formatDurationUs(1_234_567)).toBe('0:01.235');
     expect(formatDurationUs(83_456_000)).toBe('1:23.456');
+    expect(formatDurationUs(60_000_000)).toBe('1:00.000');
     expect(formatDurationUs(754_567_000)).toBe('12:34.567');
+    expect(formatDurationUs(3_600_000_000)).toBe('1:00:00.000');
     expect(formatDurationUs(3_754_567_000)).toBe('1:02:34.567');
   });
 
-  it('formats missing durations and runtime gaps', () => {
-    expect(formatDurationUs(null)).toBe('—');
+  it('formats gaps in motorsport notation', () => {
     expect(formatGapUs(0)).toBe('—');
     expect(formatGapUs(3_000_000)).toBe('+0:03.000');
   });

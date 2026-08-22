@@ -19,17 +19,18 @@ import {
 } from '../../src/domain/export/validation';
 import type { AnalysisReport } from '../../src/domain/model/report';
 import { makeAnalysisReport } from '../fixtures/analysisReport';
+import { expectedSerializedAnalysisReport } from '../fixtures/serializedAnalysisReport';
 
 describe('report exports', () => {
   it('serializes a versioned JSON report with seconds, basenames, and finite values', () => {
-    const json = createJsonExport(makeAnalysisReport());
-    const parsed = serializedAnalysisReportSchema.parse(JSON.parse(json));
+    const report = makeAnalysisReport();
+    const serialized = serializeAnalysisReport(report);
+    const json = createJsonExport(report);
 
-    expect(parsed.report_type).toBe('garage61-stint-analysis');
-    expect(parsed.sources[0].name).toBe('session-a.xlsx');
-    expect(parsed.leaderboard[0]).toMatchObject({ driver: 'Bob', runtime_seconds: 18.5 });
+    expect(serialized).toEqual(expectedSerializedAnalysisReport);
+    expect(JSON.parse(json)).toEqual(expectedSerializedAnalysisReport);
+    expect(serializedAnalysisReportSchema.parse(serialized)).toEqual(serialized);
     expect(json).not.toMatch(/NaN|Infinity|runtime_us|source_file_id/);
-    expect(serializeAnalysisReport(makeAnalysisReport())).toEqual(parsed);
   });
 
   it('blocks an invalid report before export', () => {
