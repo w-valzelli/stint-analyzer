@@ -62,6 +62,12 @@ localize. Each unit is independently coherent and leaves the repository buildabl
 4. [04-repository-handoff](./04-repository-handoff.md) — Split styles, remove dead code
    and Impeccable, finalize human/agent guidance, and run the complete verification gate.
 
+## Human ticket backlog
+
+Use [`tickets.md`](./tickets.md) for issue-ready human work packages. The backlog
+preserves the requirements, dependencies, acceptance criteria, and verification gates
+from these implementation units.
+
 ## Acceptance coverage
 
 | Spec criterion | Unit(s) | Verification                                                             |
