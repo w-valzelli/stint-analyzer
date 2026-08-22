@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import type { TooltipContentProps } from 'recharts';
 
 import type { AnalysisReport, MetricStats } from '../../domain/model/report';
-import { formatDurationUs } from '../../lib/durations';
+import { formatDurationUs } from '../../domain/durations';
 import { useAnalysisViewStore } from '../../state/analysis-view';
 import { CustomSelect, type CustomSelectOption } from '../../components/ui/select';
 

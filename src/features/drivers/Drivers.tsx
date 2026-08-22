@@ -1,5 +1,5 @@
 import type { AnalysisReport, DriverSectorAnalysis } from '../../domain/model/report';
-import { formatDurationUs } from '../../lib/durations';
+import { formatDurationUs } from '../../domain/durations';
 import {
   AnalysisSurface,
   DriverControl,

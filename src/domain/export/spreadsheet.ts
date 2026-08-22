@@ -1,7 +1,8 @@
 import writeXlsxFile, { type Cell, type SheetData } from 'write-excel-file/universal';
 
 import type { AnalysisReport } from '../model/report';
-import { formatDurationUs, microsecondsToSeconds, sourceBasename } from './serialization';
+import { formatDurationUs, microsecondsToSeconds } from '../durations';
+import { sourceBasename } from './serialization';
 import { validateAnalysisReportForExport } from './validation';
 
 export const spreadsheetSheetNames = [

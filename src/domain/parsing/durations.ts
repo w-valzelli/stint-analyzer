@@ -1,5 +1,4 @@
-export const MICROSECONDS_PER_SECOND = 1_000_000;
-export const MICROSECONDS_PER_DAY = 86_400 * MICROSECONDS_PER_SECOND;
+import { MICROSECONDS_PER_SECOND } from "../durations";
 
 function parseClockDuration(value: string): number | null {
   const parts = value.split(':').map((part) => Number(part.trim()));
@@ -52,8 +51,4 @@ export function parseDurationToMicroseconds(value: unknown): number | null {
 
   const numericValue = Number(normalized);
   return Number.isFinite(numericValue) ? parseNumericDuration(numericValue) : null;
-}
-
-export function microsecondsToSeconds(value: number | null): number | null {
-  return value === null ? null : value / MICROSECONDS_PER_SECOND;
 }

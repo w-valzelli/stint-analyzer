@@ -48,28 +48,6 @@ export function sourceBasename(value: string): string {
   return value.split(/[\\/]/).at(-1) ?? value;
 }
 
-export function microsecondsToSeconds(value: number | null): number | null {
-  return value === null ? null : value / 1_000_000;
-}
-
-export function formatDurationUs(value: number | null): string {
-  if (value === null) return '—';
-
-  const sign = value < 0 ? '-' : '';
-  const totalMilliseconds = Math.round(Math.abs(value) / 1_000);
-  const milliseconds = totalMilliseconds % 1_000;
-  const totalSeconds = Math.floor(totalMilliseconds / 1_000);
-  const seconds = totalSeconds % 60;
-  const totalMinutes = Math.floor(totalSeconds / 60);
-
-  if (totalMinutes >= 60) {
-    const hours = Math.floor(totalMinutes / 60);
-    return `${sign}${hours}:${String(totalMinutes % 60).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
-  }
-
-  return `${sign}${totalMinutes}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`;
-}
-
 function snakeCase(value: string): string {
   return value.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 }

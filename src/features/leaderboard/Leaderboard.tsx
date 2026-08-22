@@ -1,5 +1,5 @@
 import type { AnalysisReport } from '../../domain/model/report';
-import { formatDurationUs, formatGapUs } from '../../lib/durations';
+import { formatDurationUs } from '../../domain/durations';
 
 type LeaderboardProps = {
   report: AnalysisReport;
@@ -7,6 +7,10 @@ type LeaderboardProps = {
 
 function formatPercentage(value: number | null): string {
   return value === null ? '—' : `${value.toFixed(1)}%`;
+}
+
+function formatGapUs(valueUs: number): string {
+  return valueUs === 0 ? '—' : `+${formatDurationUs(valueUs)}`;
 }
 
 function fastestValue(rows: AnalysisReport['leaderboard'], metric: 'bestUs' | 'medianUs') {

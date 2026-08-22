@@ -10,7 +10,7 @@ import {
 } from 'recharts';
 
 import type { DriverAnalysis, ScorecardMetric } from '../../domain/model/report';
-import { formatDurationUs } from '../../lib/durations';
+import { formatDurationUs } from '../../domain/durations';
 import {
   AnalysisSurface,
   formatPercentage,

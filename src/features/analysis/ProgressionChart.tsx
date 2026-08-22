@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { CustomSelect } from '../../components/ui/select';
 import type { AnalysisReport, LapAuditRow } from '../../domain/model/report';
-import { formatDurationUs } from '../../lib/durations';
+import { formatDurationUs } from '../../domain/durations';
 import { AnalysisChartTooltip, AnalysisSurface } from './AnalysisPrimitives';
 
 type ProgressionChartProps = {

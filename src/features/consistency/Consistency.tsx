@@ -1,5 +1,5 @@
 import type { AnalysisReport } from '../../domain/model/report';
-import { formatDurationUs } from '../../lib/durations';
+import { formatDurationUs } from '../../domain/durations';
 import { AnalysisSurface, metricValue, SelectControl } from '../analysis/AnalysisPrimitives';
 import {
   useAnalysisViewStore,
