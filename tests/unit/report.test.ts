@@ -103,7 +103,7 @@ function scorecardDriver(
 }
 
 describe('driver scorecard rankings', () => {
-  it('ranks each dimension independently and maps ranks to radar scores', () => {
+  it('ranks pace, efficiency, and consistency lower-first and potential and cleanliness higher-first', () => {
     const scorecards = buildDriverScorecards(
       [
         scorecardDriver('Alice', {
