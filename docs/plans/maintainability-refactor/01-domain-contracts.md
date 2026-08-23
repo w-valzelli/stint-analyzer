@@ -61,12 +61,12 @@ domain and export result remains exact.
   projection.
 - `src/domain/analytics/summaries.ts` (modify) — replace positional scorecard arguments
   with explicit metric definitions and ranking directions.
-- `src/domain/durations.ts` (add) — canonical constants, conversion, and standard
+- `src/shared/durations.ts` (add) — canonical constants, conversion, and standard
   duration formatter.
-- `src/domain/parsing/durations.ts` (modify) — retain parsing and consume canonical
+- `src/domain/parsing/workbook-duration.ts` (modify) — retain parsing and consume canonical
   duration units.
-- `src/lib/durations.ts` (delete) — remove the duplicate base formatter after callers
-  move to the domain utility.
+- Former duplicate duration helper (delete) — remove it after callers move to
+  the shared utility.
 - `src/domain/model/report.ts` (modify) — reuse `sourceSummarySchema`.
 - `src/domain/export/serialized-report.ts` (add) — explicitly declare serialized JSON
   1.0 schemas and inferred types.
@@ -77,8 +77,8 @@ domain and export result remains exact.
   duration formatting.
 - `src/domain/export/json.ts` (modify only if imports move) — retain the format-specific
   JSON entry point.
-- UI files importing `src/lib/durations.ts` (modify mechanically) — use the canonical
-  duration utility without changing semantic gap wrappers.
+- UI duration callers (modify mechanically) — use the canonical shared utility
+  without changing semantic gap wrappers.
 - `tests/unit/durations.test.ts` (modify) — cover the canonical formatter and preserved
   parsing behavior.
 - `tests/unit/report.test.ts` (modify) — state scorecard directions and report-section
@@ -127,7 +127,7 @@ domain and export result remains exact.
   boundaries inside the 550-line canonical builder.
 - `serialized-report.ts`: required to make the external JSON 1.0 contract inspectable
   without mixing schema declaration with mapping logic.
-- `src/domain/durations.ts`: required as the one framework-independent owner of shared
+- `src/shared/durations.ts`: required as the one framework-independent owner of shared
   duration units and formatting.
 
 No dependency, pipeline framework, schema factory, serialization framework, or new

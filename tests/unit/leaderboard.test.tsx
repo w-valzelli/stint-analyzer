@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { buildAnalysisReport } from '../../src/domain/analytics/report';
 import { createDefaultScopeSelections } from '../../src/domain/analytics/stints';
 import type { Lap, ParsedWorkbook } from '../../src/domain/model/normalized';
-import { Leaderboard } from '../../src/features/leaderboard/Leaderboard';
+import { Leaderboard } from '../../src/components/features/analysis/leaderboard/Leaderboard';
 import { makeLap } from '../fixtures/scopeLaps';
 
 function leaderboardReport() {

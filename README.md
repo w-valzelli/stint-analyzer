@@ -48,15 +48,16 @@ export code share the canonical `AnalysisReport`.
 ```text
 src/
 ├── pages/                    Astro routes
-├── components/               App shell, theme control, UI primitives
+├── components/               All React presentation
+│   ├── app/                  App shell and application-wide UI
+│   ├── reusable/             Generic controls used by multiple areas
+│   └── features/             Import, scope, export, and analysis UI
 ├── domain/
 │   ├── model/                Normalized data and report schemas
 │   ├── parsing/              Workbook parsing and source validation
 │   ├── analytics/            Eligibility, stints, statistics, report building
 │   └── export/               XLSX, Markdown, JSON, and validation
-├── features/                 Import, scope, analysis, and export UI
-├── state/                    Analysis-view preferences
-├── lib/                      Shared helpers
+├── shared/                   Named framework-independent cross-area behavior
 └── styles/                   Global CSS and design tokens
 
 tests/
@@ -68,6 +69,25 @@ tests/
 astro.config.mjs              Astro static/base-path configuration
 package.json                  Scripts and dependencies
 ```
+
+Use the top-level source areas by code type: routes stay in `pages`, every React
+component and its UI-adjacent support code stays in `components`, and workbook
+or analysis behavior that does not depend on React stays in `domain`. Put a
+generic control in `components/reusable` only when multiple product areas use
+it. Put framework-independent code in `shared` only when multiple top-level
+areas own it; canonical duration behavior is the current example.
+
+| To change…                                       | Start in…                  |
+| ------------------------------------------------ | -------------------------- |
+| Application composition or theme behavior        | `src/components/app/`      |
+| Generic buttons, tabs, or custom selects         | `src/components/reusable/` |
+| Import, scope, export, or analysis presentation  | `src/components/features/` |
+| Workbook interpretation and validation           | `src/domain/parsing/`      |
+| Eligibility, stint, pace, or report calculations | `src/domain/analytics/`    |
+| Report schemas and normalized data types         | `src/domain/model/`        |
+| JSON, Markdown, or spreadsheet generation        | `src/domain/export/`       |
+| Cross-area duration units and formatting         | `src/shared/durations.ts`  |
+| Visual styling                                   | `src/styles/`              |
 
 ## Development
 

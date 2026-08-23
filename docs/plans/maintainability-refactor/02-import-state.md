@@ -45,9 +45,9 @@ without reconciling parallel collections or mutable result maps.
 
 - `src/domain/parsing/imports.ts` (modify) — define ordered discriminated final results,
   keep progress events, and apply same-track validation in the domain workflow.
-- `src/features/import/ImportRegister.tsx` (modify) — use one record collection, derive
+- `src/components/features/import/ImportRegister.tsx` (modify) — use one record collection, derive
   workbooks, and remove the mutable parsed-result reconstruction path.
-- `src/components/AnalyzerShell.tsx` (modify only if the import state contract can be
+- `src/components/app/AnalyzerShell.tsx` (modify only if the import state contract can be
   simplified without broadening scope) — continue consuming derived ready workbooks.
 - `tests/unit/imports.test.ts` (modify) — cover ordered results, duplicates, failures,
   track compatibility, and deliberately out-of-order async completion.
@@ -100,9 +100,9 @@ There is no new state owner, global store, state-machine framework, or dependenc
 
 - [ ] `pnpm exec vitest run tests/unit/hash.test.ts tests/unit/imports.test.ts tests/unit/import-register.test.tsx tests/unit/analyzer-shell.test.tsx`
       from the repository root → all import and shell tests pass.
-- [ ] `rg -n "pendingParsedByIndex|setWorkbooks" src/features/import/ImportRegister.tsx`
+- [ ] `rg -n "pendingParsedByIndex|setWorkbooks" src/components/features/import/ImportRegister.tsx`
       → no parallel parsed-workbook state or reconstruction remains.
-- [ ] `rg -n "trackMismatchMessage" src/features/import` → the React feature does not
+- [ ] `rg -n "trackMismatchMessage" src/components/features/import` → the React feature does not
       apply the domain track policy.
 - [ ] `pnpm lint` → pass.
 - [ ] `pnpm check` → zero diagnostics.

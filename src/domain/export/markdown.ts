@@ -1,6 +1,6 @@
 import type { AnalysisReport, MetricStats } from '../model/report';
 import { compactAnalysisData } from './serialization';
-import { formatDurationUs } from '../durations';
+import { formatDurationUs } from '../../shared/durations';
 import { validateAnalysisReportForExport } from './validation';
 
 export type MarkdownExportMode = 'summary' | 'full';

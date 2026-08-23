@@ -13,7 +13,7 @@ import {
 import type { PaceMode, ScopeSelection } from '../model/scope';
 import { deriveLapEligibility } from './eligibility';
 import { driverLapAnalyses, paceEligibleLaps, runtimeEligibleLaps } from './laps';
-import { calculateStintProgression } from './progression';
+import { calculateStintPaceProgression } from './stint-pace-progression';
 import {
   calculateSectorBenchmarks,
   calculateSectorGaps,
@@ -459,7 +459,7 @@ export function buildAnalysisReport(input: BuildAnalysisReportInput): AnalysisRe
   });
   const driverByName = new Map(drivers.map((driver) => [driver.driver, driver]));
 
-  const progression = calculateStintProgression(laps, eligibility, stints, sectorEntries);
+  const progression = calculateStintPaceProgression(laps, eligibility, stints, sectorEntries);
   const stintsById = new Map(stints.map((stint) => [stint.id, stint]));
   const lapsById = new Map(laps.map((lap) => [lap.id, lap]));
   const stintAnalyses: StintAnalysis[] = progression.map((entry) => {

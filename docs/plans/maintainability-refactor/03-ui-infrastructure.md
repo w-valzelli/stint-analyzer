@@ -19,7 +19,7 @@ keeping each custom control and chart explicit about its own domain semantics.
 
 - `CustomSelect`, `ExportMenu`, and `AuditStatus` separately implement portal rendering,
   outside press, Escape, position calculation, resize/scroll handling, and focus return.
-- `ProgressionChart` and `SectorProgressionChart` repeat most Recharts presentation but
+- `PaceProgressionChart` and `SectorDeltaProgressionChart` repeat most Recharts presentation but
   calculate different domain data.
 - Existing unit tests cover scope, export, and analysis views; Playwright covers the
   user workflows but may need focused keyboard/focus assertions.
@@ -42,21 +42,21 @@ keeping each custom control and chart explicit about its own domain semantics.
 
 ## Files
 
-- `src/components/ui/anchored-popup.tsx` (add) — shared portal, placement, dismissal,
+- `src/components/reusable/AnchoredPopup.tsx` (add) — shared portal, placement, dismissal,
   repositioning, refs, and focus-return mechanics.
-- `src/components/ui/select.tsx` (modify) — retain selection/listbox behavior and consume
+- `src/components/reusable/CustomSelect.tsx` (modify) — retain selection/listbox behavior and consume
   the shared anchored-popup mechanics.
-- `src/features/export/ExportMenu.tsx` (modify) — retain export state/content and consume
+- `src/components/features/export/ExportMenu.tsx` (modify) — retain export state/content and consume
   the shared mechanics.
-- `src/features/scope/ScopeReview.tsx` (modify) — retain `AuditStatus` semantics/content
+- `src/components/features/scope/ScopeReview.tsx` (modify) — retain `AuditStatus` semantics/content
   and consume the shared mechanics.
-- `src/features/analysis/ProgressionLineChart.tsx` (add) — shared Recharts presentation
+- `src/components/features/analysis/LapSeriesChart.tsx` (add) — shared Recharts presentation
   for prepared progression points and series.
-- `src/features/analysis/ProgressionChart.tsx` (modify) — retain lap/driver data shaping,
+- `src/components/features/analysis/PaceProgressionChart.tsx` (modify) — retain lap/driver data shaping,
   controls, labels, and formatting; delegate presentation.
-- `src/features/analysis/SectorProgressionChart.tsx` (modify) — retain sector-delta data
+- `src/components/features/analysis/SectorDeltaProgressionChart.tsx` (modify) — retain sector-delta data
   shaping, controls, labels, and formatting; delegate presentation.
-- `src/features/analysis/AnalysisPrimitives.tsx` (modify if tooltip ownership becomes
+- `src/components/features/analysis/AnalysisPrimitives.tsx` (modify if tooltip ownership becomes
   clearer) — keep genuinely shared analysis primitives only.
 - `tests/unit/scope-review.test.tsx` (modify) — verify popup dismissal and focus return.
 - `tests/unit/export-menu.test.tsx` (modify) — verify popup lifecycle through the shared
@@ -94,7 +94,7 @@ keeping each custom control and chart explicit about its own domain semantics.
 
 - `anchored-popup.tsx`: required by three current independently implemented popup
   consumers.
-- `ProgressionLineChart.tsx`: required by two current near-duplicate chart renderers.
+- `LapSeriesChart.tsx`: required by two current near-duplicate chart renderers.
 
 No UI framework, popup dependency, chart framework, or native select is added.
 
@@ -109,9 +109,9 @@ No UI framework, popup dependency, chart framework, or native select is added.
 
 - [ ] `pnpm exec vitest run tests/unit/select.test.tsx tests/unit/scope-review.test.tsx tests/unit/export-menu.test.tsx tests/unit/analysis-views.test.tsx`
       from the repository root → popup, selection, focus, and chart tests pass.
-- [ ] `rg -n "createPortal|addEventListener\('(pointerdown|keydown)'|addEventListener\('(resize|scroll)'" src/components/ui/select.tsx src/features/export/ExportMenu.tsx src/features/scope/ScopeReview.tsx`
+- [ ] `rg -n "createPortal|addEventListener\('(pointerdown|keydown)'|addEventListener\('(resize|scroll)'" src/components/reusable/CustomSelect.tsx src/components/features/export/ExportMenu.tsx src/components/features/scope/ScopeReview.tsx`
       → shared popup mechanics are absent from consumers.
-- [ ] Review `ProgressionChart.tsx` and `SectorProgressionChart.tsx` → no duplicate
+- [ ] Review `PaceProgressionChart.tsx` and `SectorDeltaProgressionChart.tsx` → no duplicate
       Recharts container, axes, legend, line, or dirty-dot rendering remains.
 - [ ] `pnpm lint` → pass.
 - [ ] `pnpm check` → zero diagnostics.

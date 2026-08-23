@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatDurationUs, MICROSECONDS_PER_SECOND } from '../../src/domain/durations';
-import { parseDurationToMicroseconds } from '../../src/domain/parsing/durations';
+import { formatDurationUs, MICROSECONDS_PER_SECOND } from '../../src/shared/durations';
+import { parseWorkbookDurationToMicroseconds } from '../../src/domain/parsing/workbook-duration';
 
-describe('parseDurationToMicroseconds', () => {
+describe('parseWorkbookDurationToMicroseconds', () => {
   it('converts Excel day fractions without millisecond rounding', () => {
-    expect(parseDurationToMicroseconds(10.123456 / 86_400)).toBe(10_123_456);
+    expect(parseWorkbookDurationToMicroseconds(10.123456 / 86_400)).toBe(10_123_456);
   });
 
   it('parses clock strings', () => {
-    expect(parseDurationToMicroseconds('01:23.456')).toBe(83_456_000);
-    expect(parseDurationToMicroseconds('00:01:23.456')).toBe(83_456_000);
+    expect(parseWorkbookDurationToMicroseconds('01:23.456')).toBe(83_456_000);
+    expect(parseWorkbookDurationToMicroseconds('00:01:23.456')).toBe(83_456_000);
   });
 
   it('returns null for placeholders and non-positive values', () => {
-    expect(parseDurationToMicroseconds('—')).toBeNull();
-    expect(parseDurationToMicroseconds(0)).toBeNull();
-    expect(parseDurationToMicroseconds(-1)).toBeNull();
+    expect(parseWorkbookDurationToMicroseconds('—')).toBeNull();
+    expect(parseWorkbookDurationToMicroseconds(0)).toBeNull();
+    expect(parseWorkbookDurationToMicroseconds(-1)).toBeNull();
   });
 
   it('keeps the unit explicit', () => {

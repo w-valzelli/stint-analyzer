@@ -104,35 +104,34 @@ Give duration rules and `SourceSummary` validation one canonical implementation.
 
 ### Scope
 
-- Define duration constants in one domain module.
+- Define duration constants in one shared module.
 - Define microsecond conversion in the same module.
 - Define standard motorsport duration format in the same module.
 - Reuse `sourceSummarySchema` in `analysisReportSchema`.
 
 ### Procedure
 
-1. Add `src/domain/durations.ts`.
+1. Add `src/shared/durations.ts`.
 2. Move the shared duration constants to this module.
 3. Move `microsecondsToSeconds` to this module.
 4. Move the standard duration formatter to this module.
 5. Update UI and export imports.
 6. Keep signed deltas near their presentation code.
 7. Keep leaderboard zero gaps near their presentation code.
-8. Keep workbook duration parsing in `src/domain/parsing/durations.ts`.
-9. Delete `src/lib/durations.ts` after all callers use the domain module.
+8. Keep workbook duration parsing in `src/domain/parsing/workbook-duration.ts`.
+9. Delete the former duplicate duration helper after all callers use the shared module.
 10. Import `sourceSummarySchema` into `src/domain/model/report.ts`.
 11. Remove the duplicate source schema definition.
 12. Do not merge schemas for different domain concepts.
 
 ### Files
 
-- `src/domain/durations.ts`
-- `src/domain/parsing/durations.ts`
-- `src/lib/durations.ts`
+- `src/shared/durations.ts`
+- `src/domain/parsing/workbook-duration.ts`
 - `src/domain/model/report.ts`
 - `src/domain/export/markdown.ts`
 - `src/domain/export/spreadsheet.ts`
-- UI files that import `src/lib/durations.ts`
+- UI files that import the former duplicate duration helper
 - `tests/unit/durations.test.ts`
 
 ### Acceptance criteria
@@ -403,8 +402,8 @@ Use one ordered record collection from file selection through removal.
 ### Files
 
 - `src/domain/parsing/imports.ts`
-- `src/features/import/ImportRegister.tsx`
-- If the derived state contract changes: `src/components/AnalyzerShell.tsx`
+- `src/components/features/import/ImportRegister.tsx`
+- If the derived state contract changes: `src/components/app/AnalyzerShell.tsx`
 - `tests/unit/imports.test.ts`
 - `tests/unit/import-register.test.tsx`
 - If its fixture changes: `tests/unit/analyzer-shell.test.tsx`
@@ -422,9 +421,9 @@ Use one ordered record collection from file selection through removal.
 ### Verification
 
 - [ ] Run `pnpm exec vitest run tests/unit/hash.test.ts tests/unit/imports.test.ts tests/unit/import-register.test.tsx tests/unit/analyzer-shell.test.tsx`.
-- [ ] Run `rg -n "pendingParsedByIndex|setWorkbooks" src/features/import/ImportRegister.tsx`.
+- [ ] Run `rg -n "pendingParsedByIndex|setWorkbooks" src/components/features/import/ImportRegister.tsx`.
 - [ ] Confirm that no parallel workbook state remains.
-- [ ] Run `rg -n "trackMismatchMessage" src/features/import`.
+- [ ] Run `rg -n "trackMismatchMessage" src/components/features/import`.
 - [ ] Confirm that the React feature does not apply the track policy.
 - [ ] Run `pnpm lint`.
 - [ ] Run `pnpm check`.
@@ -460,7 +459,7 @@ Use one implementation for the shared anchored-popup mechanics.
 ### Procedure
 
 1. Add direct custom-select behavior tests before the extraction.
-2. Add `src/components/ui/anchored-popup.tsx`.
+2. Add `src/components/reusable/AnchoredPopup.tsx`.
 3. Move shared portal mechanics to this component.
 4. Move shared position mechanics to this component.
 5. Move shared document and window listeners to this component.
@@ -478,10 +477,10 @@ Use one implementation for the shared anchored-popup mechanics.
 
 ### Files
 
-- `src/components/ui/anchored-popup.tsx`
-- `src/components/ui/select.tsx`
-- `src/features/export/ExportMenu.tsx`
-- `src/features/scope/ScopeReview.tsx`
+- `src/components/reusable/AnchoredPopup.tsx`
+- `src/components/reusable/CustomSelect.tsx`
+- `src/components/features/export/ExportMenu.tsx`
+- `src/components/features/scope/ScopeReview.tsx`
 - `tests/unit/select.test.tsx`
 - `tests/unit/scope-review.test.tsx`
 - `tests/unit/export-menu.test.tsx`
@@ -527,13 +526,13 @@ Use one presentation component for both progression charts.
 ### Scope
 
 - Share the repeated Recharts presentation.
-- Keep lap data preparation in `ProgressionChart`.
-- Keep sector data preparation in `SectorProgressionChart`.
+- Keep lap data preparation in `PaceProgressionChart`.
+- Keep sector data preparation in `SectorDeltaProgressionChart`.
 - Preserve all chart controls and output.
 
 ### Procedure
 
-1. Add `src/features/analysis/ProgressionLineChart.tsx`.
+1. Add `src/components/features/analysis/LapSeriesChart.tsx`.
 2. Move the repeated Recharts container to this component.
 3. Move the repeated axes to this component.
 4. Move repeated legend and tooltip wiring to this component.
@@ -549,10 +548,10 @@ Use one presentation component for both progression charts.
 
 ### Files
 
-- `src/features/analysis/ProgressionLineChart.tsx`
-- `src/features/analysis/ProgressionChart.tsx`
-- `src/features/analysis/SectorProgressionChart.tsx`
-- If tooltip ownership changes: `src/features/analysis/AnalysisPrimitives.tsx`
+- `src/components/features/analysis/LapSeriesChart.tsx`
+- `src/components/features/analysis/PaceProgressionChart.tsx`
+- `src/components/features/analysis/SectorDeltaProgressionChart.tsx`
+- If tooltip ownership changes: `src/components/features/analysis/AnalysisPrimitives.tsx`
 - `tests/unit/analysis-views.test.tsx`
 - If observable coverage is missing: relevant E2E tests
 
@@ -567,7 +566,7 @@ Use one presentation component for both progression charts.
 ### Verification
 
 - [ ] Run `pnpm exec vitest run tests/unit/analysis-views.test.tsx`.
-- [ ] Review `ProgressionChart.tsx` and `SectorProgressionChart.tsx`.
+- [ ] Review `PaceProgressionChart.tsx` and `SectorDeltaProgressionChart.tsx`.
 - [ ] Confirm that duplicate Recharts presentation is absent.
 - [ ] Run `pnpm lint`.
 - [ ] Run `pnpm check`.
@@ -621,7 +620,7 @@ Divide styles into stable areas and remove confirmed dead UI code.
 17. Preserve the original cascade order.
 18. Keep responsive rules with their feature area.
 19. Add short comments only at useful boundaries.
-20. Delete `src/components/ui/card.tsx`.
+20. Delete `src/components/reusable/Card.tsx`.
 21. Remove `MetricStrip` from `AnalysisPrimitives.tsx`.
 22. Remove styles for `Card` and `MetricStrip`.
 23. Remove the design thesis comment from `src/pages/index.astro`.
@@ -635,8 +634,8 @@ Divide styles into stable areas and remove confirmed dead UI code.
 - `src/styles/import-scope.css`
 - `src/styles/analysis.css`
 - `src/styles/ui.css`
-- `src/components/ui/card.tsx`
-- `src/features/analysis/AnalysisPrimitives.tsx`
+- `src/components/reusable/Card.tsx`
+- `src/components/features/analysis/AnalysisPrimitives.tsx`
 - `src/pages/index.astro`
 - If current coverage is insufficient: relevant tests
 

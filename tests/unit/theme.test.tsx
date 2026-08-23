@@ -1,13 +1,13 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ThemeControl } from '../../src/components/ThemeControl';
+import { ThemeControl } from '../../src/components/app/ThemeControl';
 import {
   applyTheme,
   parseThemePreference,
   resolveTheme,
   THEME_STORAGE_KEY,
-} from '../../src/lib/theme';
+} from '../../src/components/app/theme';
 
 const storage = new Map<string, string>();
 const localStorageMock = {

@@ -6,7 +6,7 @@ import {
   driverLapAnalyses,
   sumRuntimeUs,
 } from '../../src/domain/analytics/laps';
-import { calculateStintProgression } from '../../src/domain/analytics/progression';
+import { calculateStintPaceProgression } from '../../src/domain/analytics/stint-pace-progression';
 import {
   calculateSectorBenchmarks,
   calculateSectorGaps,
@@ -246,7 +246,7 @@ describe('stint progression', () => {
     const laps = analyticsFixture();
     const { eligibility, stints } = deriveAll(laps);
     const sectorStats = calculateSectorStats(laps, eligibility);
-    const progression = calculateStintProgression(laps, eligibility, stints, sectorStats);
+    const progression = calculateStintPaceProgression(laps, eligibility, stints, sectorStats);
     const firstAlice = progression.find((stint) => stint.driver === 'Alice');
 
     expect(progression).toHaveLength(3);

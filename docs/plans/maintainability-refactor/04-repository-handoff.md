@@ -63,8 +63,8 @@ directions for human maintainers and agents.
   scorecard, and analysis-responsive rules.
 - `src/styles/ui.css` (add) — buttons, tabs, custom select, anchored popups, export menu,
   and shared primitive-responsive rules.
-- `src/components/ui/card.tsx` (delete) — unused primitive.
-- `src/features/analysis/AnalysisPrimitives.tsx` (modify) — remove unused `MetricStrip`
+- `src/components/reusable/Card.tsx` (delete) — unused primitive.
+- `src/components/features/analysis/AnalysisPrimitives.tsx` (modify) — remove unused `MetricStrip`
   and retain used primitives.
 - `src/pages/index.astro` (modify) — remove the non-rendered design-generation thesis
   block while preserving theme bootstrap and page markup.

@@ -1,7 +1,7 @@
 import writeXlsxFile, { type Cell, type SheetData } from 'write-excel-file/universal';
 
 import type { AnalysisReport } from '../model/report';
-import { formatDurationUs, microsecondsToSeconds } from '../durations';
+import { formatDurationUs, microsecondsToSeconds } from '../../shared/durations';
 import { sourceBasename } from './serialization';
 import { validateAnalysisReportForExport } from './validation';
 

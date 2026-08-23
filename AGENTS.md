@@ -23,6 +23,22 @@ future request explicitly requires them.
 - Update README.md when durable codebase facts change. Keep agent-only rules in
   this file instead of duplicating the README.
 
+## File routing
+
+- Keep Astro route entry points in `src/pages`.
+- Keep all React components and their UI-adjacent support code under
+  `src/components`: application composition in `app`, generic controls in
+  `reusable`, and product-facing workflows in `features`.
+- Colocate UI state with the narrowest component area that owns it; do not
+  recreate a root `state` category.
+- Keep framework-independent workbook, analytics, report, and export behavior
+  in `src/domain`.
+- Use `src/shared` only for named framework-independent behavior consumed by
+  multiple top-level areas. Do not recreate generic `lib`, `utils`, or `helpers`
+  buckets.
+- Name modules after the product or domain responsibility they own; avoid vague
+  names such as `progression` when a more explicit domain term is available.
+
 ## Product boundaries
 
 - The app is a static Astro site with a React analyzer and no backend.

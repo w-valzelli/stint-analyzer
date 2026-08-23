@@ -20,7 +20,7 @@ vi.mock('../../src/domain/parsing/imports', () => ({
   },
 }));
 
-import { ImportRegister } from '../../src/features/import/ImportRegister';
+import { ImportRegister } from '../../src/components/features/import/ImportRegister';
 
 const parsedWorkbook = {
   source: {
