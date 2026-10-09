@@ -29,12 +29,10 @@ criteria, and verification.
 | MR-05 | —                                                           | Declare and map every JSON 1.0 field explicitly              | Complete     | MR-04        |
 | MR-06 | —                                                           | Use one ordered import record flow                           | Complete     | MR-05        |
 | MR-07 | —                                                           | Share anchored-popup mechanics                               | Complete     | MR-06        |
-| MR-08 | [#5](https://github.com/w-valzelli/stint-analyzer/issues/5) | Share lap-series chart presentation                          | Ready — next | MR-06        |
-| MR-09 | [#6](https://github.com/w-valzelli/stint-analyzer/issues/6) | Split styles and remove confirmed dead UI                    | Blocked      | MR-07, MR-08 |
+| MR-08 | —                                                           | Share lap-series chart presentation                          | Complete     | MR-06        |
+| MR-09 | [#6](https://github.com/w-valzelli/stint-analyzer/issues/6) | Split styles and remove confirmed dead UI                    | Ready — next | MR-07, MR-08 |
 | MR-10 | [#7](https://github.com/w-valzelli/stint-analyzer/issues/7) | Remove the Impeccable integration                            | Blocked      | MR-09        |
 | MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Blocked      | MR-10        |
-
-MR-09 is the join point of MR-07 and MR-08 and must wait for MR-08.
 
 ## Requirement coverage
 
@@ -44,7 +42,7 @@ MR-09 is the join point of MR-07 and MR-08 and must wait for MR-08.
 | R-2 Explicit JSON 1.0 contract                   | MR-05 complete |
 | R-3 One ordered import record model              | MR-06 complete |
 | R-4 Shared anchored-popup mechanics              | MR-07 complete |
-| R-5 Shared lap-series presentation               | MR-08          |
+| R-5 Shared lap-series presentation               | MR-08 complete |
 | R-6 Human-navigable styles and dead-code removal | MR-09          |
 | R-7 Canonical duration behavior                  | MR-02 complete |
 | R-8 Shared domain schemas                        | MR-02 complete |
@@ -107,6 +105,13 @@ content, and state, and each supplies its own unchanged placement geometry
 through `place`. `AuditStatus` opts out of focus restoration on outside press.
 `tests/unit/select.test.tsx` characterizes `CustomSelect` selection, keyboard,
 and dismissal behavior.
+
+MR-08 added `src/components/features/analysis/LapSeriesChart.tsx`, which owns
+the Recharts container, axes, legend, tooltip wiring, lines, and dirty-point
+markers, and exports the shared `LapSeriesPoint` shape and `dirtyKeyFor` key.
+`PaceProgressionChart` and `SectorDeltaProgressionChart` keep `pointsForReport`,
+Y-domain padding, selection state, and empty states, and pass series colors,
+axis width, stroke width, formatters, and the accessible label.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:
