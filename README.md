@@ -77,17 +77,17 @@ generic control in `components/reusable` only when multiple product areas use
 it. Put framework-independent code in `shared` only when multiple top-level
 areas own it; canonical duration behavior is the current example.
 
-| To change…                                       | Start in…                  |
-| ------------------------------------------------ | -------------------------- |
-| Application composition or theme behavior        | `src/components/app/`      |
-| Generic buttons, tabs, or custom selects         | `src/components/reusable/` |
-| Import, scope, export, or analysis presentation  | `src/components/features/` |
-| Workbook interpretation and validation           | `src/domain/parsing/`      |
-| Eligibility, stint, pace, or report calculations | `src/domain/analytics/`    |
-| Report schemas and normalized data types         | `src/domain/model/`        |
-| JSON, Markdown, or spreadsheet generation        | `src/domain/export/`       |
-| Cross-area duration units and formatting         | `src/shared/durations.ts`  |
-| Visual styling                                   | `src/styles/`              |
+| To change…                                         | Start in…                  |
+| -------------------------------------------------- | -------------------------- |
+| Application composition or theme behavior          | `src/components/app/`      |
+| Generic buttons, tabs, selects, or anchored popups | `src/components/reusable/` |
+| Import, scope, export, or analysis presentation    | `src/components/features/` |
+| Workbook interpretation and validation             | `src/domain/parsing/`      |
+| Eligibility, stint, pace, or report calculations   | `src/domain/analytics/`    |
+| Report schemas and normalized data types           | `src/domain/model/`        |
+| JSON, Markdown, or spreadsheet generation          | `src/domain/export/`       |
+| Cross-area duration units and formatting           | `src/shared/durations.ts`  |
+| Visual styling                                     | `src/styles/`              |
 
 ## Development
 

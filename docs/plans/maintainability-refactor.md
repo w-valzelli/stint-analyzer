@@ -28,14 +28,13 @@ criteria, and verification.
 | MR-04 | —                                                           | Make `buildAnalysisReport` readable orchestration            | Complete     | MR-03        |
 | MR-05 | —                                                           | Declare and map every JSON 1.0 field explicitly              | Complete     | MR-04        |
 | MR-06 | —                                                           | Use one ordered import record flow                           | Complete     | MR-05        |
-| MR-07 | [#4](https://github.com/w-valzelli/stint-analyzer/issues/4) | Share anchored-popup mechanics                               | Ready — next | MR-06        |
-| MR-08 | [#5](https://github.com/w-valzelli/stint-analyzer/issues/5) | Share lap-series chart presentation                          | Ready        | MR-06        |
+| MR-07 | —                                                           | Share anchored-popup mechanics                               | Complete     | MR-06        |
+| MR-08 | [#5](https://github.com/w-valzelli/stint-analyzer/issues/5) | Share lap-series chart presentation                          | Ready — next | MR-06        |
 | MR-09 | [#6](https://github.com/w-valzelli/stint-analyzer/issues/6) | Split styles and remove confirmed dead UI                    | Blocked      | MR-07, MR-08 |
 | MR-10 | [#7](https://github.com/w-valzelli/stint-analyzer/issues/7) | Remove the Impeccable integration                            | Blocked      | MR-09        |
 | MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Blocked      | MR-10        |
 
-MR-07 and MR-08 may proceed independently after MR-06. MR-09 is their join
-point and must wait for both.
+MR-09 is the join point of MR-07 and MR-08 and must wait for MR-08.
 
 ## Requirement coverage
 
@@ -44,7 +43,7 @@ point and must wait for both.
 | R-1 Readable canonical report construction       | MR-04 complete |
 | R-2 Explicit JSON 1.0 contract                   | MR-05 complete |
 | R-3 One ordered import record model              | MR-06 complete |
-| R-4 Shared anchored-popup mechanics              | MR-07          |
+| R-4 Shared anchored-popup mechanics              | MR-07 complete |
 | R-5 Shared lap-series presentation               | MR-08          |
 | R-6 Human-navigable styles and dead-code removal | MR-09          |
 | R-7 Canonical duration behavior                  | MR-02 complete |
@@ -99,6 +98,15 @@ error union; ready results own their `ParsedWorkbook`. Parse completions settle
 in input order, where same-track validation runs, and hashing failures become
 per-file error results. `ImportRegister` keeps one record collection and derives
 accepted workbooks from ready records.
+
+MR-07 added `src/components/reusable/AnchoredPopup.tsx`, which owns the body
+portal, placement lifecycle (on open, after layout, on resize and captured
+scroll), Escape and outside-press dismissal, and trigger focus restoration.
+`CustomSelect`, `ExportMenu`, and `AuditStatus` keep their roles, labels,
+content, and state, and each supplies its own unchanged placement geometry
+through `place`. `AuditStatus` opts out of focus restoration on outside press.
+`tests/unit/select.test.tsx` characterizes `CustomSelect` selection, keyboard,
+and dismissal behavior.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:
