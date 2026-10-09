@@ -1,34 +1,22 @@
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  type DotItemDotProps,
-} from 'recharts';
 import { useEffect, useMemo, useState } from 'react';
 
 import { CustomSelect } from '../../reusable/CustomSelect';
 import type { AnalysisReport, LapAuditRow } from '../../../domain/model/report';
 import { formatDurationUs } from '../../../shared/durations';
-import { AnalysisChartTooltip, AnalysisSurface } from './AnalysisPrimitives';
+import { AnalysisSurface } from './AnalysisPrimitives';
+import {
+  LapSeriesChart,
+  dirtyKeyFor,
+  type LapSeriesDomain,
+  type LapSeriesPoint,
+} from './LapSeriesChart';
 
 type PaceProgressionChartProps = {
   report: AnalysisReport;
   driver?: string | null;
 };
 
-type ProgressionPoint = {
-  lapKey: string;
-  lapNumber: number;
-  [driver: string]: number | string | null;
-};
-
 const ALL_DRIVERS_OPTION = '__all_drivers__';
-const dirtyKeyFor = (driver: string) => `${driver}__dirty`;
 const lineColors = [
   'var(--calibration-cobalt)',
   'var(--calibration-vermilion)',
@@ -59,7 +47,7 @@ function selectionLabel(selectedDrivers: readonly string[], drivers: readonly st
 export function pointsForReport(
   report: AnalysisReport,
   drivers: readonly string[],
-): ProgressionPoint[] {
+): LapSeriesPoint[] {
   const selectedDrivers = new Set(drivers);
   const rowsByDriver = new Map<string, Map<number, LapAuditRow[]>>();
 
@@ -96,7 +84,7 @@ export function pointsForReport(
   );
 
   return orderedLapPoints.map(([lapKey, { lapNumber, occurrence }]) => {
-    const point: ProgressionPoint = { lapKey, lapNumber };
+    const point: LapSeriesPoint = { lapKey, lapNumber };
     for (const driver of drivers) {
       const row = rowsByDriver.get(driver)?.get(lapNumber)?.[occurrence];
       const isPitLap = row?.pitIn === true || row?.pitOut === true;
@@ -107,7 +95,7 @@ export function pointsForReport(
   });
 }
 
-function yDomainFor(data: readonly ProgressionPoint[], drivers: readonly string[]) {
+function yDomainFor(data: readonly LapSeriesPoint[], drivers: readonly string[]): LapSeriesDomain {
   const values = data.flatMap((point) =>
     drivers.flatMap((driver) => {
       const value = point[driver];
@@ -122,26 +110,6 @@ function yDomainFor(data: readonly ProgressionPoint[], drivers: readonly string[
   const maximum = Math.max(...values);
   const padding = Math.max(300_000, (maximum - minimum) * 0.1);
   return [Math.max(0, minimum - padding), maximum + padding] as const;
-}
-
-function progressionDot(driver: string, color: string) {
-  return (props: DotItemDotProps) => {
-    const point = props.payload as ProgressionPoint;
-    const isDirty = point[dirtyKeyFor(driver)] !== null;
-    if (props.cx === undefined || props.cy === undefined) {
-      return null;
-    }
-    return (
-      <circle
-        cx={props.cx}
-        cy={props.cy}
-        r={isDirty ? 3.5 : 2}
-        fill={isDirty ? 'var(--calibration-ochre)' : color}
-        stroke="var(--calibration-sheet)"
-        strokeWidth={isDirty ? 1.5 : 0}
-      />
-    );
-  };
 }
 
 export function PaceProgressionChart({ report, driver }: PaceProgressionChartProps) {
@@ -198,74 +166,19 @@ export function PaceProgressionChart({ report, driver }: PaceProgressionChartPro
       {data.length === 0 ? (
         <p className="analysis-empty">No completed laps are available for this chart.</p>
       ) : (
-        <div className="analysis-chart" role="img" aria-label="Lap pace progression chart">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data} margin={{ top: 10, right: 18, bottom: 4, left: 8 }}>
-              <CartesianGrid stroke="var(--calibration-rule)" vertical={false} />
-              <XAxis
-                dataKey="lapKey"
-                tick={{
-                  fill: 'var(--calibration-ink-soft)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                }}
-                tickLine={false}
-                axisLine={{ stroke: 'var(--calibration-rule-strong)' }}
-                minTickGap={24}
-                tickFormatter={(value: string) => value.split(':')[0] ?? value}
-              />
-              <YAxis
-                domain={yDomain}
-                tick={{
-                  fill: 'var(--calibration-ink-soft)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value: number) => formatDurationUs(value)}
-                width={58}
-              />
-              <Tooltip
-                allowEscapeViewBox={{ x: true, y: true }}
-                content={(props) => (
-                  <AnalysisChartTooltip
-                    {...props}
-                    formatLabel={(label) => `Lap ${String(label).split(':')[0] ?? label}`}
-                    formatValue={(value, name) =>
-                      `${String(name)} · ${formatDurationUs(Number(value))}`
-                    }
-                  />
-                )}
-              />
-              <Legend
-                wrapperStyle={{
-                  color: 'var(--calibration-muted)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                }}
-              />
-              {chartDrivers.map((entry) => {
-                const color =
-                  lineColors[driverNames.indexOf(entry) % lineColors.length] ?? lineColors[0];
-                return (
-                  <Line
-                    key={entry}
-                    type="monotone"
-                    dataKey={entry}
-                    name={entry}
-                    stroke={color}
-                    strokeWidth={2}
-                    dot={progressionDot(entry, color)}
-                    activeDot={{ r: 4, fill: 'var(--calibration-vermilion)' }}
-                    connectNulls={false}
-                  />
-                );
-              })}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <LapSeriesChart
+          data={data}
+          series={chartDrivers.map((entry) => ({
+            key: entry,
+            color: lineColors[driverNames.indexOf(entry) % lineColors.length] ?? lineColors[0],
+          }))}
+          yDomain={yDomain}
+          yAxisWidth={58}
+          strokeWidth={2}
+          formatTick={formatDurationUs}
+          formatTooltipValue={(value, name) => `${name} · ${formatDurationUs(value)}`}
+          ariaLabel="Lap pace progression chart"
+        />
       )}
     </AnalysisSurface>
   );
