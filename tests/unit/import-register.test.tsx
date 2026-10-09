@@ -1,23 +1,13 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ParserWarning } from '../../src/domain/model/normalized';
+import type { ParsedWorkbook, ParserWarning } from '../../src/domain/model/normalized';
+import type { ImportProgressEvent, ImportResult } from '../../src/domain/parsing/imports';
 
 const importWorkbookFilesMock = vi.hoisted(() => vi.fn());
 
 vi.mock('../../src/domain/parsing/imports', () => ({
   importWorkbookFiles: importWorkbookFilesMock,
-  trackMismatchMessage: (candidate: typeof parsedWorkbook, existing: (typeof parsedWorkbook)[]) => {
-    const candidateTrack = candidate.source.trackName?.trim();
-    const differentTrack = existing
-      .map((workbook) => workbook.source.trackName?.trim())
-      .find(
-        (track) => track && candidateTrack && track.toLowerCase() !== candidateTrack.toLowerCase(),
-      );
-    return differentTrack
-      ? `All imported lap data should use the same track. This file reports “${candidateTrack}”, but existing files report “${differentTrack}”.`
-      : null;
-  },
 }));
 
 import { ImportRegister } from '../../src/components/features/import/ImportRegister';
@@ -42,46 +32,45 @@ const parsedWorkbook = {
   warnings: [] as ParserWarning[],
 };
 
-type ProgressEvent = {
-  index: number;
-  name: string;
-  hash: string;
-  status: 'parsing' | 'ready';
-  parsed?: typeof parsedWorkbook;
-};
-
-type ProgressCallback = (event: ProgressEvent) => void;
+type ProgressCallback = (event: ImportProgressEvent<File>) => void;
 
 function mockImport(warnings: ParserWarning[] = [], trackNames: string[] = ['Synthetic Ring']) {
   importWorkbookFilesMock.mockImplementation(
     async (
       files: File[],
-      _existingHashes: ReadonlySet<string>,
+      _existingWorkbooks: readonly ParsedWorkbook[],
       _concurrency: number,
       onProgress: ProgressCallback,
     ) => {
-      files.forEach((file, index) => {
+      const firstTrack = trackNames[0] ?? null;
+      const results = files.map((file, index): ImportResult<File> => {
         const sourceId = String(index + 1).repeat(64);
-        onProgress({
-          index,
-          name: file.name,
-          hash: sourceId,
-          status: 'ready',
-          parsed: {
-            ...parsedWorkbook,
-            warnings,
-            source: {
-              ...parsedWorkbook.source,
-              id: sourceId,
-              hash: sourceId,
-              name: file.name,
-              trackName: trackNames[index] ?? trackNames[0] ?? null,
-              warningCount: warnings.length,
-            },
+        const trackName = trackNames[index] ?? firstTrack;
+        const parsed = {
+          ...parsedWorkbook,
+          warnings,
+          source: {
+            ...parsedWorkbook.source,
+            id: sourceId,
+            hash: sourceId,
+            name: file.name,
+            trackName,
+            warningCount: warnings.length,
           },
-        });
+        };
+        const identity = { index, file, name: file.name, hash: sourceId };
+
+        return trackName === firstTrack
+          ? { ...identity, status: 'ready', parsed }
+          : {
+              ...identity,
+              status: 'error',
+              parsed,
+              message: `All imported lap data should use the same track. This file reports “${trackName}”, but existing files report “${firstTrack}”.`,
+            };
       });
-      return { parsed: [parsedWorkbook], duplicates: [], failures: [] };
+      results.forEach(onProgress);
+      return results;
     },
   );
 }
@@ -146,7 +135,7 @@ describe('ImportRegister', () => {
     expect(screen.getByRole('button', { name: 'Remove first.xlsx' })).toBeEnabled();
     expect(importWorkbookFilesMock).toHaveBeenCalledWith(
       [first, second],
-      new Set(),
+      [],
       4,
       expect.any(Function),
     );
@@ -217,18 +206,19 @@ describe('ImportRegister', () => {
     importWorkbookFilesMock.mockImplementation(
       async (
         files: File[],
-        _hashes: ReadonlySet<string>,
+        _existingWorkbooks: readonly ParsedWorkbook[],
         _concurrency: number,
         onProgress: ProgressCallback,
       ) => {
         onProgress({
           index: 0,
+          file: files[0],
           name: files[0].name,
           hash: 'b'.repeat(64),
           status: 'parsing',
         });
         await pending;
-        return { parsed: [], duplicates: [], failures: [] };
+        return [];
       },
     );
     render(<ImportRegister onStateChange={vi.fn()} />);

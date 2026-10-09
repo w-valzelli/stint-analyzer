@@ -1,28 +1,26 @@
 import { AlertTriangle, Copy, FileSpreadsheet, FileWarning, LoaderCircle, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDropzone, type FileRejection } from 'react-dropzone';
 
-import type { ParsedWorkbook, ParserWarning } from '../../../domain/model/normalized';
-import {
-  importWorkbookFiles,
-  trackMismatchMessage,
-  type ImportProgressEvent,
-} from '../../../domain/parsing/imports';
+import type { ParsedWorkbook } from '../../../domain/model/normalized';
+import { importWorkbookFiles, type ImportProgressEvent } from '../../../domain/parsing/imports';
 import { Button } from '../../reusable/Button';
 
-export type ImportRecordStatus =
-  'hashing' | 'parsing' | 'ready' | 'duplicate' | 'error' | 'rejected';
+export type ImportRecord =
+  | {
+      key: string;
+      name: string;
+      status: 'hashing';
+    }
+  | {
+      key: string;
+      name: string;
+      status: 'rejected';
+      message: string;
+    }
+  | ({ key: string } & ImportProgressEvent<File>);
 
-export type ImportRecord = {
-  key: string;
-  name: string;
-  hash: string | null;
-  status: ImportRecordStatus;
-  source: ParsedWorkbook['source'] | null;
-  warnings: ParserWarning[];
-  message: string | null;
-  duplicateReason: 'existing' | 'selection' | null;
-};
+export type ImportRecordStatus = ImportRecord['status'];
 
 export type ImportRegisterState = {
   records: ImportRecord[];
@@ -98,17 +96,30 @@ function statusMessage(record: ImportRecord): string | null {
       ? 'The same file bytes appear more than once in this selection.'
       : 'The same file bytes are already registered.';
   }
+  if (record.status === 'error' || record.status === 'rejected') {
+    return record.message;
+  }
 
-  return record.message;
+  return null;
+}
+
+function recordWorkbook(record: ImportRecord): ParsedWorkbook | null {
+  if (record.status === 'ready' || record.status === 'error') {
+    return record.parsed;
+  }
+
+  return null;
 }
 
 export function ImportRegister({ onStateChange }: ImportRegisterProps) {
   const [records, setRecords] = useState<ImportRecord[]>([]);
-  const [workbooks, setWorkbooks] = useState<ParsedWorkbook[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const batchId = useRef(0);
-  const pendingParsedByIndex = useRef(new Map<number, ParsedWorkbook>());
+  const workbooks = useMemo(
+    () => records.flatMap((record) => (record.status === 'ready' ? [record.parsed] : [])),
+    [records],
+  );
 
   useEffect(() => {
     setIsHydrated(true);
@@ -118,77 +129,29 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
     onStateChange({ records, workbooks, isProcessing });
   }, [isProcessing, onStateChange, records, workbooks]);
 
-  const removeRecord = useCallback(
-    (key: string) => {
-      const record = records.find((current) => current.key === key);
-      if (!record || record.status === 'hashing' || record.status === 'parsing') {
-        return;
-      }
-
-      setRecords((current) => current.filter((item) => item.key !== key));
-      if (record.source) {
-        setWorkbooks((current) =>
-          current.filter((workbook) => workbook.source.id !== record.source?.id),
-        );
-      }
-    },
-    [records],
-  );
-
-  const updateRecord = useCallback((key: string, update: Partial<ImportRecord>) => {
+  const removeRecord = useCallback((key: string) => {
     setRecords((current) =>
-      current.map((record) => (record.key === key ? { ...record, ...update } : record)),
+      current.filter(
+        (record) =>
+          record.key !== key || record.status === 'hashing' || record.status === 'parsing',
+      ),
     );
   }, []);
-
-  const handleProgress = useCallback(
-    (currentBatchId: number, event: ImportProgressEvent) => {
-      if (currentBatchId !== batchId.current) {
-        return;
-      }
-
-      const key = `${currentBatchId}:${event.index}`;
-      updateRecord(key, {
-        hash: event.hash,
-        status: event.status,
-        source: event.parsed?.source ?? null,
-        warnings: event.parsed?.warnings ?? [],
-        message: event.message ?? null,
-        duplicateReason: event.duplicateReason ?? null,
-      });
-
-      const parsed = event.parsed;
-      if (event.status === 'ready' && parsed) {
-        pendingParsedByIndex.current.set(event.index, parsed);
-      }
-    },
-    [updateRecord],
-  );
 
   const handleDrop = useCallback(
     async (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       const currentBatchId = batchId.current + 1;
       batchId.current = currentBatchId;
-      pendingParsedByIndex.current = new Map();
       const acceptedRecords: ImportRecord[] = acceptedFiles.map((file, index) => ({
         key: `${currentBatchId}:${index}`,
         name: file.name,
-        hash: null,
         status: 'hashing',
-        source: null,
-        warnings: [],
-        message: null,
-        duplicateReason: null,
       }));
       const rejectedRecords: ImportRecord[] = fileRejections.map((rejection, index) => ({
         key: `${currentBatchId}:rejected-${index}`,
         name: rejection.file.name,
-        hash: null,
         status: 'rejected',
-        source: null,
-        warnings: [],
         message: rejectionMessage(rejection),
-        duplicateReason: null,
       }));
 
       if (acceptedRecords.length > 0 || rejectedRecords.length > 0) {
@@ -201,60 +164,23 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
 
       setIsProcessing(true);
       try {
-        const batch = await importWorkbookFiles(
-          acceptedFiles,
-          new Set(workbooks.map((workbook) => workbook.source.hash)),
-          4,
-          (event) => handleProgress(currentBatchId, event),
-        );
-        if (currentBatchId !== batchId.current) {
-          return;
-        }
-
-        const parsedByIndex = new Map(pendingParsedByIndex.current);
-        if (parsedByIndex.size === 0) {
-          batch.parsed.forEach((parsed, index) => parsedByIndex.set(index, parsed));
-        }
-
-        const acceptedWorkbooks: ParsedWorkbook[] = [];
-        for (const [index, parsed] of [...parsedByIndex.entries()].sort(
-          ([left], [right]) => left - right,
-        )) {
-          const mismatch = trackMismatchMessage(parsed, [...workbooks, ...acceptedWorkbooks]);
-          if (mismatch) {
-            updateRecord(`${currentBatchId}:${index}`, {
-              status: 'error',
-              message: mismatch,
-            });
-            continue;
+        await importWorkbookFiles(acceptedFiles, workbooks, 4, (event) => {
+          if (currentBatchId !== batchId.current) {
+            return;
           }
-          acceptedWorkbooks.push(parsed);
-        }
 
-        if (acceptedWorkbooks.length > 0) {
-          setWorkbooks((current) => [
-            ...current.filter(
-              (workbook) =>
-                !acceptedWorkbooks.some((accepted) => accepted.source.id === workbook.source.id),
-            ),
-            ...acceptedWorkbooks,
-          ]);
-        }
-      } catch (error) {
-        if (currentBatchId === batchId.current) {
-          const message =
-            error instanceof Error ? error.message : 'The files could not be checked.';
-          acceptedRecords.forEach((record) =>
-            updateRecord(record.key, { status: 'error', message }),
+          const key = `${currentBatchId}:${event.index}`;
+          setRecords((current) =>
+            current.map((record) => (record.key === key ? { key, ...event } : record)),
           );
-        }
+        });
       } finally {
         if (currentBatchId === batchId.current) {
           setIsProcessing(false);
         }
       }
     },
-    [handleProgress, updateRecord, workbooks],
+    [workbooks],
   );
 
   const { getInputProps, getRootProps, isDragActive, isDragReject, open } = useDropzone({
@@ -305,6 +231,9 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
         >
           {records.map((record) => {
             const message = statusMessage(record);
+            const workbook = recordWorkbook(record);
+            const source = workbook?.source;
+            const warnings = workbook?.warnings ?? [];
             const canRemove = record.status !== 'hashing' && record.status !== 'parsing';
             return (
               <article
@@ -335,41 +264,38 @@ export function ImportRegister({ onStateChange }: ImportRegisterProps) {
                     <X aria-hidden="true" size={14} />
                   </Button>
                 </div>
-                {record.source && (
+                {source && (
                   <details className="calibration-register__information-disclosure">
                     <summary>File information</summary>
                     <dl className="calibration-register__metadata">
                       <div>
                         <dt>Driver name</dt>
                         <dd>
-                          {record.source.driverName ??
-                            (record.source.driverNames.join(', ') || 'Not provided')}
+                          {source.driverName ?? (source.driverNames.join(', ') || 'Not provided')}
                         </dd>
                       </div>
                       <div>
                         <dt>Track</dt>
-                        <dd>{record.source.trackName ?? 'Not provided'}</dd>
+                        <dd>{source.trackName ?? 'Not provided'}</dd>
                       </div>
                       <div>
                         <dt>Car</dt>
-                        <dd>{record.source.carName ?? 'Not provided'}</dd>
+                        <dd>{source.carName ?? 'Not provided'}</dd>
                       </div>
                     </dl>
                   </details>
                 )}
                 {message && <p className="calibration-register__message">{message}</p>}
-                {record.warnings.length > 0 && (
+                {warnings.length > 0 && (
                   <details className="calibration-register__warning-disclosure">
-                    <summary>Warnings ({record.warnings.length})</summary>
+                    <summary>Warnings ({warnings.length})</summary>
                     <ul className="calibration-register__warning-list">
-                      {record.warnings.slice(0, 3).map((warning, index) => (
+                      {warnings.slice(0, 3).map((warning, index) => (
                         <li key={`${warning.code}-${warning.rowNumber ?? 'file'}-${index}`}>
                           {warning.message}
                         </li>
                       ))}
-                      {record.warnings.length > 3 && (
-                        <li>{record.warnings.length - 3} more parser warnings.</li>
-                      )}
+                      {warnings.length > 3 && <li>{warnings.length - 3} more parser warnings.</li>}
                     </ul>
                   </details>
                 )}
