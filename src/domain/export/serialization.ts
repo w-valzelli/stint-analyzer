@@ -1,36 +1,9 @@
-import { z } from 'zod';
-
 import { analysisReportSchema, type AnalysisReport } from '../model/report';
+import { serializedAnalysisReportSchema, type SerializedAnalysisReport } from './serialized-report';
 
-const jsonPrimitiveSchema = z.union([
-  z.string(),
-  z.number().refine(Number.isFinite, 'Expected a finite number'),
-  z.boolean(),
-  z.null(),
-]);
-type JsonValue = z.infer<typeof jsonPrimitiveSchema> | JsonValue[] | { [key: string]: JsonValue };
+export { serializedAnalysisReportSchema, type SerializedAnalysisReport };
 
-const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
-  z.union([jsonPrimitiveSchema, z.array(jsonValueSchema), z.record(z.string(), jsonValueSchema)]),
-);
-
-export const serializedAnalysisReportSchema = z.object({
-  schema_version: z.literal('1.0'),
-  report_type: z.literal('garage61-stint-analysis'),
-  generated_at: z.string().min(1),
-  configuration: z.record(z.string(), jsonValueSchema),
-  methodology: z.record(z.string(), jsonValueSchema),
-  sources: z.array(z.record(z.string(), jsonValueSchema)),
-  warnings: z.array(z.record(z.string(), jsonValueSchema)),
-  overview: z.record(z.string(), jsonValueSchema),
-  consistency: z.array(z.record(z.string(), jsonValueSchema)),
-  leaderboard: z.array(z.record(z.string(), jsonValueSchema)),
-  drivers: z.array(z.record(z.string(), jsonValueSchema)),
-  sectors: z.array(z.record(z.string(), jsonValueSchema)),
-  stints: z.array(z.record(z.string(), jsonValueSchema)),
-  lap_audit: z.array(z.record(z.string(), jsonValueSchema)),
-});
-export type SerializedAnalysisReport = z.infer<typeof serializedAnalysisReportSchema>;
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
 const omittedKeys = new Set([
   'hash',
