@@ -27,9 +27,9 @@ criteria, and verification.
 | MR-03 | —                                                           | Make scorecard value, sample, and direction rules explicit   | Complete     | MR-01        |
 | MR-04 | —                                                           | Make `buildAnalysisReport` readable orchestration            | Complete     | MR-03        |
 | MR-05 | —                                                           | Declare and map every JSON 1.0 field explicitly              | Complete     | MR-04        |
-| MR-06 | [#3](https://github.com/w-valzelli/stint-analyzer/issues/3) | Use one ordered import record flow                           | Ready — next | MR-05        |
-| MR-07 | [#4](https://github.com/w-valzelli/stint-analyzer/issues/4) | Share anchored-popup mechanics                               | Blocked      | MR-06        |
-| MR-08 | [#5](https://github.com/w-valzelli/stint-analyzer/issues/5) | Share lap-series chart presentation                          | Blocked      | MR-06        |
+| MR-06 | —                                                           | Use one ordered import record flow                           | Complete     | MR-05        |
+| MR-07 | [#4](https://github.com/w-valzelli/stint-analyzer/issues/4) | Share anchored-popup mechanics                               | Ready — next | MR-06        |
+| MR-08 | [#5](https://github.com/w-valzelli/stint-analyzer/issues/5) | Share lap-series chart presentation                          | Ready        | MR-06        |
 | MR-09 | [#6](https://github.com/w-valzelli/stint-analyzer/issues/6) | Split styles and remove confirmed dead UI                    | Blocked      | MR-07, MR-08 |
 | MR-10 | [#7](https://github.com/w-valzelli/stint-analyzer/issues/7) | Remove the Impeccable integration                            | Blocked      | MR-09        |
 | MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Blocked      | MR-10        |
@@ -43,7 +43,7 @@ point and must wait for both.
 | ------------------------------------------------ | -------------- |
 | R-1 Readable canonical report construction       | MR-04 complete |
 | R-2 Explicit JSON 1.0 contract                   | MR-05 complete |
-| R-3 One ordered import record model              | MR-06          |
+| R-3 One ordered import record model              | MR-06 complete |
 | R-4 Shared anchored-popup mechanics              | MR-07          |
 | R-5 Shared lap-series presentation               | MR-08          |
 | R-6 Human-navigable styles and dead-code removal | MR-09          |
@@ -92,6 +92,13 @@ mapper per section. Each mapper returns its inferred serialized type, so a new
 quirks are preserved for compatibility: a missing warning source file name
 serializes as the string `'null'`, and lowercased sector keys in
 `sector_delta_seconds` and `sectors_seconds` keep microsecond values.
+
+MR-06 made `importWorkbookFiles` in `src/domain/parsing/imports.ts` return one
+result per input file, keyed by stable input index, as a ready, duplicate, or
+error union; ready results own their `ParsedWorkbook`. Parse completions settle
+in input order, where same-track validation runs, and hashing failures become
+per-file error results. `ImportRegister` keeps one record collection and derives
+accepted workbooks from ready records.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:
