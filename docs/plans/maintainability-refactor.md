@@ -57,8 +57,8 @@ criteria, and verification.
 - Add no dependency without separate approval.
 - Do not fix unrelated defects inside these tickets; record them instead.
 - Do not publish or deploy.
-- Run each ticket’s focused checks, then the standard gate: `pnpm lint`,
-  `pnpm check`, `pnpm test`, and `pnpm build`.
+- Run each ticket’s focused checks, then the standard gate: `pnpm format`,
+  `pnpm lint`, `pnpm check`, `pnpm test`, and `pnpm build`.
 
 ## Completed foundation
 
