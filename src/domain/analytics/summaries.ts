@@ -12,10 +12,7 @@ import type {
 } from '../model/report';
 import type { SourceSummary } from '../model/normalized';
 import { durationStats } from './statistics';
-
-function compareText(left: string, right: string): number {
-  return left.localeCompare(right, undefined, { sensitivity: 'base' });
-}
+import { compareText } from './text-order';
 
 function minimum(values: readonly (number | null)[]): number | null {
   const available = values.filter((value): value is number => value !== null);
