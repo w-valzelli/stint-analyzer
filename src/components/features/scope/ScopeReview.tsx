@@ -1,6 +1,6 @@
-import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 
+import { AnchoredPopup, type AnchoredPopupPosition } from '../../reusable/AnchoredPopup';
 import { CustomSelect } from '../../reusable/CustomSelect';
 
 import type { Lap } from '../../../domain/model/normalized';
@@ -59,81 +59,26 @@ type AuditStatusProps = {
   label: string;
 };
 
-type PopoverPosition = {
-  top: number;
-  left: number;
-};
-
 function AuditStatus({ state, label }: AuditStatusProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
-  const rootRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLSpanElement>(null);
   const isOpen = isHovered || isClicked;
   const popoverId = controlId(`${label}-reasons`);
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-      if (!rootRef.current?.contains(target) && !popoverRef.current?.contains(target)) {
-        setIsClicked(false);
-      }
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsClicked(false);
-        setIsHovered(false);
-        buttonRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setPopoverPosition(null);
-      return undefined;
-    }
-
-    const updatePosition = () => {
-      const button = buttonRef.current;
-      if (!button) {
-        return;
-      }
-      const bounds = button.getBoundingClientRect();
-      const width = 230;
-      const margin = 8;
-      const top =
-        bounds.bottom + 100 < window.innerHeight
-          ? bounds.bottom + 6
-          : Math.max(margin, bounds.top - 86);
-      const left = Math.min(
-        Math.max(margin, bounds.left),
-        Math.max(margin, window.innerWidth - width - margin),
-      );
-      setPopoverPosition({ top, left });
-    };
-
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
-    };
-  }, [isOpen]);
+  const placePopover = (bounds: DOMRect): AnchoredPopupPosition => {
+    const width = 230;
+    const margin = 8;
+    const top =
+      bounds.bottom + 100 < window.innerHeight
+        ? bounds.bottom + 6
+        : Math.max(margin, bounds.top - 86);
+    const left = Math.min(
+      Math.max(margin, bounds.left),
+      Math.max(margin, window.innerWidth - width - margin),
+    );
+    return { top, left };
+  };
 
   if (state.eligible) {
     return (
@@ -146,7 +91,6 @@ function AuditStatus({ state, label }: AuditStatusProps) {
   return (
     <span
       className="scope-review__audit-status-wrap"
-      ref={rootRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -161,25 +105,34 @@ function AuditStatus({ state, label }: AuditStatusProps) {
       >
         Excluded
       </button>
-      {isOpen &&
-        popoverPosition &&
-        typeof document !== 'undefined' &&
-        createPortal(
+      <AnchoredPopup
+        open={isOpen}
+        anchorRef={buttonRef}
+        place={placePopover}
+        restoreFocusOnOutsidePress={false}
+        onDismiss={(reason) => {
+          setIsClicked(false);
+          if (reason === 'escape') {
+            setIsHovered(false);
+          }
+        }}
+      >
+        {(popup) => (
           <span
             className="scope-review__audit-popover"
             id={popoverId}
-            ref={popoverRef}
+            ref={popup.ref}
             role="dialog"
             aria-label={`${label} exclusion reasons`}
-            style={popoverPosition}
+            style={popup.style}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
             <strong>Exclusion reasons</strong>
             <span>{state.reasons.map((reason) => reasonLabels[reason]).join(' · ')}</span>
-          </span>,
-          document.body,
+          </span>
         )}
+      </AnchoredPopup>
     </span>
   );
 }
