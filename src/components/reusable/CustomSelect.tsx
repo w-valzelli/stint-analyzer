@@ -1,6 +1,7 @@
 import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { createPortal } from 'react-dom';
+
+import { AnchoredPopup, type AnchoredPopupPosition } from './AnchoredPopup';
 
 export type CustomSelectOption = {
   value: string;
@@ -23,13 +24,6 @@ function controlId(label: string): string {
   return `custom-select-${label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}`;
 }
 
-type MenuPosition = {
-  top: number;
-  left: number;
-  width: number;
-  maxHeight: number;
-};
-
 export function CustomSelect({
   label,
   triggerLabel,
@@ -42,10 +36,7 @@ export function CustomSelect({
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const id = controlId(label);
   const currentValues = typeof value === 'string' ? [value] : [...value];
@@ -67,74 +58,26 @@ export function CustomSelect({
     ),
   );
 
-  useEffect(() => {
-    if (!isOpen) {
-      return undefined;
-    }
+  const placeMenu = (bounds: DOMRect): AnchoredPopupPosition => {
+    const margin = 8;
+    const gap = 6;
+    const viewportWidth = window.innerWidth - margin * 2;
+    const width = Math.min(bounds.width, viewportWidth);
+    const estimatedHeight = Math.min(options.length * 44 + 10, 320);
+    const spaceBelow = window.innerHeight - bounds.bottom - gap - margin;
+    const spaceAbove = bounds.top - gap - margin;
+    const opensAbove = spaceBelow < Math.min(estimatedHeight, 160) && spaceAbove > spaceBelow;
+    const maxHeight = Math.max(72, opensAbove ? spaceAbove : spaceBelow);
+    const top = opensAbove
+      ? Math.max(margin, bounds.top - gap - Math.min(estimatedHeight, maxHeight))
+      : bounds.bottom + gap;
+    const left = Math.min(
+      Math.max(margin, bounds.left),
+      Math.max(margin, window.innerWidth - width - margin),
+    );
 
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-      if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) {
-        setIsOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setMenuPosition(null);
-      return undefined;
-    }
-
-    const updatePosition = () => {
-      const trigger = triggerRef.current;
-      if (!trigger) {
-        return;
-      }
-
-      const bounds = trigger.getBoundingClientRect();
-      const margin = 8;
-      const gap = 6;
-      const viewportWidth = window.innerWidth - margin * 2;
-      const width = Math.min(bounds.width, viewportWidth);
-      const estimatedHeight = Math.min(options.length * 44 + 10, 320);
-      const spaceBelow = window.innerHeight - bounds.bottom - gap - margin;
-      const spaceAbove = bounds.top - gap - margin;
-      const opensAbove = spaceBelow < Math.min(estimatedHeight, 160) && spaceAbove > spaceBelow;
-      const maxHeight = Math.max(72, opensAbove ? spaceAbove : spaceBelow);
-      const top = opensAbove
-        ? Math.max(margin, bounds.top - gap - Math.min(estimatedHeight, maxHeight))
-        : bounds.bottom + gap;
-      const left = Math.min(
-        Math.max(margin, bounds.left),
-        Math.max(margin, window.innerWidth - width - margin),
-      );
-
-      setMenuPosition({ top, left, width, maxHeight });
-    };
-
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    window.addEventListener('scroll', updatePosition, true);
-    return () => {
-      window.removeEventListener('resize', updatePosition);
-      window.removeEventListener('scroll', updatePosition, true);
-    };
-  }, [isOpen, options.length]);
+    return { top, left, width, maxHeight };
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -212,7 +155,7 @@ export function CustomSelect({
   };
 
   return (
-    <div className="scope-select" ref={rootRef}>
+    <div className="scope-select">
       <button
         type="button"
         className="scope-select__trigger"
@@ -237,18 +180,22 @@ export function CustomSelect({
         <ChevronDown aria-hidden="true" size={16} strokeWidth={1.8} />
       </button>
 
-      {isOpen &&
-        menuPosition &&
-        typeof document !== 'undefined' &&
-        createPortal(
+      <AnchoredPopup
+        open={isOpen}
+        anchorRef={triggerRef}
+        place={placeMenu}
+        layoutKey={options.length}
+        onDismiss={() => setIsOpen(false)}
+      >
+        {(popup) => (
           <div
             id={`${id}-menu`}
             className="scope-select__menu"
-            ref={menuRef}
+            ref={popup.ref}
             role="listbox"
             aria-label={`${label} options`}
             aria-multiselectable={multiple || undefined}
-            style={menuPosition}
+            style={popup.style}
           >
             {options.map((option, index) => {
               const selected =
@@ -277,9 +224,9 @@ export function CustomSelect({
                 </button>
               );
             })}
-          </div>,
-          document.body,
+          </div>
         )}
+      </AnchoredPopup>
     </div>
   );
 }
