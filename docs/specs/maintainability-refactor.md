@@ -7,19 +7,9 @@ without altering product behavior. The work makes important contracts explicit,
 removes duplicated implementation, organizes large surfaces by recognizable
 responsibility, and removes obsolete design tooling.
 
-This specification defines durable outcomes and boundaries. Implementation order
-and status live in `docs/plans/maintainability-refactor.md`. Mutable local work
-instructions live under the gitignored `.todo/maintainability-refactor/` folder.
-
-## Current status
-
-- Contract characterization tests are complete.
-- Duration behavior and `SourceSummary` validation have canonical owners.
-- The source tree now follows a type-first structure: Astro routes in `pages`,
-  React presentation in `components`, framework-independent product logic in
-  `domain`, and cross-area duration behavior in `shared`.
-- Scorecard, report, JSON, import, popup, chart, style, repository cleanup, and
-  final handoff work remain.
+This specification defines durable outcomes and boundaries. Implementation
+order, status, and per-ticket steps live in
+`docs/plans/maintainability-refactor.md`.
 
 ## Goals
 
@@ -40,6 +30,8 @@ instructions live under the gitignored `.todo/maintainability-refactor/` folder.
 - JSON field names, units, values, ordering, source basenames, and privacy-related
   omissions remain compatible with schema version `1.0`.
 - A new `AnalysisReport` field cannot enter JSON automatically.
+- The compact JSON embedded in Markdown exports remains derived from the same
+  serialized report and stays byte-identical.
 - Recursive key rewriting, suffix-based conversion, and a global omission
   blacklist are removed rather than replaced with another generic serializer.
 
@@ -178,5 +170,6 @@ The refactor is complete when:
   responsibilities;
 - `pnpm format`, `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build`, and
   `pnpm e2e` pass;
-- `BASE_PATH=/garage61-analyzer pnpm build` succeeds;
+- `BASE_PATH=/stint-analyzer pnpm build` succeeds and the built `index.html`
+  references assets under `/stint-analyzer/`;
 - no dependency was added and no unapproved change remains.
