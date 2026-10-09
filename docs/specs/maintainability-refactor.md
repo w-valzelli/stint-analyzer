@@ -8,8 +8,9 @@ removes duplicated implementation, organizes large surfaces by recognizable
 responsibility, and removes obsolete design tooling.
 
 This specification defines durable outcomes and boundaries. Implementation
-order, status, and per-ticket steps live in
-`docs/plans/maintainability-refactor.md`.
+order and status live in `docs/plans/maintainability-refactor.md`, which links
+each open ticket to its GitHub issue
+([#2](https://github.com/w-valzelli/stint-analyzer/issues/2)–[#8](https://github.com/w-valzelli/stint-analyzer/issues/8)).
 
 ## Goals
 
