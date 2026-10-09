@@ -26,8 +26,8 @@ criteria, and verification.
 | MR-02 | —                                                           | Establish shared duration behavior and one source schema     | Complete     | MR-01        |
 | MR-03 | —                                                           | Make scorecard value, sample, and direction rules explicit   | Complete     | MR-01        |
 | MR-04 | —                                                           | Make `buildAnalysisReport` readable orchestration            | Complete     | MR-03        |
-| MR-05 | [#2](https://github.com/w-valzelli/stint-analyzer/issues/2) | Declare and map every JSON 1.0 field explicitly              | Ready — next | MR-04        |
-| MR-06 | [#3](https://github.com/w-valzelli/stint-analyzer/issues/3) | Use one ordered import record flow                           | Blocked      | MR-05        |
+| MR-05 | —                                                           | Declare and map every JSON 1.0 field explicitly              | Complete     | MR-04        |
+| MR-06 | [#3](https://github.com/w-valzelli/stint-analyzer/issues/3) | Use one ordered import record flow                           | Ready — next | MR-05        |
 | MR-07 | [#4](https://github.com/w-valzelli/stint-analyzer/issues/4) | Share anchored-popup mechanics                               | Blocked      | MR-06        |
 | MR-08 | [#5](https://github.com/w-valzelli/stint-analyzer/issues/5) | Share lap-series chart presentation                          | Blocked      | MR-06        |
 | MR-09 | [#6](https://github.com/w-valzelli/stint-analyzer/issues/6) | Split styles and remove confirmed dead UI                    | Blocked      | MR-07, MR-08 |
@@ -42,7 +42,7 @@ point and must wait for both.
 | Specification requirement                        | Ticket         |
 | ------------------------------------------------ | -------------- |
 | R-1 Readable canonical report construction       | MR-04 complete |
-| R-2 Explicit JSON 1.0 contract                   | MR-05          |
+| R-2 Explicit JSON 1.0 contract                   | MR-05 complete |
 | R-3 One ordered import record model              | MR-06          |
 | R-4 Shared anchored-popup mechanics              | MR-07          |
 | R-5 Shared lap-series presentation               | MR-08          |
@@ -84,6 +84,14 @@ validation. Warnings live in `report-warnings.ts`, sectors, leaderboard, and
 drivers with scorecards in `report-drivers.ts`, and stints and lap audit in
 `report-audit.ts`, each behind named input and output types. The analytics
 modules share `compareText` from `text-order.ts`.
+
+MR-05 declared every JSON 1.0 field in `src/domain/export/serialized-report.ts`
+and replaced the recursive key rewriter in `serialization.ts` with one typed
+mapper per section. Each mapper returns its inferred serialized type, so a new
+`AnalysisReport` field reaches JSON only through a mapper change. Two JSON 1.0
+quirks are preserved for compatibility: a missing warning source file name
+serializes as the string `'null'`, and lowercased sector keys in
+`sector_delta_seconds` and `sectors_seconds` keep microsecond values.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:

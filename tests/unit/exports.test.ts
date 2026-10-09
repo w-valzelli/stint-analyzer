@@ -29,6 +29,7 @@ describe('report exports', () => {
 
     expect(serialized).toEqual(expectedSerializedAnalysisReport);
     expect(JSON.parse(json)).toEqual(expectedSerializedAnalysisReport);
+    expect(json).toBe(`${JSON.stringify(expectedSerializedAnalysisReport, null, 2)}\n`);
     expect(serializedAnalysisReportSchema.parse(serialized)).toEqual(serialized);
     expect(json).not.toMatch(/NaN|Infinity|runtime_us|source_file_id/);
   });
