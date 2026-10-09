@@ -1,37 +1,21 @@
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  type DotItemDotProps,
-} from 'recharts';
 import { useEffect, useMemo, useState } from 'react';
 
 import { CustomSelect } from '../../reusable/CustomSelect';
 import type { AnalysisReport, LapAuditRow } from '../../../domain/model/report';
+import { AnalysisSurface, formatSignedDurationUs } from './AnalysisPrimitives';
 import {
-  AnalysisChartTooltip,
-  AnalysisSurface,
-  formatSignedDurationUs,
-} from './AnalysisPrimitives';
+  LapSeriesChart,
+  dirtyKeyFor,
+  type LapSeriesDomain,
+  type LapSeriesPoint,
+} from './LapSeriesChart';
 
 type SectorDeltaProgressionChartProps = {
   report: AnalysisReport;
   driver: string | null;
 };
 
-type SectorProgressionPoint = {
-  lapKey: string;
-  lapNumber: number;
-  [sector: string]: number | string | null;
-};
-
 const ALL_SECTORS_OPTION = '__all_sectors__';
-const dirtyKeyFor = (sector: string) => `${sector}__dirty`;
 const lineColors = [
   'var(--calibration-cobalt)',
   'var(--calibration-vermilion)',
@@ -62,7 +46,7 @@ export function pointsForReport(
   report: AnalysisReport,
   driver: string | null,
   sectors: readonly string[],
-): SectorProgressionPoint[] {
+): LapSeriesPoint[] {
   if (!driver) {
     return [];
   }
@@ -96,7 +80,7 @@ export function pointsForReport(
   return orderedRows.map(({ lapNumber, occurrence, row }) => {
     const lapKey = `${lapNumber}:${occurrence}`;
     const isPitLap = row.pitIn || row.pitOut;
-    const point: SectorProgressionPoint = { lapKey, lapNumber };
+    const point: LapSeriesPoint = { lapKey, lapNumber };
 
     for (const sector of sectors) {
       const sectorValue = row.sectorsUs[sector] ?? null;
@@ -113,7 +97,7 @@ export function pointsForReport(
   });
 }
 
-function yDomainFor(data: readonly SectorProgressionPoint[], sectors: readonly string[]) {
+function yDomainFor(data: readonly LapSeriesPoint[], sectors: readonly string[]): LapSeriesDomain {
   const values = data.flatMap((point) =>
     sectors.flatMap((sector) => {
       const value = point[sector];
@@ -128,26 +112,6 @@ function yDomainFor(data: readonly SectorProgressionPoint[], sectors: readonly s
   const maximum = Math.max(...values);
   const padding = Math.max(100_000, (maximum - minimum) * 0.1);
   return [minimum - padding, maximum + padding] as const;
-}
-
-function progressionDot(sector: string, color: string) {
-  return (props: DotItemDotProps) => {
-    const point = props.payload as SectorProgressionPoint;
-    const isDirty = point[dirtyKeyFor(sector)] !== null;
-    if (props.cx === undefined || props.cy === undefined) {
-      return null;
-    }
-    return (
-      <circle
-        cx={props.cx}
-        cy={props.cy}
-        r={isDirty ? 3.5 : 2}
-        fill={isDirty ? 'var(--calibration-ochre)' : color}
-        stroke="var(--calibration-sheet)"
-        strokeWidth={isDirty ? 1.5 : 0}
-      />
-    );
-  };
 }
 
 export function SectorDeltaProgressionChart({ report, driver }: SectorDeltaProgressionChartProps) {
@@ -206,73 +170,19 @@ export function SectorDeltaProgressionChart({ report, driver }: SectorDeltaProgr
       {data.length === 0 || selectedSectors.length === 0 ? (
         <p className="analysis-empty">No completed sector progression is available.</p>
       ) : (
-        <div className="analysis-chart" role="img" aria-label="Sector progression chart">
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data} margin={{ top: 10, right: 18, bottom: 4, left: 8 }}>
-              <CartesianGrid stroke="var(--calibration-rule)" vertical={false} />
-              <XAxis
-                dataKey="lapKey"
-                tick={{
-                  fill: 'var(--calibration-ink-soft)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                }}
-                tickLine={false}
-                axisLine={{ stroke: 'var(--calibration-rule-strong)' }}
-                minTickGap={24}
-                tickFormatter={(value: string) => value.split(':')[0] ?? value}
-              />
-              <YAxis
-                domain={yDomain}
-                tick={{
-                  fill: 'var(--calibration-ink-soft)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: 10,
-                }}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value: number) => formatSignedDurationUs(value)}
-                width={66}
-              />
-              <Tooltip
-                allowEscapeViewBox={{ x: true, y: true }}
-                content={(props) => (
-                  <AnalysisChartTooltip
-                    {...props}
-                    formatLabel={(label) => `Lap ${String(label).split(':')[0] ?? label}`}
-                    formatValue={(value, name) =>
-                      `${String(name)} delta · ${formatSignedDurationUs(Number(value))}`
-                    }
-                  />
-                )}
-              />
-              <Legend
-                wrapperStyle={{
-                  color: 'var(--calibration-muted)',
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                }}
-              />
-              {selectedSectors.map((sector, index) => {
-                const color = lineColors[index % lineColors.length] ?? lineColors[0];
-                return (
-                  <Line
-                    key={sector}
-                    type="monotone"
-                    dataKey={sector}
-                    name={sector}
-                    stroke={color}
-                    strokeWidth={1.8}
-                    dot={progressionDot(sector, color)}
-                    activeDot={{ r: 4, fill: 'var(--calibration-vermilion)' }}
-                    connectNulls={false}
-                  />
-                );
-              })}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <LapSeriesChart
+          data={data}
+          series={selectedSectors.map((sector, index) => ({
+            key: sector,
+            color: lineColors[index % lineColors.length] ?? lineColors[0],
+          }))}
+          yDomain={yDomain}
+          yAxisWidth={66}
+          strokeWidth={1.8}
+          formatTick={formatSignedDurationUs}
+          formatTooltipValue={(value, name) => `${name} delta · ${formatSignedDurationUs(value)}`}
+          ariaLabel="Sector progression chart"
+        />
       )}
     </AnalysisSurface>
   );
