@@ -127,44 +127,38 @@ export type ScorecardDriverInput = {
 type ScorecardRankDirection = 'lower-first' | 'higher-first';
 
 type ScorecardMetricDefinition = {
-  key: keyof DriverScorecard;
   valueFor: (driver: ScorecardDriverInput) => number | null;
   sampleSizeFor: (driver: ScorecardDriverInput) => number;
   direction: ScorecardRankDirection;
 };
 
-const scorecardMetricDefinitions = [
-  {
-    key: 'pace',
+const scorecardMetricDefinitions = {
+  pace: {
     valueFor: (driver) => driver.lapStats.medianUs,
     sampleSizeFor: (driver) => driver.lapStats.n,
     direction: 'lower-first',
   },
-  {
-    key: 'potential',
+  potential: {
     valueFor: (driver) => driver.executionGapUs,
     sampleSizeFor: (driver) => driver.lapStats.n,
     direction: 'higher-first',
   },
-  {
-    key: 'efficiency',
+  efficiency: {
     valueFor: (driver) => driver.fuelUsedMeanLiters,
     sampleSizeFor: (driver) => driver.fuelUsedLapCount,
     direction: 'lower-first',
   },
-  {
-    key: 'cleanliness',
+  cleanliness: {
     valueFor: (driver) => driver.cleanPercentage,
     sampleSizeFor: (driver) => driver.eligibleNonPitLapCount,
     direction: 'higher-first',
   },
-  {
-    key: 'consistency',
+  consistency: {
     valueFor: (driver) => driver.lapStats.madUs,
     sampleSizeFor: (driver) => driver.lapStats.n,
     direction: 'lower-first',
   },
-] as const satisfies readonly ScorecardMetricDefinition[];
+} satisfies Record<keyof DriverScorecard, ScorecardMetricDefinition>;
 
 function buildScorecardMetric(
   driver: ScorecardDriverInput,
@@ -201,20 +195,26 @@ export function buildDriverScorecards(
   const leaderboardDriverSet = new Set(leaderboardDrivers);
 
   return new Map(
-    drivers.map((driver) => [
-      driver.driver,
-      Object.fromEntries(
-        scorecardMetricDefinitions.map((definition) => [
-          definition.key,
-          buildScorecardMetric(
-            driver,
-            drivers,
-            leaderboardDriverSet,
-            leaderboardDrivers.length,
-            definition,
-          ),
-        ]),
-      ) as DriverScorecard,
-    ]),
+    drivers.map((driver) => {
+      const metric = (definition: ScorecardMetricDefinition) =>
+        buildScorecardMetric(
+          driver,
+          drivers,
+          leaderboardDriverSet,
+          leaderboardDrivers.length,
+          definition,
+        );
+
+      return [
+        driver.driver,
+        {
+          pace: metric(scorecardMetricDefinitions.pace),
+          potential: metric(scorecardMetricDefinitions.potential),
+          efficiency: metric(scorecardMetricDefinitions.efficiency),
+          cleanliness: metric(scorecardMetricDefinitions.cleanliness),
+          consistency: metric(scorecardMetricDefinitions.consistency),
+        },
+      ];
+    }),
   );
 }
