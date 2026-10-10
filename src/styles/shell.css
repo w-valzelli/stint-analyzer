@@ -1,0 +1,317 @@
+.calibration-app {
+  width: min(100% - 48px, 1360px);
+  margin: 0 auto;
+  padding: 26px 0 30px;
+}
+
+.calibration-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  min-height: 54px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--calibration-rule-strong);
+}
+
+.calibration-mark {
+  width: fit-content;
+  color: var(--calibration-ink);
+  text-decoration: none;
+}
+
+.calibration-mark__name {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.calibration-mark__name strong {
+  font-weight: 700;
+}
+
+.calibration-mark__name span {
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  line-height: 1.15;
+}
+
+.calibration-header__right,
+.calibration-header__actions {
+  display: flex;
+  align-items: center;
+}
+
+.calibration-header__right {
+  gap: 24px;
+}
+
+.calibration-header__actions {
+  gap: 8px;
+}
+
+.calibration-header__source {
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.calibration-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(480px, 1.15fr);
+  gap: clamp(44px, 7vw, 112px);
+  align-items: center;
+  min-height: 540px;
+  padding: 78px 0 86px;
+}
+
+.calibration-intro__copy {
+  max-width: 600px;
+}
+
+.calibration-intro h1 {
+  max-width: 11ch;
+  margin: 0;
+  font-size: clamp(3.2rem, 7vw, 6.6rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.92;
+}
+
+.calibration-intro h1 span {
+  display: block;
+  color: var(--calibration-cobalt);
+}
+
+.calibration-intro__lede {
+  max-width: 52ch;
+  margin: 29px 0 0;
+  color: var(--calibration-ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.calibration-sheet {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-lg);
+  background: var(--calibration-sheet);
+  box-shadow: none;
+}
+
+.calibration-sheet::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+  background:
+    linear-gradient(90deg, var(--calibration-sheet-texture) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(var(--calibration-sheet-texture) 1px, transparent 1px) 0 0 / 32px 32px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.calibration-sheet__body {
+  position: relative;
+  padding: clamp(27px, 4vw, 46px);
+}
+
+.calibration-sheet__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.calibration-sheet__heading > div {
+  min-width: 0;
+}
+
+.calibration-sheet h2,
+.calibration-index h2 {
+  margin: 7px 0 0;
+  font-size: clamp(1.45rem, 2.6vw, 2.25rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+.calibration-sheet__heading p {
+  max-width: 45ch;
+  margin: 12px 0 0;
+  color: var(--calibration-ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.calibration-index {
+  padding: 42px 0 72px;
+  border-top: 1px solid var(--calibration-rule-strong);
+}
+
+.calibration-index__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+.calibration-index [role='tablist'] {
+  margin-top: 30px;
+}
+
+.calibration-index [role='tab'] {
+  min-height: 39px;
+}
+
+.calibration-panel {
+  position: relative;
+  min-height: 214px;
+  margin-top: 20px;
+  overflow: hidden;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-lg);
+  background: var(--calibration-paper-deep);
+}
+
+.calibration-panel__advisory {
+  min-height: 214px;
+  padding: clamp(25px, 5vw, 47px);
+}
+
+.calibration-panel h3 {
+  max-width: 28ch;
+  margin: 0;
+  font-size: clamp(1.3rem, 2vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.calibration-panel p {
+  max-width: 57ch;
+  margin: 12px 0 0;
+  color: var(--calibration-ink-soft);
+  line-height: 1.6;
+}
+
+.calibration-panel--table {
+  min-height: 0;
+}
+
+.calibration-panel__rule {
+  display: flex;
+  gap: 7px;
+  margin-top: 30px;
+}
+
+.calibration-panel__rule span {
+  display: block;
+  width: 54px;
+  height: 3px;
+  background: var(--calibration-cobalt);
+}
+
+.calibration-panel__rule span:nth-child(2) {
+  width: 18px;
+  background: var(--calibration-vermilion);
+}
+
+.calibration-panel__rule span:nth-child(3) {
+  width: 9px;
+  background: var(--calibration-ochre);
+}
+
+.calibration-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 17px;
+  border-top: 1px solid var(--calibration-rule-strong);
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 1000px) {
+  .calibration-intro {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    min-height: 0;
+  }
+
+  .calibration-intro__copy {
+    max-width: 700px;
+  }
+
+  .calibration-intro h1 {
+    max-width: 12ch;
+  }
+}
+
+@media (max-width: 680px) {
+  .calibration-app {
+    width: min(100% - 28px, 1360px);
+    padding-top: 16px;
+  }
+
+  .calibration-header {
+    gap: 16px;
+  }
+
+  .calibration-intro {
+    padding: 57px 0 61px;
+  }
+
+  .calibration-intro h1 {
+    font-size: clamp(3rem, 15vw, 5rem);
+  }
+
+  .calibration-intro__lede {
+    font-size: 0.96rem;
+  }
+
+  .calibration-sheet__body {
+    padding: 25px 19px;
+  }
+
+  .calibration-index {
+    padding-bottom: 55px;
+  }
+
+  .calibration-index__heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .calibration-header__source {
+    display: none;
+  }
+
+  .calibration-index [role='tablist'] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    margin-right: -14px;
+    padding-right: 14px;
+    scrollbar-width: thin;
+  }
+
+  .calibration-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+}

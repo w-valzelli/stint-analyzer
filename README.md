@@ -58,7 +58,7 @@ src/
 │   ├── analytics/            Eligibility, stints, statistics, report building
 │   └── export/               XLSX, Markdown, JSON, and validation
 ├── shared/                   Named framework-independent cross-area behavior
-└── styles/                   Global CSS and design tokens
+└── styles/                   Global CSS entry and style areas
 
 tests/
 ├── unit/                     Vitest and Testing Library tests
@@ -76,6 +76,12 @@ or analysis behavior that does not depend on React stays in `domain`. Put a
 generic control in `components/reusable` only when multiple product areas use
 it. Put framework-independent code in `shared` only when multiple top-level
 areas own it; canonical duration behavior is the current example.
+
+`src/styles/global.css` is the only stylesheet entry. It loads the fonts and
+Tailwind, then imports the style areas in cascade order: `foundations.css`
+(tokens, resets, accessibility, motion), `shell.css`, `import-scope.css`,
+`ui.css` (shared controls and popups), and `analysis.css`. Keep each area's
+responsive rules in its own file.
 
 | To change…                                         | Start in…                  |
 | -------------------------------------------------- | -------------------------- |
