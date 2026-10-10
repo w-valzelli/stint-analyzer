@@ -30,8 +30,8 @@ criteria, and verification.
 | MR-06 | —                                                           | Use one ordered import record flow                           | Complete     | MR-05        |
 | MR-07 | —                                                           | Share anchored-popup mechanics                               | Complete     | MR-06        |
 | MR-08 | —                                                           | Share lap-series chart presentation                          | Complete     | MR-06        |
-| MR-09 | [#6](https://github.com/w-valzelli/stint-analyzer/issues/6) | Split styles and remove confirmed dead UI                    | Ready — next | MR-07, MR-08 |
-| MR-10 | [#7](https://github.com/w-valzelli/stint-analyzer/issues/7) | Remove the Impeccable integration                            | Blocked      | MR-09        |
+| MR-09 | —                                                           | Split styles and remove confirmed dead UI                    | Complete     | MR-07, MR-08 |
+| MR-10 | [#7](https://github.com/w-valzelli/stint-analyzer/issues/7) | Remove the Impeccable integration                            | Ready — next | MR-09        |
 | MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Blocked      | MR-10        |
 
 ## Requirement coverage
@@ -43,7 +43,7 @@ criteria, and verification.
 | R-3 One ordered import record model              | MR-06 complete |
 | R-4 Shared anchored-popup mechanics              | MR-07 complete |
 | R-5 Shared lap-series presentation               | MR-08 complete |
-| R-6 Human-navigable styles and dead-code removal | MR-09          |
+| R-6 Human-navigable styles and dead-code removal | MR-09 complete |
 | R-7 Canonical duration behavior                  | MR-02 complete |
 | R-8 Shared domain schemas                        | MR-02 complete |
 | R-9 Explicit scorecard rules                     | MR-03 complete |
@@ -112,6 +112,18 @@ markers, and exports the shared `LapSeriesPoint` shape and `dirtyKeyFor` key.
 `PaceProgressionChart` and `SectorDeltaProgressionChart` keep `pointsForReport`,
 Y-domain padding, selection state, and empty states, and pass series colors,
 axis width, stroke width, formatters, and the accessible label.
+
+MR-09 split `src/styles/global.css` into `foundations.css`, `shell.css`,
+`import-scope.css`, `ui.css`, and `analysis.css`, imported in that order so
+every cross-area override keeps its original winner; `analysis.css` follows
+`ui.css` so analysis select overrides still beat expanded-trigger styles. It
+removed `Card`, `MetricStrip`, their styles, and the design-thesis comment.
+Other selectors with no literal source reference remain for a separate,
+confirmed removal: `analysis-control-note`, `analysis-driver-grid`,
+`analysis-observation-list`, `analysis-overview-grid`, `analysis-status`,
+`analysis-surface__count`, `analysis-surface__header--audit`,
+`analysis-warning-list`, `calibration-dropzone__state`,
+`calibration-header__source`, and `calibration-panel--table`.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:
