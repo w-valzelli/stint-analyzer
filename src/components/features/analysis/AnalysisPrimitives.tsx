@@ -6,30 +6,6 @@ import { formatDurationUs } from '../../../shared/durations';
 import { CustomSelect, type CustomSelectOption } from '../../reusable/CustomSelect';
 import { useAnalysisViewStore } from './analysisViewStore';
 
-type MetricItem = {
-  label: string;
-  value: string;
-  detail?: string;
-};
-
-type MetricStripProps = {
-  items: readonly MetricItem[];
-};
-
-export function MetricStrip({ items }: MetricStripProps) {
-  return (
-    <dl className="analysis-metric-strip">
-      {items.map((item) => (
-        <div className="analysis-metric-strip__item" key={item.label}>
-          <dt>{item.label}</dt>
-          <dd>{item.value}</dd>
-          {item.detail ? <small>{item.detail}</small> : null}
-        </div>
-      ))}
-    </dl>
-  );
-}
-
 type AnalysisSurfaceProps = {
   children: ReactNode;
   className?: string;

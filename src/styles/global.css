@@ -1055,32 +1055,6 @@ input[type='checkbox']:focus-visible {
   margin-top: 20px;
 }
 
-.analysis-metric-strip {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  margin: 0;
-  border-top: 1px solid var(--calibration-rule-strong);
-  border-bottom: 1px solid var(--calibration-rule-strong);
-}
-
-.analysis-metric-strip__item {
-  display: grid;
-  align-content: start;
-  gap: 5px;
-  min-width: 0;
-  padding: 15px 14px 14px 0;
-  border-right: 1px solid var(--calibration-rule);
-}
-
-.analysis-metric-strip__item:not(:first-child) {
-  padding-left: 14px;
-}
-
-.analysis-metric-strip__item:last-child {
-  border-right: 0;
-}
-
-.analysis-metric-strip dt,
 .analysis-control > span,
 .analysis-control-note {
   color: var(--calibration-muted);
@@ -1089,27 +1063,6 @@ input[type='checkbox']:focus-visible {
   letter-spacing: 0.05em;
   line-height: 1.35;
   text-transform: uppercase;
-}
-
-.analysis-metric-strip dd {
-  margin: 0;
-  color: var(--calibration-ink);
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.analysis-metric-strip small {
-  overflow: hidden;
-  color: var(--calibration-muted);
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.03em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
 .analysis-overview-grid,
@@ -1685,36 +1638,6 @@ input[type='checkbox']:focus-visible {
   opacity: 0.48;
 }
 
-.calibration-card {
-  border: 1px solid var(--calibration-rule-strong);
-  border-radius: var(--calibration-radius-lg);
-  background: var(--calibration-sheet);
-  box-shadow: var(--calibration-shadow);
-}
-
-.calibration-card__header,
-.calibration-card__content {
-  padding: 24px;
-}
-
-.calibration-card__content {
-  padding-top: 0;
-}
-
-.calibration-card__title {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
-
-.calibration-card__description {
-  margin: 6px 0 0;
-  color: var(--calibration-ink-soft);
-  font-size: 0.86rem;
-  line-height: 1.55;
-}
-
 .calibration-tabs__list {
   display: flex;
   flex-wrap: wrap;
@@ -1775,14 +1698,6 @@ input[type='checkbox']:focus-visible {
   .analysis-overview-grid,
   .analysis-driver-grid {
     grid-template-columns: 1fr;
-  }
-
-  .analysis-metric-strip {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .analysis-metric-strip__item:nth-child(4n) {
-    border-right: 0;
   }
 }
 
@@ -1847,20 +1762,6 @@ input[type='checkbox']:focus-visible {
   .calibration-index,
   .scope-review {
     padding-bottom: 55px;
-  }
-
-  .analysis-metric-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .analysis-metric-strip__item,
-  .analysis-metric-strip__item:not(:first-child) {
-    padding: 13px 12px;
-    border-right: 1px solid var(--calibration-rule);
-  }
-
-  .analysis-metric-strip__item:nth-child(2n) {
-    border-right: 0;
   }
 
   .analysis-controls {
