@@ -3,6 +3,9 @@
 Stint Analyzer is a static Astro + React app for analyzing one or more Garage
 61 `.xlsx` session/stint exports locally in the browser.
 
+This README is the maintainer reference. Operating rules for AI coding agents
+live in [AGENTS.md](AGENTS.md).
+
 ## Features
 
 - Multi-file `.xlsx` import with duplicate detection and parser warnings.
@@ -36,12 +39,35 @@ Astro page → AnalyzerShell React island → local workbook import
     → canonical AnalysisReport → views and XLSX/Markdown/JSON exports
 ```
 
+`ImportRegister` passes dropped files to `importWorkbookFiles`
+(`src/domain/parsing/imports.ts`), which returns one ready, duplicate, or error
+result per input file in input order. `AnalyzerShell` passes the accepted
+workbooks and the reviewed scope to `buildAnalysisReport`
+(`src/domain/analytics/report.ts`). Every view and export reads the resulting
+`AnalysisReport`; none recalculates analysis on its own.
+
 The app has no backend, account system, hosted analysis service, or analysis
 persistence. Workbooks are read through the browser File API and kept in
 memory. The only browser preference is the selected theme.
 
 Domain code is framework-independent TypeScript. Parsing, analytics, UI, and
 export code share the canonical `AnalysisReport`.
+
+## Exports and privacy
+
+All exports are generated in the browser from the validated `AnalysisReport`
+and downloaded directly; nothing is uploaded.
+
+- JSON uses schema version `1.0`. Every field is declared in
+  `src/domain/export/serialized-report.ts` and mapped section by section in
+  `serialization.ts`, so a new report field reaches JSON only through an
+  explicit mapper change. Keep field names, units, values, and ordering
+  compatible; `tests/fixtures/serializedAnalysisReport.ts` pins the full
+  object.
+- The spreadsheet export has nine fixed sheets. Both Markdown modes end with
+  a compact machine-readable JSON block; Markdown Full adds the lap audit.
+- Exports identify sources by file basename only and omit internal lap, stint,
+  and source identifiers and file hashes.
 
 ## Repository structure
 
@@ -117,11 +143,13 @@ pnpm dev
 | `pnpm e2e:ui`       | Open the Playwright UI runner.   |
 
 The default base path is `/stint-analyzer/`. Use `BASE_PATH=/` for root hosting
-or verify a repository-style path with:
+or verify the GitHub Pages path with:
 
 ```bash
-BASE_PATH=/garage61-analyzer pnpm build
+BASE_PATH=/stint-analyzer pnpm build
 ```
+
+The built `dist/index.html` should reference assets under `/stint-analyzer/`.
 
 ## Dependencies
 
