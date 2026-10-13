@@ -31,8 +31,8 @@ criteria, and verification.
 | MR-07 | —                                                           | Share anchored-popup mechanics                               | Complete     | MR-06        |
 | MR-08 | —                                                           | Share lap-series chart presentation                          | Complete     | MR-06        |
 | MR-09 | —                                                           | Split styles and remove confirmed dead UI                    | Complete     | MR-07, MR-08 |
-| MR-10 | [#7](https://github.com/w-valzelli/stint-analyzer/issues/7) | Remove the Impeccable integration                            | Ready — next | MR-09        |
-| MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Blocked      | MR-10        |
+| MR-10 | —                                                           | Remove the Impeccable integration                            | Complete     | MR-09        |
+| MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Ready — next | MR-10        |
 
 ## Requirement coverage
 
@@ -47,7 +47,7 @@ criteria, and verification.
 | R-7 Canonical duration behavior                  | MR-02 complete |
 | R-8 Shared domain schemas                        | MR-02 complete |
 | R-9 Explicit scorecard rules                     | MR-03 complete |
-| R-10 Remove Impeccable                           | MR-10          |
+| R-10 Remove Impeccable                           | MR-10 complete |
 | R-11 Concise human and agent guidance            | MR-11          |
 
 ## Global boundaries
@@ -124,6 +124,12 @@ confirmed removal: `analysis-control-note`, `analysis-driver-grid`,
 `analysis-surface__count`, `analysis-surface__header--audit`,
 `analysis-warning-list`, `calibration-dropzone__state`,
 `calibration-header__source`, and `calibration-panel--table`.
+
+MR-10 removed the Impeccable submodule, `.gitmodules`, the
+`.agents/skills/impeccable` link, `.impeccable/`, `DESIGN.md`, `PRODUCT.md`,
+and `MANIFEST.json`, along with their `.gitignore`, `.prettierignore`, ESLint,
+and TypeScript exclusions and the stale `docs/0[1-4]_*` Prettier exclusions. A
+fresh clone needs no submodule initialization.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:
