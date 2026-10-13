@@ -2,12 +2,16 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ExportMenu } from '../../src/features/export/ExportMenu';
-import { downloadReportFormats, exportFilename } from '../../src/features/export/downloads';
+import { ExportMenu } from '../../src/components/features/export/ExportMenu';
+import {
+  downloadReportFormats,
+  exportFilename,
+} from '../../src/components/features/export/downloads';
 import { makeAnalysisReport } from '../fixtures/analysisReport';
 
-vi.mock('../../src/features/export/downloads', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../../src/features/export/downloads')>();
+vi.mock('../../src/components/features/export/downloads', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('../../src/components/features/export/downloads')>();
   return { ...original, downloadReportFormats: vi.fn().mockResolvedValue(undefined) };
 });
 

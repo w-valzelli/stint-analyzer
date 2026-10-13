@@ -7,6 +7,7 @@ import {
   type ScopeSelection,
   type SourceScopeGroup,
 } from '../model/scope';
+import { compareText } from './text-order';
 
 function parsedTimestamp(value: string | null): number | null {
   if (!value) {
@@ -15,10 +16,6 @@ function parsedTimestamp(value: string | null): number | null {
 
   const timestamp = Date.parse(value);
   return Number.isFinite(timestamp) ? timestamp : null;
-}
-
-function compareText(left: string, right: string): number {
-  return left.localeCompare(right, undefined, { sensitivity: 'base' });
 }
 
 function orderLaps(laps: readonly Lap[]): Lap[] {

@@ -10,7 +10,7 @@ import {
 } from '../../src/domain/analytics/stints';
 import type { Lap } from '../../src/domain/model/normalized';
 import type { PaceMode, ScopeSelection } from '../../src/domain/model/scope';
-import { ScopeReview } from '../../src/features/scope/ScopeReview';
+import { ScopeReview } from '../../src/components/features/scope/ScopeReview';
 import { makeLap, stintFixtureLaps } from '../fixtures/scopeLaps';
 
 type HarnessProps = {

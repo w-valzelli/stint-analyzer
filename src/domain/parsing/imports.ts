@@ -1,33 +1,37 @@
 import type { ParsedWorkbook } from '../model/normalized';
-import { hashFiles, type HashableFile, type HashedFile } from './hash';
+import { hashFiles, type HashableFile } from './hash';
 
-export type ImportDuplicate = {
-  name: string;
-  hash: string;
-  reason: 'existing' | 'selection';
-};
-
-export type ImportFailure = {
-  name: string;
-  hash: string;
-  message: string;
-};
-
-export type ImportProgressEvent = {
+type ImportFileIdentity<T extends HashableFile> = {
   index: number;
+  file: T;
   name: string;
-  hash: string;
-  status: 'parsing' | 'ready' | 'duplicate' | 'error';
-  parsed?: ParsedWorkbook;
-  message?: string;
-  duplicateReason?: ImportDuplicate['reason'];
 };
 
-export type WorkbookImportBatch = {
-  parsed: ParsedWorkbook[];
-  duplicates: ImportDuplicate[];
-  failures: ImportFailure[];
-};
+export type ImportResult<T extends HashableFile = HashableFile> =
+  | (ImportFileIdentity<T> & {
+      status: 'ready';
+      hash: string;
+      parsed: ParsedWorkbook;
+    })
+  | (ImportFileIdentity<T> & {
+      status: 'duplicate';
+      hash: string;
+      duplicateReason: 'existing' | 'selection';
+    })
+  | (ImportFileIdentity<T> & {
+      status: 'error';
+      hash: string | null;
+      message: string;
+      // Present when the workbook parsed but was not accepted, such as a track mismatch.
+      parsed: ParsedWorkbook | null;
+    });
+
+export type ImportProgressEvent<T extends HashableFile = HashableFile> =
+  | (ImportFileIdentity<T> & {
+      status: 'parsing';
+      hash: string;
+    })
+  | ImportResult<T>;
 
 function normalizedTrackName(value: string): string {
   return value.trim().toLocaleLowerCase();
@@ -54,78 +58,133 @@ export function trackMismatchMessage(
   return `All imported lap data should use the same track. This file reports “${candidateTrack}”, but existing files report “${differentTrack}”.`;
 }
 
+/**
+ * Hashes, deduplicates, parses, and track-validates files. Results and every
+ * progress event are keyed by input index; parsed results settle in input order
+ * so same-track validation never depends on parse completion order.
+ */
 export async function importWorkbookFiles<T extends HashableFile>(
   files: readonly T[],
-  existingHashes: ReadonlySet<string> = new Set(),
+  existingWorkbooks: readonly ParsedWorkbook[] = [],
   concurrency = 4,
-  onProgress?: (event: ImportProgressEvent) => void,
-): Promise<WorkbookImportBatch> {
-  const hashedFiles = await hashFiles(files, concurrency);
-  const knownHashes = new Set(existingHashes);
-  const candidates: Array<HashedFile<T> & { index: number }> = [];
-  const duplicates: ImportDuplicate[] = [];
+  onProgress?: (event: ImportProgressEvent<T>) => void,
+): Promise<ImportResult<T>[]> {
+  const results: ImportResult<T>[] = [];
 
-  for (const [index, hashed] of hashedFiles.entries()) {
-    if (knownHashes.has(hashed.hash)) {
-      const reason = existingHashes.has(hashed.hash) ? 'existing' : 'selection';
-      duplicates.push({ name: hashed.file.name, hash: hashed.hash, reason });
-      onProgress?.({
+  let hashedFiles;
+  try {
+    hashedFiles = await hashFiles(files, concurrency);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'The files could not be checked.';
+    for (const [index, file] of files.entries()) {
+      results[index] = {
         index,
-        name: hashed.file.name,
-        hash: hashed.hash,
+        file,
+        name: file.name,
+        status: 'error',
+        hash: null,
+        message,
+        parsed: null,
+      };
+      onProgress?.(results[index]);
+    }
+    return results;
+  }
+
+  const existingHashes = new Set(existingWorkbooks.map((workbook) => workbook.source.hash));
+  const knownHashes = new Set(existingHashes);
+  const candidates: Array<{ index: number; file: T; hash: string }> = [];
+
+  for (const [index, { file, hash }] of hashedFiles.entries()) {
+    if (knownHashes.has(hash)) {
+      results[index] = {
+        index,
+        file,
+        name: file.name,
         status: 'duplicate',
-        duplicateReason: reason,
-      });
+        hash,
+        duplicateReason: existingHashes.has(hash) ? 'existing' : 'selection',
+      };
+      onProgress?.(results[index]);
       continue;
     }
 
-    knownHashes.add(hashed.hash);
-    candidates.push({ ...hashed, index });
-    onProgress?.({ index, name: hashed.file.name, hash: hashed.hash, status: 'parsing' });
+    knownHashes.add(hash);
+    candidates.push({ index, file, hash });
+    onProgress?.({ index, file, name: file.name, status: 'parsing', hash });
   }
 
-  const parsed: ParsedWorkbook[] = [];
-  const failures: ImportFailure[] = [];
-  let nextIndex = 0;
+  const parsedByIndex = new Map<number, ImportResult<T>>();
+  const acceptedWorkbooks = [...existingWorkbooks];
+  let nextSettledIndex = 0;
+
+  function settleInInputOrder() {
+    while (nextSettledIndex < files.length) {
+      if (results[nextSettledIndex]?.status === 'duplicate') {
+        nextSettledIndex += 1;
+        continue;
+      }
+
+      const result = parsedByIndex.get(nextSettledIndex);
+      if (!result) {
+        return;
+      }
+
+      const mismatch =
+        result.status === 'ready' ? trackMismatchMessage(result.parsed, acceptedWorkbooks) : null;
+      if (result.status === 'ready' && mismatch) {
+        results[nextSettledIndex] = {
+          ...result,
+          status: 'error',
+          message: mismatch,
+        };
+      } else {
+        results[nextSettledIndex] = result;
+        if (result.status === 'ready') {
+          acceptedWorkbooks.push(result.parsed);
+        }
+      }
+
+      onProgress?.(results[nextSettledIndex]);
+      nextSettledIndex += 1;
+    }
+  }
+
+  let nextCandidate = 0;
   const workerCount = Math.min(Math.max(concurrency, 1), candidates.length);
 
   async function worker() {
-    while (nextIndex < candidates.length) {
-      const index = nextIndex;
-      nextIndex += 1;
-      const candidate = candidates[index];
+    while (nextCandidate < candidates.length) {
+      const { index, file, hash } = candidates[nextCandidate];
+      nextCandidate += 1;
 
       try {
         const { parseWorkbookFile } = await import('./workbook');
-        const result = await parseWorkbookFile(await candidate.file.arrayBuffer(), {
-          id: candidate.hash,
-          name: candidate.file.name,
-          hash: candidate.hash,
+        const parsed = await parseWorkbookFile(await file.arrayBuffer(), {
+          id: hash,
+          name: file.name,
+          hash,
         });
-        parsed.push(result);
-        onProgress?.({
-          index: candidate.index,
-          name: candidate.file.name,
-          hash: candidate.hash,
-          status: 'ready',
-          parsed: result,
-        });
+        parsedByIndex.set(index, { index, file, name: file.name, status: 'ready', hash, parsed });
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'The workbook could not be parsed.';
-        failures.push({ name: candidate.file.name, hash: candidate.hash, message });
-        onProgress?.({
-          index: candidate.index,
-          name: candidate.file.name,
-          hash: candidate.hash,
+        parsedByIndex.set(index, {
+          index,
+          file,
+          name: file.name,
           status: 'error',
+          hash,
           message,
+          parsed: null,
         });
       }
+
+      settleInInputOrder();
     }
   }
 
   await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
-  return { parsed, duplicates, failures };
+  return results;
 }

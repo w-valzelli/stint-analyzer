@@ -1,0 +1,96 @@
+:root {
+  color-scheme: light;
+  --calibration-paper: #f4f1e8;
+  --calibration-paper-deep: #e8e5dc;
+  --calibration-sheet: #fbfaf5;
+  --calibration-ink: #182126;
+  --calibration-ink-soft: #4d5a5e;
+  --calibration-muted: #6f7a7c;
+  --calibration-rule: #c9cbc2;
+  --calibration-rule-strong: #939d9e;
+  --calibration-cobalt: #2e5aa8;
+  --calibration-vermilion: #d84b2f;
+  --calibration-ochre: #c7982e;
+  --calibration-moss: #2f756a;
+  --calibration-purple: #6f4aa1;
+  --calibration-sheet-texture: rgb(46 90 168 / 6%);
+  --calibration-radius-sm: 6px;
+  --calibration-radius-md: 8px;
+  --calibration-radius-lg: 12px;
+  --calibration-shadow: 0 18px 42px -26px rgb(24 33 38 / 35%);
+  font-family: var(--font-sans);
+  background: var(--calibration-paper);
+  color: var(--calibration-ink);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --calibration-paper: #171b1d;
+  --calibration-paper-deep: #222a2c;
+  --calibration-sheet: #283133;
+  --calibration-ink: #edf2ed;
+  --calibration-ink-soft: #c2ceca;
+  --calibration-muted: #92a19e;
+  --calibration-rule: #455153;
+  --calibration-rule-strong: #6c7a77;
+  --calibration-cobalt: #78a7e8;
+  --calibration-vermilion: #ee816d;
+  --calibration-ochre: #dfbb61;
+  --calibration-moss: #79b8a7;
+  --calibration-purple: #b89ae8;
+  --calibration-sheet-texture: rgb(120 167 232 / 8%);
+  --calibration-shadow: 0 18px 42px -26px rgb(0 0 0 / 48%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--calibration-paper);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--calibration-paper);
+  color: var(--calibration-ink);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--calibration-ochre);
+  color: var(--calibration-ink);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--calibration-cobalt);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

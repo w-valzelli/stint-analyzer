@@ -1,0 +1,436 @@
+.export-menu {
+  position: relative;
+  z-index: 30;
+}
+
+.export-menu__chevron {
+  margin-left: 2px;
+  transition: transform 160ms ease-out;
+}
+
+.export-menu > .calibration-button[aria-expanded='true'] {
+  border-color: var(--calibration-cobalt);
+}
+
+.export-menu > .calibration-button[aria-expanded='true'] .export-menu__chevron {
+  transform: rotate(180deg);
+}
+
+.export-menu__panel {
+  position: fixed;
+  z-index: 100;
+  overflow-y: auto;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-md);
+  background: var(--calibration-sheet);
+  box-shadow: var(--calibration-shadow);
+}
+
+.export-menu__list {
+  padding: 7px;
+}
+
+.export-menu__option {
+  position: relative;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border-radius: var(--calibration-radius-sm);
+  cursor: pointer;
+}
+
+.export-menu__option:hover {
+  background: var(--calibration-paper-deep);
+}
+
+.export-menu__option:focus-within {
+  outline: 2px solid var(--calibration-cobalt);
+  outline-offset: -2px;
+}
+
+.export-menu__option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.export-menu__check {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-sm);
+  color: var(--calibration-sheet);
+}
+
+.export-menu__option input:checked + .export-menu__check {
+  border-color: var(--calibration-cobalt);
+  background: var(--calibration-cobalt);
+}
+
+.export-menu__option > span:last-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.export-menu__option strong {
+  color: var(--calibration-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.export-menu__option small {
+  color: var(--calibration-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  letter-spacing: 0.02em;
+}
+
+.export-menu__footer {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--calibration-rule);
+  background: var(--calibration-paper-deep);
+}
+
+.export-menu__footer > span {
+  color: var(--calibration-ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  line-height: 1.35;
+}
+
+.export-menu__footer > .calibration-button {
+  width: 100%;
+}
+
+.scope-select {
+  position: relative;
+}
+
+.scope-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-sm);
+  background: transparent;
+  color: var(--calibration-ink);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  text-align: left;
+  transition:
+    border-color 160ms ease-out,
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+.scope-select__trigger:hover {
+  border-color: var(--calibration-ink);
+}
+
+.scope-select__trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.scope-select__trigger svg {
+  flex: 0 0 auto;
+  color: var(--calibration-muted);
+  transition: transform 160ms ease-out;
+}
+
+.scope-select__trigger[aria-expanded='true'] {
+  border-color: var(--calibration-cobalt);
+}
+
+.scope-select__trigger[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.scope-select__menu {
+  position: fixed;
+  z-index: 100;
+  display: grid;
+  gap: 2px;
+  overflow-y: auto;
+  padding: 5px;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: var(--calibration-radius-sm);
+  background: var(--calibration-sheet);
+  box-shadow: var(--calibration-shadow);
+}
+
+.scope-select__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 36px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: var(--calibration-radius-sm);
+  background: transparent;
+  color: var(--calibration-ink);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  text-align: left;
+}
+
+.scope-select__option:hover,
+.scope-select__option[aria-selected='true'] {
+  background: var(--calibration-paper-deep);
+}
+
+.scope-select__option-indicator {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--calibration-rule-strong);
+  border-radius: 3px;
+  color: var(--calibration-sheet);
+}
+
+.scope-select__option[aria-selected='true'] .scope-select__option-indicator {
+  border-color: var(--calibration-cobalt);
+  background: var(--calibration-cobalt);
+}
+
+.scope-select__option-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.scope-select__option-copy strong {
+  font-weight: 600;
+}
+
+.scope-select__option-copy small {
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+.calibration-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: var(--calibration-radius-sm);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
+}
+
+.calibration-button--default {
+  min-height: 42px;
+  padding: 0 17px;
+}
+
+.calibration-button--sm {
+  min-height: 36px;
+  padding: 0 13px;
+}
+
+.calibration-button--lg {
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: var(--calibration-radius-md);
+}
+
+.calibration-button--tab-size {
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.calibration-button--content-icon {
+  aspect-ratio: 1;
+  padding: 0;
+}
+
+.calibration-button--solid {
+  background: var(--calibration-ink);
+  color: var(--calibration-sheet);
+}
+
+.calibration-button--solid:hover:not(:disabled) {
+  background: var(--calibration-cobalt);
+}
+
+.calibration-button--outline {
+  border-color: var(--calibration-ink);
+  background: transparent;
+  color: var(--calibration-ink);
+}
+
+.calibration-button--outline:hover:not(:disabled) {
+  border-color: var(--calibration-cobalt);
+  color: var(--calibration-cobalt);
+}
+
+.calibration-button--ghost {
+  background: transparent;
+  color: var(--calibration-ink-soft);
+}
+
+.calibration-button--ghost:hover:not(:disabled) {
+  background: var(--calibration-paper-deep);
+  color: var(--calibration-ink);
+}
+
+.calibration-button--control {
+  border-color: var(--calibration-rule-strong);
+  background: transparent;
+  color: var(--calibration-ink-soft);
+}
+
+.calibration-button--control:hover:not(:disabled) {
+  border-color: var(--calibration-cobalt);
+  background: var(--calibration-paper-deep);
+  color: var(--calibration-cobalt);
+}
+
+.calibration-button--tab {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--calibration-muted);
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.calibration-button--tab:hover {
+  color: var(--calibration-ink);
+  background: rgb(255 255 255 / 35%);
+}
+
+.calibration-button--accent.calibration-button--solid {
+  background: var(--calibration-cobalt);
+}
+
+.calibration-button--accent.calibration-button--outline {
+  border-color: var(--calibration-cobalt);
+  color: var(--calibration-cobalt);
+}
+
+.calibration-button--danger.calibration-button--solid {
+  background: var(--calibration-vermilion);
+}
+
+.calibration-button--danger.calibration-button--outline,
+.calibration-button--danger.calibration-button--ghost {
+  border-color: var(--calibration-vermilion);
+  color: var(--calibration-vermilion);
+}
+
+.calibration-button--danger.calibration-button--solid:hover:not(:disabled),
+.calibration-button--danger.calibration-button--outline:hover:not(:disabled),
+.calibration-button--danger.calibration-button--ghost:hover:not(:disabled) {
+  border-color: var(--calibration-vermilion);
+  background: var(--calibration-vermilion);
+  color: var(--calibration-sheet);
+}
+
+.calibration-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.calibration-tabs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 1px solid var(--calibration-rule-strong);
+  border-bottom: 1px solid var(--calibration-rule-strong);
+}
+
+.calibration-tabs__trigger {
+  position: relative;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--calibration-muted);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition:
+    color 160ms ease-out,
+    background-color 160ms ease-out;
+}
+
+.calibration-tabs__trigger::after {
+  position: absolute;
+  right: 14px;
+  bottom: -1px;
+  left: 14px;
+  height: 2px;
+  content: '';
+  background: transparent;
+}
+
+.calibration-tabs__trigger:hover {
+  color: var(--calibration-ink);
+  background: rgb(255 255 255 / 35%);
+}
+
+.calibration-tabs__trigger[data-state='active'],
+.calibration-tabs__trigger[aria-selected='true'] {
+  color: var(--calibration-ink);
+  background: var(--calibration-sheet);
+}
+
+.calibration-tabs__trigger[data-state='active']::after,
+.calibration-tabs__trigger[aria-selected='true']::after {
+  background: var(--calibration-vermilion);
+}
+
+.calibration-tabs__content {
+  margin-top: 0;
+}
+
+@media (max-width: 680px) {
+  .export-menu,
+  .export-menu > .calibration-button {
+    width: 100%;
+  }
+
+  .calibration-tabs__trigger {
+    flex: 0 0 auto;
+  }
+}

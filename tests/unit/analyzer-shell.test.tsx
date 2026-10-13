@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { AnalyzerShell } from '../../src/components/AnalyzerShell';
+import { AnalyzerShell } from '../../src/components/app/AnalyzerShell';
 
 describe('AnalyzerShell', () => {
   it('shows the direct Stint Analyzer shell', () => {

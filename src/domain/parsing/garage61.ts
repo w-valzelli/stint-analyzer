@@ -5,7 +5,7 @@ import {
   type ParserWarning,
   type SourceSummary,
 } from '../model/normalized';
-import { parseDurationToMicroseconds } from './durations';
+import { parseWorkbookDurationToMicroseconds } from './workbook-duration';
 import { detectHeaderRow, type HeaderDetection } from './headers';
 
 export const SECTOR_SUM_MISMATCH_TOLERANCE_US = 250_000;
@@ -206,12 +206,12 @@ export function parseDetectedGarage61Sheet(
       continue;
     }
 
-    const lapTimeUs = parseDurationToMicroseconds(cell(row, detection.columns.lapTime));
+    const lapTimeUs = parseWorkbookDurationToMicroseconds(cell(row, detection.columns.lapTime));
     const lapNumber = integerValue(cell(row, detection.columns.lap));
     const sectorsUs = Object.fromEntries(
       detection.sectorColumns.map((sector) => [
         sector.name,
-        parseDurationToMicroseconds(cell(row, sector.index)),
+        parseWorkbookDurationToMicroseconds(cell(row, sector.index)),
       ]),
     );
     const classification = classifyLap(lapNumber, lapTimeUs, sectorsUs);

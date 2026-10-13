@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ParsedWorkbook } from '../../src/domain/model/normalized';
 import { hashFile } from '../../src/domain/parsing/hash';
 import { importWorkbookFiles } from '../../src/domain/parsing/imports';
 
@@ -18,19 +19,39 @@ describe('source hashing', () => {
     const unique = new File(['different bytes'], 'unique.xlsx');
     const existingHash = await hashFile(first);
 
-    const batch = await importWorkbookFiles([first, renamed, unique], new Set([existingHash]));
+    const existing = { source: { hash: existingHash } } as ParsedWorkbook;
 
-    expect(batch.duplicates).toEqual([
-      { name: 'first.xlsx', hash: existingHash, reason: 'existing' },
-      { name: 'renamed.xlsx', hash: existingHash, reason: 'existing' },
+    const results = await importWorkbookFiles([first, renamed, unique], [existing]);
+
+    expect(results.filter((result) => result.status === 'duplicate')).toEqual([
+      {
+        index: 0,
+        file: first,
+        name: 'first.xlsx',
+        status: 'duplicate',
+        hash: existingHash,
+        duplicateReason: 'existing',
+      },
+      {
+        index: 1,
+        file: renamed,
+        name: 'renamed.xlsx',
+        status: 'duplicate',
+        hash: existingHash,
+        duplicateReason: 'existing',
+      },
     ]);
   });
 
   it('marks same-selection duplicates separately', async () => {
     const first = new File(['same bytes'], 'first.xlsx');
     const renamed = new File(['same bytes'], 'renamed.xlsx');
-    const batch = await importWorkbookFiles([first, renamed]);
+    const results = await importWorkbookFiles([first, renamed]);
 
-    expect(batch.duplicates[0]).toMatchObject({ name: 'renamed.xlsx', reason: 'selection' });
+    expect(results[1]).toMatchObject({
+      name: 'renamed.xlsx',
+      status: 'duplicate',
+      duplicateReason: 'selection',
+    });
   });
 });

@@ -12,10 +12,7 @@ import type {
 } from '../model/report';
 import type { SourceSummary } from '../model/normalized';
 import { durationStats } from './statistics';
-
-function compareText(left: string, right: string): number {
-  return left.localeCompare(right, undefined, { sensitivity: 'base' });
-}
+import { compareText } from './text-order';
 
 function minimum(values: readonly (number | null)[]): number | null {
   const available = values.filter((value): value is number => value !== null);
@@ -124,32 +121,67 @@ export type ScorecardDriverInput = {
   executionGapUs: number | null;
 };
 
+type ScorecardRankDirection = 'lower-first' | 'higher-first';
+
+type ScorecardMetricDefinition = {
+  valueFor: (driver: ScorecardDriverInput) => number | null;
+  sampleSizeFor: (driver: ScorecardDriverInput) => number;
+  direction: ScorecardRankDirection;
+};
+
+const scorecardMetricDefinitions = {
+  pace: {
+    valueFor: (driver) => driver.lapStats.medianUs,
+    sampleSizeFor: (driver) => driver.lapStats.n,
+    direction: 'lower-first',
+  },
+  potential: {
+    valueFor: (driver) => driver.executionGapUs,
+    sampleSizeFor: (driver) => driver.lapStats.n,
+    direction: 'higher-first',
+  },
+  efficiency: {
+    valueFor: (driver) => driver.fuelUsedMeanLiters,
+    sampleSizeFor: (driver) => driver.fuelUsedLapCount,
+    direction: 'lower-first',
+  },
+  cleanliness: {
+    valueFor: (driver) => driver.cleanPercentage,
+    sampleSizeFor: (driver) => driver.eligibleNonPitLapCount,
+    direction: 'higher-first',
+  },
+  consistency: {
+    valueFor: (driver) => driver.lapStats.madUs,
+    sampleSizeFor: (driver) => driver.lapStats.n,
+    direction: 'lower-first',
+  },
+} satisfies Record<keyof DriverScorecard, ScorecardMetricDefinition>;
+
 function buildScorecardMetric(
   driver: ScorecardDriverInput,
   drivers: readonly ScorecardDriverInput[],
   leaderboardDrivers: ReadonlySet<string>,
   leaderboardDriverCount: number,
-  valueFor: (entry: ScorecardDriverInput) => number | null,
-  sampleSizeFor: (entry: ScorecardDriverInput) => number,
-  lowerIsBetter: boolean,
+  definition: ScorecardMetricDefinition,
 ): ScorecardMetric {
   const available = drivers.flatMap((entry) => {
-    const value = valueFor(entry);
+    const value = definition.valueFor(entry);
     return leaderboardDrivers.has(entry.driver) && value !== null ? [{ value }] : [];
   });
-  const value = valueFor(driver);
+  const value = definition.valueFor(driver);
   const rank =
     !leaderboardDrivers.has(driver.driver) || value === null
       ? null
-      : available.filter((entry) => (lowerIsBetter ? entry.value < value : entry.value > value))
-          .length + 1;
+      : available.filter((entry) =>
+          definition.direction === 'lower-first' ? entry.value < value : entry.value > value,
+        ).length + 1;
   const fieldSize = available.length;
 
   return {
     rank,
     fieldSize,
     radarScore: rank === null ? null : leaderboardDriverCount - rank + 1,
-    sampleSize: sampleSizeFor(driver),
+    sampleSize: definition.sampleSizeFor(driver),
   };
 }
 
@@ -160,55 +192,26 @@ export function buildDriverScorecards(
   const leaderboardDriverSet = new Set(leaderboardDrivers);
 
   return new Map(
-    drivers.map((driver) => [
-      driver.driver,
-      {
-        pace: buildScorecardMetric(
+    drivers.map((driver) => {
+      const metric = (definition: ScorecardMetricDefinition) =>
+        buildScorecardMetric(
           driver,
           drivers,
           leaderboardDriverSet,
           leaderboardDrivers.length,
-          (entry) => entry.lapStats.medianUs,
-          (entry) => entry.lapStats.n,
-          true,
-        ),
-        potential: buildScorecardMetric(
-          driver,
-          drivers,
-          leaderboardDriverSet,
-          leaderboardDrivers.length,
-          (entry) => entry.executionGapUs,
-          (entry) => entry.lapStats.n,
-          false,
-        ),
-        efficiency: buildScorecardMetric(
-          driver,
-          drivers,
-          leaderboardDriverSet,
-          leaderboardDrivers.length,
-          (entry) => entry.fuelUsedMeanLiters,
-          (entry) => entry.fuelUsedLapCount,
-          true,
-        ),
-        cleanliness: buildScorecardMetric(
-          driver,
-          drivers,
-          leaderboardDriverSet,
-          leaderboardDrivers.length,
-          (entry) => entry.cleanPercentage,
-          (entry) => entry.eligibleNonPitLapCount,
-          false,
-        ),
-        consistency: buildScorecardMetric(
-          driver,
-          drivers,
-          leaderboardDriverSet,
-          leaderboardDrivers.length,
-          (entry) => entry.lapStats.madUs,
-          (entry) => entry.lapStats.n,
-          true,
-        ),
-      },
-    ]),
+          definition,
+        );
+
+      return [
+        driver.driver,
+        {
+          pace: metric(scorecardMetricDefinitions.pace),
+          potential: metric(scorecardMetricDefinitions.potential),
+          efficiency: metric(scorecardMetricDefinitions.efficiency),
+          cleanliness: metric(scorecardMetricDefinitions.cleanliness),
+          consistency: metric(scorecardMetricDefinitions.consistency),
+        },
+      ];
+    }),
   );
 }

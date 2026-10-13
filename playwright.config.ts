@@ -13,6 +13,9 @@ export default defineConfig({
   },
   webServer: {
     command: 'pnpm dev --host 127.0.0.1',
+    // Astro 7 detaches `astro dev` when it detects an AI agent environment, which
+    // Playwright reports as an early exit. This marker keeps it in the foreground.
+    env: { ASTRO_DEV_BACKGROUND: '1' },
     url: 'http://127.0.0.1:4321/stint-analyzer/',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

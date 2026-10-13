@@ -1,7 +1,0 @@
-{
-  "name": "stint-analyzer-repository",
-  "created": "2026-08-21",
-  "purpose": "Repository references for a static Astro + React Garage 61 stint analyzer",
-  "files": ["AGENTS.md", "README.md"],
-  "directive": "Accountless, backend-free, ephemeral: drop files -> analyze locally -> export -> discard"
-}
