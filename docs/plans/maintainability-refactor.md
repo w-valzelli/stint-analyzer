@@ -20,19 +20,19 @@ criteria, and verification.
 
 ## Status and sequence
 
-| ID    | Issue                                                       | Outcome                                                      | Status       | Depends on   |
-| ----- | ----------------------------------------------------------- | ------------------------------------------------------------ | ------------ | ------------ |
-| MR-01 | —                                                           | Characterize report, JSON, scorecard, and duration contracts | Complete     | —            |
-| MR-02 | —                                                           | Establish shared duration behavior and one source schema     | Complete     | MR-01        |
-| MR-03 | —                                                           | Make scorecard value, sample, and direction rules explicit   | Complete     | MR-01        |
-| MR-04 | —                                                           | Make `buildAnalysisReport` readable orchestration            | Complete     | MR-03        |
-| MR-05 | —                                                           | Declare and map every JSON 1.0 field explicitly              | Complete     | MR-04        |
-| MR-06 | —                                                           | Use one ordered import record flow                           | Complete     | MR-05        |
-| MR-07 | —                                                           | Share anchored-popup mechanics                               | Complete     | MR-06        |
-| MR-08 | —                                                           | Share lap-series chart presentation                          | Complete     | MR-06        |
-| MR-09 | —                                                           | Split styles and remove confirmed dead UI                    | Complete     | MR-07, MR-08 |
-| MR-10 | —                                                           | Remove the Impeccable integration                            | Complete     | MR-09        |
-| MR-11 | [#8](https://github.com/w-valzelli/stint-analyzer/issues/8) | Finalize maintainer guidance and run the complete gate       | Ready — next | MR-10        |
+| ID    | Issue | Outcome                                                      | Status   | Depends on   |
+| ----- | ----- | ------------------------------------------------------------ | -------- | ------------ |
+| MR-01 | —     | Characterize report, JSON, scorecard, and duration contracts | Complete | —            |
+| MR-02 | —     | Establish shared duration behavior and one source schema     | Complete | MR-01        |
+| MR-03 | —     | Make scorecard value, sample, and direction rules explicit   | Complete | MR-01        |
+| MR-04 | —     | Make `buildAnalysisReport` readable orchestration            | Complete | MR-03        |
+| MR-05 | —     | Declare and map every JSON 1.0 field explicitly              | Complete | MR-04        |
+| MR-06 | —     | Use one ordered import record flow                           | Complete | MR-05        |
+| MR-07 | —     | Share anchored-popup mechanics                               | Complete | MR-06        |
+| MR-08 | —     | Share lap-series chart presentation                          | Complete | MR-06        |
+| MR-09 | —     | Split styles and remove confirmed dead UI                    | Complete | MR-07, MR-08 |
+| MR-10 | —     | Remove the Impeccable integration                            | Complete | MR-09        |
+| MR-11 | —     | Finalize maintainer guidance and run the complete gate       | Complete | MR-10        |
 
 ## Requirement coverage
 
@@ -48,7 +48,7 @@ criteria, and verification.
 | R-8 Shared domain schemas                        | MR-02 complete |
 | R-9 Explicit scorecard rules                     | MR-03 complete |
 | R-10 Remove Impeccable                           | MR-10 complete |
-| R-11 Concise human and agent guidance            | MR-11          |
+| R-11 Concise human and agent guidance            | MR-11 complete |
 
 ## Global boundaries
 
@@ -130,6 +130,13 @@ MR-10 removed the Impeccable submodule, `.gitmodules`, the
 and `MANIFEST.json`, along with their `.gitignore`, `.prettierignore`, ESLint,
 and TypeScript exclusions and the stale `docs/0[1-4]_*` Prettier exclusions. A
 fresh clone needs no submodule initialization.
+
+MR-11 added the import-to-report data flow, a JSON `1.0` export compatibility
+and privacy section, and the correct `/stint-analyzer` base-path check to
+README. AGENTS now points to README for analysis and export semantics, keeps
+only the invariants agents must preserve, and scales verification to the kind
+of change. The complete gate, including `pnpm e2e` and the base-path build,
+passes.
 
 The separately approved type-first restructure established the source routing
 used by the remaining work:
