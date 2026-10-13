@@ -51,18 +51,16 @@ future request explicitly requires them.
 
 ## Analysis invariants
 
-- Runtime and pace eligibility are separate concepts.
-- Runtime sums selected full timed laps, including pit laps when they are in
-  the selected scope. `Clean` does not affect runtime.
-- Default pace uses full timed, clean, non-pit laps. The exploratory all-non-pit
-  mode may include unclean non-pit laps.
-- Clean percentage uses full timed non-pit laps as its denominator and always
-  exposes numerator, denominator, and percentage.
-- `Clean = 0` is not a penalty. Do not infer penalties or black flags from it;
-  the current product has no penalty-adjusted leaderboard.
-- Every lap must retain an auditable inclusion/exclusion result.
-- Domain calculations remain framework-independent pure TypeScript.
-- The UI and all export formats consume the same canonical `AnalysisReport`.
+README's Analysis rules and Exports and privacy sections define the semantics.
+When changing analysis, import, or export code:
+
+- Keep runtime and pace eligibility separate; `Clean` never affects runtime.
+- Keep clean percentage reporting its numerator, denominator, and percentage.
+- Do not treat `Clean = 0` as a penalty or infer penalties or black flags.
+- Keep an auditable inclusion/exclusion result for every lap.
+- Keep domain calculations framework-independent pure TypeScript.
+- Feed the UI and every export from the same canonical `AnalysisReport`.
+- Keep JSON `1.0` compatible; change it only through its explicit mappers.
 - Preserve dynamic sector discovery and actionable validation for malformed or
   unrelated workbooks.
 
@@ -80,7 +78,10 @@ future request explicitly requires them.
 
 ## Verification
 
-Use the relevant commands documented in README.md. For normal application
-changes, run linting, type checking, unit tests, and a production build. Run
-Playwright for user-visible workflow changes and verify the configured GitHub
-Pages base path when routing or asset behavior changes.
+Use the commands documented in README.md, in proportion to the change:
+
+- Documentation only: `pnpm format`.
+- Application code: `pnpm format`, `pnpm lint`, `pnpm check`, `pnpm test`, and
+  `pnpm build`.
+- User-visible workflows: also `pnpm e2e`.
+- Routing or asset behavior: also run README's base-path build check.
