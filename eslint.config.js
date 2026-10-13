@@ -6,15 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: [
-      '.impeccable/**',
-      'vendor/impeccable/**',
-      'dist/**',
-      '.astro/**',
-      'coverage/**',
-      'playwright-report/**',
-      'test-results/**',
-    ],
+    ignores: ['dist/**', '.astro/**', 'coverage/**', 'playwright-report/**', 'test-results/**'],
   },
   {
     languageOptions: {
